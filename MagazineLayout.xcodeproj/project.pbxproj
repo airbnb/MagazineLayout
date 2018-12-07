@@ -77,9 +77,9 @@
 		93A1C05321ACEDFC00DED67D /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		93A1C05421ACEDFC00DED67D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		FD23F5F021AF4A1B00AA78D4 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FD23F5F221AF4A3200AA78D4 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FD4DFF0721B0C737001F46CE /* MagazineLayoutCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagazineLayoutCollectionViewCell.swift; sourceTree = "<group>"; };
 		FD4DFF0921B0D181001F46CE /* MagazineLayoutCollectionReusableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MagazineLayoutCollectionReusableView.swift; sourceTree = "<group>"; };
+		FD69EA0F21BA01E6001E0650 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FDF6E15A21B0B7870092775D /* MagazineLayoutCollectionViewLayoutAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MagazineLayoutCollectionViewLayoutAttributes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -107,6 +107,7 @@
 			children = (
 				93A1C05421ACEDFC00DED67D /* README.md */,
 				93A1C05321ACEDFC00DED67D /* LICENSE */,
+				FD69EA0F21BA01E6001E0650 /* Info.plist */,
 				93A1C01221ACED0100DED67D /* MagazineLayout */,
 				93A1C00921ACED0100DED67D /* Tests */,
 				93A1BFF021ACE9A000DED67D /* Products */,
@@ -139,7 +140,6 @@
 		93A1C01221ACED0100DED67D /* MagazineLayout */ = {
 			isa = PBXGroup;
 			children = (
-				FD23F5F221AF4A3200AA78D4 /* Info.plist */,
 				93A1C01421ACED0100DED67D /* Public */,
 				93A1C01E21ACED0100DED67D /* LayoutCore */,
 			);
@@ -492,7 +492,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = MagazineLayout/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -519,7 +519,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = MagazineLayout/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
