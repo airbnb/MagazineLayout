@@ -21,9 +21,9 @@ A collection view layout capable of laying out views in vertically scrolling gri
 - Section backgrounds that can be hidden / visible on a per-section basis
 
 Other features:
-- Specify horizontal item spacing on a per-section basis
-- Specify vertical row spacing on a per-section basis
-- Specify item insets on a per-section basis
+- Specifying horizontal item spacing on a per-section basis
+- Specifying vertical row spacing on a per-section basis
+- Specifying item insets on a per-section basis
 
 These capabilities have allowed us to build a wide variety of screens in the Airbnb app, many of which are among our highest-traffic screens. Here are just a few examples of screens laid out using `MagazineLayout`:
 
@@ -101,9 +101,9 @@ To delete an item, simple tap on the item in the collection view. The item will 
 ## Getting Started
 
 ### Requirements
-- Deployment target iOS 10.0 or higher
-- Swift 4 or higher
-- Xcode 10 or higher
+- Deployment target iOS 10.0+
+- Swift 4+
+- Xcode 10+
 
 ### Installation
 #### Carthage
@@ -119,14 +119,14 @@ To install `MagazineLayout` using [CocoaPods](http://cocoapods.org), add
 Once you've integrated the `MagazineLayout` into your project, using it with a collection view is easy.
 
 #### Setting up cells and headers
-[Due to shortcomings in `UIKit`](MagazineLayout/Public/Views/MagazineLayoutCollectionViewCell.swift), `MagazineLayout` requires its own `UICollectionViewCell` and `UICollectionReusableView` subclasses:
+[Due to shortcomings in `UIKit`](MagazineLayout/Public/Views/MagazineLayoutCollectionViewCell.swift#L34-L39), `MagazineLayout` requires its own `UICollectionViewCell` and `UICollectionReusableView` subclasses:
 -  `MagazineLayoutCollectionViewCell`
 - `MagazineLayoutCollectionReusableView`
 
-These two types enable cells and supplementary views to self-size correctly when using `MagazineLayout`. **Make sure that the custom cell and reusable view types in your app subclass from `MagazineLayoutCollectionViewCell` and `MagazineLayoutCollectionReusableView`, respectively.** 
+These two types enable cells and supplementary views to self-size correctly when using `MagazineLayout`. **Make sure that the custom cell and reusable view types in your app subclass from `MagazineLayoutCollectionViewCell` and `MagazineLayoutCollectionReusableView` respectively.** 
 
 Alternatively, you can copy the implementation of `preferredLayoutAttributesFitting(_:)`
-for use in your custom cell and reusable view types, without subclassing from the ones `MagazineLayout` provides.
+for use in your custom cell and reusable view types without subclassing from the ones `MagazineLayout` provides.
 
 #### Importing MagazineLayout
 At the top of the file where you'd like to use `MagazineLayout` (likely a `UIView` or `UIViewController` subclass), import `MagazineLayout`.
