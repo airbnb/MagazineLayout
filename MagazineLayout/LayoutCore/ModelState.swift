@@ -49,7 +49,13 @@ final class ModelState {
   func idForItemModel(at indexPath: IndexPath, _ batchUpdateStage: BatchUpdateStage) -> String? {
     let sectionModels = self.sectionModels(batchUpdateStage)
 
-    guard indexPath.section < sectionModels.count else { return nil }
+    guard
+      indexPath.section < sectionModels.count,
+      indexPath.item < sectionModels[indexPath.section].numberOfItems else
+    {
+      // This occurs when getting layout attributes for initial / final animations
+      return nil
+    }
 
     return sectionModels[indexPath.section].idForItemModel(atIndex: indexPath.item)
   }
@@ -74,7 +80,10 @@ final class ModelState {
   func idForSectionModel(atIndex index: Int, _ batchUpdateStage: BatchUpdateStage) -> String? {
     let sectionModels = self.sectionModels(batchUpdateStage)
 
-    guard index < sectionModels.count else { return nil }
+    guard index < sectionModels.count else {
+      // This occurs when getting layout attributes for initial / final animations
+      return nil
+    }
 
     return sectionModels[index].id
   }
@@ -90,16 +99,77 @@ final class ModelState {
     return nil
   }
 
-  func preferredHeightForItemModel(
-    at indexPath: IndexPath,
-    _ batchUpdateStage: BatchUpdateStage)
-    -> CGFloat?
+  func itemModelHeightModeForPreferredAttributesCheck(
+    at indexPath: IndexPath)
+    -> MagazineLayoutItemHeightMode?
   {
-    let sectionModels = self.sectionModels(batchUpdateStage)
+    func itemModelHeightModeForPreferredAttributesCheck(
+      at indexPath: IndexPath,
+      sectionModels: inout [SectionModel])
+      -> MagazineLayoutItemHeightMode?
+    {
+      guard
+        indexPath.section < sectionModels.count,
+        indexPath.item < sectionModels[indexPath.section].numberOfItems else
+      {
+        assertionFailure("Height mode for item at \(indexPath) is out of bounds")
+        return nil
+      }
 
-    guard indexPath.section < sectionModels.count else { return nil }
+      return sectionModels[indexPath.section].itemModel(atIndex: indexPath.item).sizeMode.heightMode
+    }
 
-    return sectionModels[indexPath.section].preferredHeightForItemModel(atIndex: indexPath.item)
+    switch preferredHeightUpdateContext(forPreferredHeightUpdateToItemAt: indexPath) {
+    case .updatePreviousModels, .updatePreviousAndCurrentModels:
+      return itemModelHeightModeForPreferredAttributesCheck(
+        at: indexPath,
+        sectionModels: &sectionModelsBeforeBatchUpdates)
+    case .updateCurrentModels:
+      return itemModelHeightModeForPreferredAttributesCheck(
+        at: indexPath,
+        sectionModels: &currentSectionModels)
+    }
+  }
+
+  func headerModelHeightModeDuringPreferredAttributesCheck(
+    atSectionIndex sectionIndex: Int)
+    -> MagazineLayoutHeaderHeightMode?
+  {
+    guard sectionIndex < currentSectionModels.count else {
+      assertionFailure("Height mode for header at section index \(sectionIndex) is out of bounds")
+      return nil
+    }
+
+    return currentSectionModels[sectionIndex].headerModel?.heightMode
+  }
+
+  func itemModelPreferredHeightDuringPreferredAttributesCheck(at indexPath: IndexPath) -> CGFloat? {
+    func itemModelPreferredHeightDuringPreferredAttributesCheck(
+      at indexPath: IndexPath,
+      sectionModels: inout [SectionModel])
+      -> CGFloat?
+    {
+      guard
+        indexPath.section < sectionModels.count,
+        indexPath.item < sectionModels[indexPath.section].numberOfItems else
+      {
+        assertionFailure("Height mode for item at \(indexPath) is out of bounds")
+        return nil
+      }
+
+      return sectionModels[indexPath.section].preferredHeightForItemModel(atIndex: indexPath.item)
+    }
+
+    switch preferredHeightUpdateContext(forPreferredHeightUpdateToItemAt: indexPath) {
+    case .updatePreviousModels, .updatePreviousAndCurrentModels:
+      return itemModelPreferredHeightDuringPreferredAttributesCheck(
+        at: indexPath,
+        sectionModels: &sectionModelsBeforeBatchUpdates)
+    case .updateCurrentModels:
+      return itemModelPreferredHeightDuringPreferredAttributesCheck(
+        at: indexPath,
+        sectionModels: &currentSectionModels)
+    }
   }
 
   func itemFrameInfo(forItemsIn visibleRect: CGRect) -> ElementLocationFramePairs {
@@ -289,14 +359,20 @@ final class ModelState {
 
   func updateItemHeight(
     toPreferredHeight preferredHeight: CGFloat,
-    forItemAtIndexPath indexPath: IndexPath)
+    forItemAt indexPath: IndexPath)
   {
     func updateItemHeight(
       toPreferredHeight preferredHeight: CGFloat,
-      forItemAtIndexPath indexPath: IndexPath,
+      forItemAt indexPath: IndexPath,
       sectionModels: inout [SectionModel])
     {
-      guard indexPath.section < sectionModels.count else { return }
+      guard
+        indexPath.section < sectionModels.count,
+        indexPath.item < sectionModels[indexPath.section].numberOfItems else
+      {
+        assertionFailure("Updating the preferred height for an item model at \(indexPath) is out of bounds")
+        return
+      }
 
       sectionModels[indexPath.section].updateItemHeight(
         toPreferredHeight: preferredHeight,
@@ -305,68 +381,26 @@ final class ModelState {
       invalidateSectionMaxYsCacheForSectionIndices(startingAt: indexPath.section)
     }
 
-    // iOS 12 fixes an issue that causes `UICollectionView` to provide preferred attributes for old,
-    // invalid item index paths. This happens when an item is deleted, causing an off-screen,
-    // unsized item to slide up into view. At this point, `UICollectionView` sizes that item since
-    // it's now visible, but it provides the preferred attributes for the item's index path *before*
-    // the delete batch update.
-    // This issue actually causes `UICollectionViewFlowLayout` to crash on iOS 11 and earlier.
-    // https://openradar.appspot.com/radar?id=5006149438930944
-    // Related animation issue ticket: https://openradar.appspot.com/radar?id=4929660190195712
-    // Once we drop support for iOS 11, we can delete everything outside of the
-    // `#available(iOS 12.0, *)` check.
-    if #available(iOS 12.0, *) {
+    switch preferredHeightUpdateContext(forPreferredHeightUpdateToItemAt: indexPath) {
+    case .updatePreviousModels:
       updateItemHeight(
         toPreferredHeight: preferredHeight,
-        forItemAtIndexPath: indexPath,
-        sectionModels: &currentSectionModels)
-    } else if !isPerformingBatchUpdates {
+        forItemAt: indexPath,
+        sectionModels: &sectionModelsBeforeBatchUpdates)
+    case .updateCurrentModels:
       updateItemHeight(
         toPreferredHeight: preferredHeight,
-        forItemAtIndexPath: indexPath,
+        forItemAt: indexPath,
         sectionModels: &currentSectionModels)
-    } else {
-      if
-        itemIndexPathsToInsert.contains(indexPath) ||
-        sectionIndicesToInsert.contains(indexPath.section)
-      {
-        // If an item is being inserted, or it's in a section that's being inserted, update its
-        // height in the section models after batch updates, since it won't exist in the previous
-        // section models.
-        updateItemHeight(
-          toPreferredHeight: preferredHeight,
-          forItemAtIndexPath: indexPath,
-          sectionModels: &currentSectionModels)
-      } else if
-        itemIndexPathsToDelete.contains(indexPath) ||
-        sectionIndicesToDelete.contains(indexPath.section)
-      {
-        // If an item is being deleted, or it's in a section that's being deleted, update its height
-        // in the section models before batch updates, since it won't exist in the current section
-        // models.
-        updateItemHeight(
-          toPreferredHeight: preferredHeight,
-          forItemAtIndexPath: indexPath,
-          sectionModels: &sectionModelsBeforeBatchUpdates)
-      } else if
-        let previousItemModelID = idForItemModel(at: indexPath, .beforeUpdates),
-        let itemModelIndexPath = indexPathForItemModel(
-          withID: previousItemModelID,
-          .afterUpdates)
-      {
-        // If an item was moved, then it will have an ID in the section models before batch updates,
-        // and that ID will match an index path in the current section models. In this scenario, we
-        // want to update the section models from before and after batch updates.
-        updateItemHeight(
-          toPreferredHeight: preferredHeight,
-          forItemAtIndexPath: indexPath,
-          sectionModels: &sectionModelsBeforeBatchUpdates)
-
-        updateItemHeight(
-          toPreferredHeight: preferredHeight,
-          forItemAtIndexPath: itemModelIndexPath,
-          sectionModels: &currentSectionModels)
-      }
+    case let .updatePreviousAndCurrentModels(previousIndexPath, currentIndexPath):
+      updateItemHeight(
+        toPreferredHeight: preferredHeight,
+        forItemAt: previousIndexPath,
+        sectionModels: &sectionModelsBeforeBatchUpdates)
+      updateItemHeight(
+        toPreferredHeight: preferredHeight,
+        forItemAt: currentIndexPath,
+        sectionModels: &currentSectionModels)
     }
   }
 
@@ -386,7 +420,10 @@ final class ModelState {
     toPreferredHeight preferredHeight: CGFloat,
     forSectionAtIndex sectionIndex: Int)
   {
-    guard sectionIndex < currentSectionModels.count else { return }
+    guard sectionIndex < currentSectionModels.count else {
+      assertionFailure("Updating the preferred height for a header model at section index \(sectionIndex) is out of bounds")
+      return
+    }
 
     currentSectionModels[sectionIndex].updateHeaderHeight(toPreferredHeight: preferredHeight)
 
@@ -489,6 +526,12 @@ final class ModelState {
 
   // MARK: Private
 
+  private enum PreferredHeightUpdateContext {
+    case updatePreviousModels
+    case updateCurrentModels
+    case updatePreviousAndCurrentModels(previousIndexPath: IndexPath, currentIndexPath: IndexPath)
+  }
+
   private var currentSectionModels = [SectionModel]()
   private var sectionModelsBeforeBatchUpdates = [SectionModel]()
 
@@ -511,6 +554,61 @@ final class ModelState {
     case .beforeUpdates: return UnsafeMutableRawPointer(mutating: &sectionModelsBeforeBatchUpdates)
     case .afterUpdates: return UnsafeMutableRawPointer(mutating: &currentSectionModels)
     }
+  }
+
+  private func preferredHeightUpdateContext(
+    forPreferredHeightUpdateToItemAt indexPath: IndexPath)
+    -> PreferredHeightUpdateContext
+  {
+    // iOS 12 fixes an issue that causes `UICollectionView` to provide preferred attributes for old,
+    // invalid item index paths. This happens when an item is deleted, causing an off-screen,
+    // unsized item to slide up into view. At this point, `UICollectionView` sizes that item since
+    // it's now visible, but it provides the preferred attributes for the item's index path *before*
+    // the delete batch update.
+    // This issue actually causes `UICollectionViewFlowLayout` to crash on iOS 11 and earlier.
+    // https://openradar.appspot.com/radar?id=5006149438930944
+    // Related animation issue ticket: https://openradar.appspot.com/radar?id=4929660190195712
+    // Once we drop support for iOS 11, we can delete everything outside of the
+    // `#available(iOS 12.0, *)` check.
+    if #available(iOS 12.0, *) {
+      return .updateCurrentModels
+    } else if !isPerformingBatchUpdates {
+      return .updateCurrentModels
+    } else {
+      if
+        itemIndexPathsToInsert.contains(indexPath) ||
+        sectionIndicesToInsert.contains(indexPath.section)
+      {
+        // If an item is being inserted, or it's in a section that's being inserted, update its
+        // height in the section models after batch updates, since it won't exist in the previous
+        // section models.
+        return .updateCurrentModels
+      } else if
+        itemIndexPathsToDelete.contains(indexPath) ||
+        sectionIndicesToDelete.contains(indexPath.section)
+      {
+        // If an item is being deleted, or it's in a section that's being deleted, update its height
+        // in the section models before batch updates, since it won't exist in the current section
+        // models.
+        return .updatePreviousModels
+      } else if
+        indexPath.section < sectionModelsBeforeBatchUpdates.count,
+        indexPath.item < sectionModelsBeforeBatchUpdates[indexPath.section].numberOfItems,
+        let previousItemModelID = idForItemModel(at: indexPath, .beforeUpdates),
+        let currentIndexPath = indexPathForItemModel(
+          withID: previousItemModelID,
+          .afterUpdates)
+      {
+        // If an item was moved, then it will have an ID in the section models before batch updates,
+        // and that ID will match an index path in the current section models. In this scenario, we
+        // want to update the section models from before and after batch updates.
+        return .updatePreviousAndCurrentModels(
+          previousIndexPath: indexPath,
+          currentIndexPath: currentIndexPath)
+      }
+    }
+
+    return .updateCurrentModels
   }
 
   private func allocateMemoryForSectionMaxYsCache() {

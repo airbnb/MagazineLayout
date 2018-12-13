@@ -43,12 +43,13 @@ struct SectionModel {
 
   let id: String
 
+  private(set) var headerModel: HeaderModel?
+
   var numberOfItems: Int {
     return itemModels.count
   }
 
-  func idForItemModel(atIndex index: Int) -> String? {
-    guard index < itemModels.count else { return nil }
+  func idForItemModel(atIndex index: Int) -> String {
     return itemModels[index].id
   }
 
@@ -61,7 +62,6 @@ struct SectionModel {
   }
 
   func preferredHeightForItemModel(atIndex index: Int) -> CGFloat? {
-    guard index < itemModels.count else { return nil }
     return itemModels[index].preferredHeight
   }
 
@@ -151,8 +151,6 @@ struct SectionModel {
     toPreferredHeight preferredHeight: CGFloat,
     atIndex index: Int)
   {
-    guard index < itemModels.count else { return }
-
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
     // and Swift retain / releases calls.
     let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
@@ -202,7 +200,6 @@ struct SectionModel {
   // MARK: Private
 
   private var itemModels: [ItemModel]
-  private var headerModel: HeaderModel?
   private var backgroundModel: BackgroundModel?
   private var metrics: MagazineLayoutSectionMetrics
   private var calculatedHeight: CGFloat

@@ -114,9 +114,10 @@ final class ModelStateLayoutTests: XCTestCase {
         let indexPath = IndexPath(item: itemIndex, section: 0)
         modelState.updateItemHeight(
           toPreferredHeight: sizeModeAndHeight.height,
-          forItemAtIndexPath: indexPath)
+          forItemAt: indexPath)
 
-        let preferredHeight = modelState.preferredHeightForItemModel(at: indexPath, .afterUpdates)
+        let preferredHeight = modelState.itemModelPreferredHeightDuringPreferredAttributesCheck(
+          at: indexPath)
         XCTAssert(preferredHeight == sizeModeAndHeight.height, "Item preferred height is incorrect")
       case .static:
         continue
