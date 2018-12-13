@@ -498,46 +498,30 @@ public final class MagazineLayout: UICollectionViewLayout {
     withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
     -> Bool
   {
-    let indexPath: IndexPath
-    // See comment in `ModelState`'s `setItemHeight` function for context
-    if #available(iOS 12.0, *) {
-      indexPath = preferredAttributes.indexPath
-    } else if
-      let itemID = modelState.idForItemModel(
-        at: preferredAttributes.indexPath,
-        .beforeUpdates),
-      let newIndexPath = modelState.indexPathForItemModel(withID: itemID, .afterUpdates)
-    {
-      indexPath = newIndexPath
-    } else {
-      indexPath = preferredAttributes.indexPath
-    }
+    let hasNewPreferredHeight = preferredAttributes.size.height.rounded() != originalAttributes.size.height.rounded()
 
     switch (preferredAttributes.representedElementCategory, preferredAttributes.representedElementKind) {
     case (.cell, nil):
-      let hasNewPreferredHeight = preferredAttributes.size.height.rounded() != originalAttributes.size.height.rounded()
-
-      switch sizeModeForItem(at: indexPath).heightMode {
-      case .static: return false
-      case .dynamic:
+      let itemHeightMode = modelState.itemModelHeightModeDuringPreferredAttributesCheck(
+        at: preferredAttributes.indexPath)
+      switch itemHeightMode {
+      case .some(.static):
+        return false
+      case .some(.dynamic):
         return hasNewPreferredHeight
-      case .dynamicAndStretchToTallestItemInRow:
-        let currentPreferredHeight = modelState.preferredHeightForItemModel(
-          at: indexPath,
-          .afterUpdates)
+      case .some(.dynamicAndStretchToTallestItemInRow):
+        let currentPreferredHeight = modelState.itemModelPreferredHeightDuringPreferredAttributesCheck(
+          at: preferredAttributes.indexPath)
         let hasPreferredHeightChanged = preferredAttributes.size.height.rounded() != currentPreferredHeight?.rounded()
         return hasNewPreferredHeight && hasPreferredHeightChanged
+      case nil:
+        return false
       }
 
     case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionHeader):
-      let headerVisibilityMode = visibilityModeForHeader(
-        inSectionAtIndex: preferredAttributes.indexPath.section)
-      switch headerVisibilityMode {
-      case let .visible(headerHeightMode):
-        return headerHeightMode == .dynamic
-      case .hidden:
-        return false
-      }
+      let headerHeightMode = modelState.headerModelHeightModeDuringPreferredAttributesCheck(
+        atSectionIndex: preferredAttributes.indexPath.section)
+      return headerHeightMode == .dynamic
 
     case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionBackground):
       return false
@@ -557,7 +541,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     case .cell:
       modelState.updateItemHeight(
         toPreferredHeight: preferredAttributes.size.height,
-        forItemAtIndexPath: preferredAttributes.indexPath)
+        forItemAt: preferredAttributes.indexPath)
     case .supplementaryView:
       modelState.updateHeaderHeight(
         toPreferredHeight: preferredAttributes.size.height,
