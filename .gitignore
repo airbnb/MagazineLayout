@@ -5,6 +5,7 @@
 ## Build generated
 build/
 DerivedData/
+Gemfile.lock
 
 ## Various settings
 *.pbxuser
