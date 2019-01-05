@@ -127,11 +127,7 @@ final class ElementLocationFramePair {
 
 extension ElementLocationFramePair: Equatable {
 
-  static func ==(
-    lhs: ElementLocationFramePair,
-    rhs: ElementLocationFramePair)
-    -> Bool
-  {
+  static func == (lhs: ElementLocationFramePair, rhs: ElementLocationFramePair) -> Bool {
     return lhs.elementLocation == rhs.elementLocation && lhs.frame == rhs.frame
   }
 

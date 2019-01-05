@@ -54,7 +54,7 @@ public enum MagazineLayoutHeaderHeightMode {
 
 extension MagazineLayoutHeaderHeightMode: Equatable {
 
-  public static func ==(
+  public static func == (
     lhs: MagazineLayoutHeaderHeightMode,
     rhs: MagazineLayoutHeaderHeightMode)
     -> Bool

@@ -167,6 +167,14 @@ public final class MagazineLayout: UICollectionViewLayout {
       itemLayoutAttributes = newItemLayoutAttributes
     }
 
+    if
+      prepareActions.contains(.recreateSectionModels) ||
+      prepareActions.contains(.updateLayoutMetrics)
+    {
+      lastSizedElementMinY = nil
+      lastSizedElementPreferredHeight = nil
+    }
+
     prepareActions = []
   }
 
@@ -550,9 +558,36 @@ public final class MagazineLayout: UICollectionViewLayout {
       assertionFailure("`MagazineLayout` does not support decoration views")
     }
 
+    let currentElementY = originalAttributes.frame.minY
+
     let context = super.invalidationContext(
       forPreferredLayoutAttributes: preferredAttributes,
       withOriginalAttributes: originalAttributes) as! MagazineLayoutInvalidationContext
+
+    // If layout information is discarded above our current scroll position (on rotation, for
+    // example), we need to compensate for preferred size changes to items as we're scrolling up,
+    // otherwise, the collection view will appear to jump each time an element is sized.
+    // Since size adjustments can occur for multiple items in the same soon-to-be-visible row, we
+    // need to account for this by considering the preferred height for previously sized elements in
+    // the same row so that we only adjust the content offset by the exact amount needed to create
+    // smooth scrolling.
+    let isScrolling = currentCollectionView.isDragging || currentCollectionView.isDecelerating
+    let isSizingElementAboveTopEdge = originalAttributes.frame.minY < currentCollectionView.contentOffset.y
+
+    if isScrolling && isSizingElementAboveTopEdge {
+      let isSameRowAsLastSizedElement = lastSizedElementMinY == currentElementY
+      if isSameRowAsLastSizedElement {
+        let lastSizedElementPreferredHeight = self.lastSizedElementPreferredHeight ?? 0
+        if preferredAttributes.size.height > lastSizedElementPreferredHeight {
+          context.contentOffsetAdjustment.y = preferredAttributes.size.height - lastSizedElementPreferredHeight
+        }
+      } else {
+        context.contentOffsetAdjustment.y = preferredAttributes.size.height - originalAttributes.size.height
+      }
+    }
+
+    lastSizedElementMinY = currentElementY
+    lastSizedElementPreferredHeight = preferredAttributes.size.height
 
     context.invalidateLayoutMetrics = false
 
@@ -601,6 +636,12 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private let modelState = ModelState()
   private var cachedCollectionViewWidth: CGFloat?
+
+  // These properties are used to prevent scroll jumpiness due to self-sizing after rotation; see
+  // comment in `invalidationContext(forPreferredLayoutAttributes:withOriginalAttributes:)` for more
+  // details.
+  private var lastSizedElementMinY: CGFloat?
+  private var lastSizedElementPreferredHeight: CGFloat?
 
   // The current layout attributes after batch updates have started and after they finish
   private var headerLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()

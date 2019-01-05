@@ -92,7 +92,7 @@ public enum MagazineLayoutItemWidthMode {
 
 extension MagazineLayoutItemWidthMode: Equatable {
 
-  public static func ==(
+  public static func == (
     lhs: MagazineLayoutItemWidthMode,
     rhs: MagazineLayoutItemWidthMode)
     -> Bool
@@ -145,7 +145,7 @@ public enum MagazineLayoutItemHeightMode {
 
 extension MagazineLayoutItemHeightMode: Equatable {
 
-  public static func ==(
+  public static func == (
     lhs: MagazineLayoutItemHeightMode,
     rhs: MagazineLayoutItemHeightMode)
     -> Bool
