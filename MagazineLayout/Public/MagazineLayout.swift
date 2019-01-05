@@ -167,6 +167,14 @@ public final class MagazineLayout: UICollectionViewLayout {
       itemLayoutAttributes = newItemLayoutAttributes
     }
 
+    if
+      prepareActions.contains(.recreateSectionModels) ||
+      prepareActions.contains(.updateLayoutMetrics)
+    {
+      lastSizedElementMinY = nil
+      lastSizedElementPreferredHeight = nil
+    }
+
     prepareActions = []
   }
 
