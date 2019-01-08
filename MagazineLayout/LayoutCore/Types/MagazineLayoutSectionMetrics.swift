@@ -26,9 +26,15 @@ struct MagazineLayoutSectionMetrics: Equatable {
     layout: UICollectionViewLayout,
     delegate: UICollectionViewDelegateMagazineLayout)
   {
-    width = collectionView.bounds.width -
-      collectionView.contentInset.left -
-      collectionView.contentInset.right
+    if #available(iOS 11.0, *) {
+      width = collectionView.bounds.width -
+        collectionView.adjustedContentInset.left -
+        collectionView.adjustedContentInset.right
+    } else {
+      width = collectionView.bounds.width -
+        collectionView.contentInset.left -
+        collectionView.contentInset.right
+    }
     verticalSpacing = delegate.collectionView(
       collectionView,
       layout: layout,

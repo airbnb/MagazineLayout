@@ -49,7 +49,9 @@ public enum MagazineLayoutItemWidthMode {
   ///
   /// Use this width mode to create lists of items.
   /// `respectsHorizontalInsets` specifies whether the item should be edge-to-edge in the collection
-  /// view, or if it should be inset by `contentInset.left` and `contentInset.right`.
+  /// view, or if it should be inset by `contentInset.left` and `contentInset.right`. On iOS 11 and
+  /// higher this will also take the safe area insets into account by insetting the item by
+  /// `adjustedContentInset.left` and `adjustedContentInset.right`.
   case fullWidth(respectsHorizontalInsets: Bool)
 
   /// Fractional width items will take up `1/divisor` of the available width for a given row of
@@ -60,7 +62,9 @@ public enum MagazineLayoutItemWidthMode {
   /// `divisor` of `2`, `3`, `4`, or `5`, respectively.
   ///
   /// Fractional width items respect `contentInset.left` and `contentInset.right`, and are affected
-  /// by the horizontal spacing specified for the section in which they're contained.
+  /// by the horizontal spacing specified for the section in which they're contained. On iOS 11 and
+  /// higher they will also take the safe area insets into account if the collection view's
+  /// `contentInsetAdjustmentBehavior` property is set to a value that respects the safe area.
   ///
   /// - Warning: `divisor` must be greater than `0`. Specifying `0` as the `divisor` is a programmer
   /// error and **will result in a runtime crash**.
