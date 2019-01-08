@@ -256,3 +256,12 @@ I'd also like to thank the following people, who have all helped pave the way fo
 ## License
 
 `MagazineLayout` is released under the Apache License 2.0. See [LICENSE](LICENSE) for details.
+
+### Code Visualization:
+
+Here is a cool visualization of the code evolution
+
+ [![Watch the video](https://img.youtube.com/vi/sP5E5KHKdvw/0.jpg)](https://www.youtube.com/watch?v=sP5E5KHKdvw)
+
+ [https://www.youtube.com/watch?v=sP5E5KHKdvw](https://www.youtube.com/watch?v=sP5E5KHKdvw)
+
