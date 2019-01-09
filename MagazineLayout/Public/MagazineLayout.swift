@@ -39,7 +39,12 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     let width: CGFloat
     if let collectionView = collectionView {
-      let contentInset = collectionView.contentInset
+      let contentInset: UIEdgeInsets
+      if #available(iOS 11.0, *) {
+        contentInset = collectionView.adjustedContentInset
+      } else {
+        contentInset = collectionView.contentInset
+      }
       width = collectionView.bounds.width - contentInset.left - contentInset.right
     } else {
       width = 0
