@@ -18,19 +18,19 @@ import UIKit
 extension MagazineLayout {
 
   /// Constants for layout sizing and spacing defaults.
-  enum Default {
+  public enum Default {
 
-    static let ItemSizeMode = MagazineLayoutItemSizeMode(
+    public static let ItemSizeMode = MagazineLayoutItemSizeMode(
       widthMode: .fullWidth(respectsHorizontalInsets: true),
       heightMode: MagazineLayoutItemHeightMode.static(height: ItemHeight))
-    static let HeaderVisibilityMode = MagazineLayoutHeaderVisibilityMode.hidden
-    static let BackgroundVisibilityMode = MagazineLayoutBackgroundVisibilityMode.hidden
+    public static let HeaderVisibilityMode = MagazineLayoutHeaderVisibilityMode.hidden
+    public static let BackgroundVisibilityMode = MagazineLayoutBackgroundVisibilityMode.hidden
 
-    static let ItemHeight: CGFloat = 150
-    static let HeaderHeight: CGFloat = 44
-    static let VerticalSpacing: CGFloat = 0
-    static let HorizontalSpacing: CGFloat = 0
-    static let ItemInsets: UIEdgeInsets = .zero
+    public static let ItemHeight: CGFloat = 150
+    public static let HeaderHeight: CGFloat = 44
+    public static let VerticalSpacing: CGFloat = 0
+    public static let HorizontalSpacing: CGFloat = 0
+    public static let ItemInsets: UIEdgeInsets = .zero
 
   }
 
