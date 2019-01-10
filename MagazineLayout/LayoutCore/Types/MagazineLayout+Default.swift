@@ -18,7 +18,7 @@ import UIKit
 extension MagazineLayout {
 
   /// Constants for layout sizing and spacing defaults.
-  enum Default {
+  public enum Default {
 
     static let ItemSizeMode = MagazineLayoutItemSizeMode(
       widthMode: .fullWidth(respectsHorizontalInsets: true),
