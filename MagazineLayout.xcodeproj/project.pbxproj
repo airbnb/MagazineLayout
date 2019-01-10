@@ -166,6 +166,7 @@
 				93A1C01A21ACED0100DED67D /* MagazineLayoutHeaderVisibilityMode.swift */,
 				93A1C01621ACED0100DED67D /* MagazineLayoutBackgroundVisibilityMode.swift */,
 				93A1C01721ACED0100DED67D /* MagazineLayout+SupplementaryViewKinds.swift */,
+				93A1C02021ACED0100DED67D /* MagazineLayout+Default.swift */,
 			);
 			path = Types;
 			sourceTree = "<group>";
@@ -186,7 +187,6 @@
 		93A1C01F21ACED0100DED67D /* Types */ = {
 			isa = PBXGroup;
 			children = (
-				93A1C02021ACED0100DED67D /* MagazineLayout+Default.swift */,
 				93A1C02221ACED0100DED67D /* MagazineLayoutSectionMetrics.swift */,
 				93A1C02621ACED0100DED67D /* MagazineLayoutItemWidthMode+WidthDivisor.swift */,
 				93A1C02321ACED0100DED67D /* CollectionViewUpdateItem.swift */,
