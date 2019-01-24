@@ -17,8 +17,10 @@ import UIKit
 
 /// Encapsulates all layout-affecting metrics relating to a section
 struct MagazineLayoutSectionMetrics: Equatable {
+    // MARK: Lifecycle
 
-  // MARK: Lifecycle
+                                                    isWaterfallForItemsInSectionAt: sectionIndex)
+    }
 
   init(
     forSectionAtIndex sectionIndex: Int,
@@ -85,6 +87,7 @@ struct MagazineLayoutSectionMetrics: Equatable {
   var horizontalSpacing: CGFloat
   var sectionInsets: UIEdgeInsets
   var itemInsets: UIEdgeInsets
+var isWaterfallLayout: Bool
 
   static func defaultSectionMetrics(
     forCollectionViewWidth width: CGFloat)

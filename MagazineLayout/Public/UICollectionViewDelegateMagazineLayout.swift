@@ -136,6 +136,11 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     layout collectionViewLayout: UICollectionViewLayout,
     insetsForItemsInSectionAtIndex index: Int)
     -> UIEdgeInsets
+    
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        isWaterfallForItemsInSectionAt index: Int) -> Bool
 
   ///   Asks the delegate to modify a layout attributes instance so that it represents the initial visual state of an item being inserted via
   ///   `UICollectionView.insertItems(at:)`.

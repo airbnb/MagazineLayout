@@ -209,7 +209,12 @@ struct SectionModel {
     let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
     let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
 
-    directlyMutableItemModels[index].sizeMode = sizeMode
+    if metrics.isWaterfallLayout {
+        let waterfallSizeMode = MagazineLayoutItemSizeMode(widthMode: .halfWidth, heightMode: sizeMode.heightMode)
+        directlyMutableItemModels[index].sizeMode = waterfallSizeMode
+    } else {
+        directlyMutableItemModels[index].sizeMode = sizeMode
+    }
 
     if case let .static(staticHeight) = sizeMode.heightMode {
       directlyMutableItemModels[index].size.height = staticHeight
