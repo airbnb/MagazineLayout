@@ -231,12 +231,10 @@ As a rule of thumb, if you're proposing an API breaking change or a change to ex
 Bryan Keller
 - https://github.com/bryankeller
 - https://twitter.com/BKyourway19
-- [Email](kellerbryan19@gmail.com)
 
 Bryn Bodayle
 - https://github.com/brynbodayle
 - https://twitter.com/brynbodayle
-- [Email](mailto:bryn.bodayle@gmail.com)
 
 If you or your company has found `MagazineLayout` to be useful, let us know!
 
