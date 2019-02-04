@@ -46,6 +46,10 @@ final class DataSource: NSObject {
     sectionInfos[sectionIndex].headerInfo = headerInfo
   }
 
+  func setFooterInfo(_ footerInfo: FooterInfo, forSectionAtIndex sectionIndex: Int) {
+    sectionInfos[sectionIndex].footerInfo = footerInfo
+  }
+
 }
 
 // MARK: UICollectionViewDataSource
@@ -83,11 +87,22 @@ extension DataSource: UICollectionViewDataSource {
     at indexPath: IndexPath)
     -> UICollectionReusableView
   {
-    let header = collectionView.dequeueReusableSupplementaryView(
-      ofKind: MagazineLayout.SupplementaryViewKind.sectionHeader,
-      withReuseIdentifier: Header.description(), for: indexPath) as! Header
-    header.set(sectionInfos[indexPath.section].headerInfo)
-    return header
+    switch kind {
+    case MagazineLayout.SupplementaryViewKind.sectionHeader:
+      let header = collectionView.dequeueReusableSupplementaryView(
+        ofKind: MagazineLayout.SupplementaryViewKind.sectionHeader,
+        withReuseIdentifier: Header.description(), for: indexPath) as! Header
+      header.set(sectionInfos[indexPath.section].headerInfo)
+      return header
+    case MagazineLayout.SupplementaryViewKind.sectionFooter:
+      let header = collectionView.dequeueReusableSupplementaryView(
+        ofKind: MagazineLayout.SupplementaryViewKind.sectionFooter,
+        withReuseIdentifier: Footer.description(), for: indexPath) as! Footer
+      header.set(sectionInfos[indexPath.section].footerInfo)
+      return header
+    default:
+      fatalError("Not supported")
+    }
   }
 
 }
