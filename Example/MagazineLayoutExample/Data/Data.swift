@@ -22,6 +22,7 @@ struct SectionInfo {
 
   var headerInfo: HeaderInfo
   var itemInfos: [ItemInfo]
+  var footerInfo: FooterInfo
 
 }
 
@@ -29,7 +30,16 @@ struct SectionInfo {
 
 struct HeaderInfo {
 
-  let visibilityMode: MagazineLayoutHeaderVisibilityMode
+  let visibilityMode: MagazineLayoutSupplementaryViewVisibilityMode
+  let title: String
+
+}
+
+// MARK: - Footer
+
+struct FooterInfo {
+
+  let visibilityMode: MagazineLayoutSupplementaryViewVisibilityMode
   let title: String
 
 }
