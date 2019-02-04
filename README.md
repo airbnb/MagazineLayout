@@ -16,8 +16,8 @@ A collection view layout capable of laying out views in vertically scrolling gri
 	- Half-width, third-width, etc. for a grid layout
 - Self-sizing in just the vertical dimension
 - Per-item self-sizing preferences (self-size and statically-size items anywhere in your collection view)
-- Self-sizing headers
-- Hiding or showing headers on a per-section basis
+- Self-sizing headers and footers
+- Hiding or showing headers and footers on a per-section basis
 - Section backgrounds that can be hidden / visible on a per-section basis
 
 Other features:
@@ -165,11 +165,14 @@ collectionView.register(MyCustomCell.self, forCellWithReuseIdentifier: "MyCustom
 // Only necessary if you want section headers
 collectionView.register(MyCustomHeader.self, forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionHeader, withReuseIdentifier: "MyCustomHeaderReuseIdentifier")
 
+// Only necessary if you want section footers
+collectionView.register(MyCustomFooter.self, forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionFooter, withReuseIdentifier: "MyCustomFooterReuseIdentifier")
+
 // Only necessary if you want section backgrounds
 collectionView.register(MyCustomBackground.self, forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionBackground, withReuseIdentifier: "MyCustomBackgroundReuseIdentifier")
 ```
 
-Because cells and headers can self-size (backgrounds do not self-size), in this example, `MyCustomCell` and `MyCustomHeader` **must** have the correct implementation of `preferredLayoutAttributesFitting(_:)`. See [Setting up cells and headers](#setting-up-cells-and-headers).
+Because cells, headers and footers can self-size (backgrounds do not self-size), in this example, `MyCustomCell`, `MyCustomHeader` and `MyCustomFooter` **must** have the correct implementation of `preferredLayoutAttributesFitting(_:)`. See [Setting up cells and headers](#setting-up-cells-and-headers).
 
 #### Setting the data source
 Now that you've registered your view types with your collection view, it's time to wire up the data source. Like with any collection view integration, your data source needs to conform to `UICollectionViewDataSource`. If the same object that owns your collection view is also your data source, you can simply do this:
@@ -196,7 +199,11 @@ extension  ViewController: UICollectionViewDelegateMagazineLayout {
     return MagazineLayoutItemSizeMode(widthMode: widthMode, heightMode: heightMode)
   }
 
-  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, visibilityModeForHeaderInSectionAtIndex index: Int) -> MagazineLayoutHeaderVisibilityMode {
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, visibilityModeForHeaderInSectionAtIndex index: Int) -> MagazineLayoutSupplementaryViewVisibilityMode {
+    return .visible(heightMode: .dynamic)
+  }
+
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, visibilityModeForFooterInSectionAtIndex index: Int) -> MagazineLayoutSupplementaryViewVisibilityMode {
     return .visible(heightMode: .dynamic)
   }
 
