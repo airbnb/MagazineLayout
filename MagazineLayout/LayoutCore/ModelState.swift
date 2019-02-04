@@ -131,9 +131,21 @@ final class ModelState {
     }
   }
 
+  func footerModelHeightModeDuringPreferredAttributesCheck(
+    atSectionIndex sectionIndex: Int)
+    -> MagazineLayoutSupplementaryViewHeightMode?
+  {
+    guard sectionIndex < currentSectionModels.count else {
+      assertionFailure("Height mode for footer at section index \(sectionIndex) is out of bounds")
+      return nil
+    }
+
+    return currentSectionModels[sectionIndex].footerModel?.heightMode
+  }
+
   func headerModelHeightModeDuringPreferredAttributesCheck(
     atSectionIndex sectionIndex: Int)
-    -> MagazineLayoutHeaderHeightMode?
+    -> MagazineLayoutSupplementaryViewHeightMode?
   {
     func headerModelHeightModeDuringPreferredAttributesCheck(
       atSectionIndex sectionIndex: Int,
@@ -226,6 +238,25 @@ final class ModelState {
     }
 
     return headerLocationFramePairs
+  }
+
+  func footerFrameInfo(forFootersIn visibleRect: CGRect) -> ElementLocationFramePairs {
+    var footerLocationFramePairs = ElementLocationFramePairs()
+
+    for sectionIndex in 0..<currentSectionModels.count {
+      guard
+        let frame = frameForFooter(inSectionAtIndex: sectionIndex, .afterUpdates),
+        frame.intersects(visibleRect) else
+      {
+        continue
+      }
+
+      let footerLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
+      footerLocationFramePairs.append(
+        ElementLocationFramePair(elementLocation: footerLocation, frame: frame))
+    }
+
+    return footerLocationFramePairs
   }
 
   func backgroundFrameInfo(forBackgroundsIn visibleRect: CGRect) -> ElementLocationFramePairs {
@@ -334,6 +365,27 @@ final class ModelState {
     var headerFrame = sectionModels[sectionIndex].calculateFrameForHeader()
     headerFrame?.origin.y += sectionMinY
     return headerFrame
+  }
+
+  func frameForFooter(
+    inSectionAtIndex sectionIndex: Int,
+    _ batchUpdateStage: BatchUpdateStage)
+    -> CGRect?
+  {
+    let sectionMinY: CGFloat
+    if sectionIndex == 0 {
+      sectionMinY = 0
+    } else {
+      sectionMinY = sectionMaxY(forSectionAtIndex: sectionIndex - 1, batchUpdateStage)
+    }
+
+    let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
+    let sectionModels = sectionModelsPointer.assumingMemoryBound(
+      to: SectionModel.self)
+
+    var footerFrame = sectionModels[sectionIndex].calculateFrameForFooter()
+    footerFrame?.origin.y += sectionMinY
+    return footerFrame
   }
 
   func frameForBackground(
@@ -446,6 +498,20 @@ final class ModelState {
     }
   }
 
+  func updateFooterHeight(
+    toPreferredHeight preferredHeight: CGFloat,
+    forSectionAtIndex sectionIndex: Int)
+  {
+    guard sectionIndex < currentSectionModels.count else {
+      assertionFailure("Updating the preferred height for a footer model at section index \(sectionIndex) is out of bounds")
+      return
+    }
+
+    currentSectionModels[sectionIndex].updateFooterHeight(toPreferredHeight: preferredHeight)
+
+    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+  }
+
   func updateMetrics(
     to sectionMetrics: MagazineLayoutSectionMetrics,
     forSectionAtIndex sectionIndex: Int)
@@ -471,6 +537,18 @@ final class ModelState {
 
   func removeHeader(forSectionAtIndex sectionIndex: Int) {
     currentSectionModels[sectionIndex].removeHeader()
+
+    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+  }
+
+  func setFooter(_ footerModel: FooterModel, forSectionAtIndex sectionIndex: Int) {
+    currentSectionModels[sectionIndex].setFooter(footerModel)
+
+    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+  }
+
+  func removeFooter(forSectionAtIndex sectionIndex: Int) {
+    currentSectionModels[sectionIndex].removeFooter()
 
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
   }

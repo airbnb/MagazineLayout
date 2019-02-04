@@ -19,6 +19,7 @@ extension MagazineLayout {
   public enum SupplementaryViewKind {
 
     public static let sectionHeader = "MagazineLayoutSupplementaryViewKindSectionHeader"
+    public static let sectionFooter = "MagazineLayoutSupplementaryViewKindSectionFooter"
     public static let sectionBackground = "MagazineLayoutSupplementaryViewKindSectionBackground"
 
   }
