@@ -37,6 +37,7 @@ final class ModelHelpers {
       let sectionModel = SectionModel(
         itemModels: itemModels,
         headerModel: nil,
+        footerModel: nil,
         backgroundModel: nil,
         metrics: MagazineLayoutSectionMetrics.defaultSectionMetrics(forCollectionViewWidth: 320))
       sectionModels.append(sectionModel)
@@ -118,6 +119,31 @@ final class FrameHelpers {
       if
         expectedFrameIndex < expectedFrames.count &&
         expectedFrames[expectedFrameIndex] != headerFrame
+      {
+        return false
+      }
+
+      expectedFrameIndex += 1
+    }
+
+    return true
+  }
+
+  static func expectedFrames(
+    _ expectedFrames: [CGRect?],
+    matchFooterFramesInSectionIndexRange sectionIndexRange: Range<Int>,
+    modelState: ModelState)
+    -> Bool
+  {
+    var expectedFrameIndex = 0
+    for sectionIndex in sectionIndexRange {
+      let footerFrame = modelState.frameForFooter(inSectionAtIndex: sectionIndex, .afterUpdates)
+
+      guard footerFrame != nil else { continue }
+
+      if
+        expectedFrameIndex < expectedFrames.count &&
+          expectedFrames[expectedFrameIndex] != footerFrame
       {
         return false
       }
@@ -217,6 +243,18 @@ final class DebugHelpers {
 
     print("let expectedHeaderFrames1: [CGRect] = [")
     for foo in modelState.headerFrameInfo(forHeadersIn: visibleRect1) {
+      print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
+    }
+    print("]")
+
+    print("let expectedFooterFrames0: [CGRect] = [")
+    for foo in modelState.footerFrameInfo(forFootersIn: visibleRect0) {
+      print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
+    }
+    print("]")
+
+    print("let expectedFooterFrames1: [CGRect] = [")
+    for foo in modelState.footerFrameInfo(forFootersIn: visibleRect1) {
       print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
     }
     print("]")

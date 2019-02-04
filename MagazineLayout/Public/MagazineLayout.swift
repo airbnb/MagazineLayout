@@ -106,11 +106,18 @@ public final class MagazineLayout: UICollectionViewLayout {
           let indexPath = IndexPath(item: itemIndex, section: sectionIndex)
           modelState.updateItemSizeMode(to: sizeModeForItem(at: indexPath), forItemAt: indexPath)
         }
+
+        if let footerModel = footerModelForFooter(inSectionAtIndex: sectionIndex) {
+          modelState.setFooter(footerModel, forSectionAtIndex: sectionIndex)
+        } else {
+          modelState.removeFooter(forSectionAtIndex: sectionIndex)
+        }
       }
     }
 
     var newItemLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
     var newHeaderLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
+    var newFooterLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
     var newBackgroundLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
 
     var sections = [SectionModel]()
@@ -134,6 +141,21 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         newHeaderLayoutAttributes[headerLocation]?.shouldVerticallySelfSize = heightMode == .dynamic
+      }
+
+      // Create footer layout attributes if necessary
+      if case let .visible(heightMode) = visibilityModeForFooter(inSectionAtIndex: sectionIndex) {
+        let footerLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
+
+        if let footerLayoutAttributes = footerLayoutAttributes[footerLocation] {
+          newFooterLayoutAttributes[footerLocation] = footerLayoutAttributes
+        } else {
+          newFooterLayoutAttributes[footerLocation] = MagazineLayoutCollectionViewLayoutAttributes(
+            forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionFooter,
+            with: footerLocation.indexPath)
+        }
+
+        newFooterLayoutAttributes[footerLocation]?.shouldVerticallySelfSize = heightMode == .dynamic
       }
 
       // Create background layout attributes if necessary
@@ -177,6 +199,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     if prepareActions.contains(.lazilyCreateLayoutAttributes) {
       headerLayoutAttributes = newHeaderLayoutAttributes
+      footerLayoutAttributes = newFooterLayoutAttributes
       backgroundLayoutAttributes = newBackgroundLayoutAttributes
       itemLayoutAttributes = newItemLayoutAttributes
     }
@@ -308,6 +331,18 @@ public final class MagazineLayout: UICollectionViewLayout {
       layoutAttributesInRect.append(layoutAttributes)
     }
 
+    for footerLocationAndFramePair in modelState.footerFrameInfo(forFootersIn: rect) {
+      let footerLocation = footerLocationAndFramePair.elementLocation
+      let footerFrame = footerLocationAndFramePair.frame
+
+      guard let layoutAttributes = footerLayoutAttributes[footerLocation] else {
+        continue
+      }
+
+      layoutAttributes.frame = footerFrame
+      layoutAttributesInRect.append(layoutAttributes)
+    }
+
     for backgroundLocationAndFramePair in modelState.backgroundFrameInfo(forBackgroundsIn: rect) {
       let backgroundLocation = backgroundLocationAndFramePair.elementLocation
       let backgroundFrame = backgroundLocationAndFramePair.frame
@@ -376,6 +411,15 @@ public final class MagazineLayout: UICollectionViewLayout {
     {
       headerLayoutAttributes.frame = headerFrame
       return headerLayoutAttributes
+    } else if
+      elementKind == MagazineLayout.SupplementaryViewKind.sectionFooter,
+      let footerLayoutAttributes = footerLayoutAttributes[elementLocation],
+      let footerFrame = modelState.frameForFooter(
+        inSectionAtIndex: elementLocation.sectionIndex,
+        .afterUpdates)
+    {
+      footerLayoutAttributes.frame = footerFrame
+      return footerLayoutAttributes
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionBackground,
       let backgroundLayoutAttributes = backgroundLayoutAttributes[elementLocation],
@@ -545,11 +589,16 @@ public final class MagazineLayout: UICollectionViewLayout {
         atSectionIndex: preferredAttributes.indexPath.section)
       return headerHeightMode == .dynamic
 
+    case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionFooter):
+      let headerHeightMode = modelState.footerModelHeightModeDuringPreferredAttributesCheck(
+        atSectionIndex: preferredAttributes.indexPath.section)
+      return headerHeightMode == .dynamic
+
     case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionBackground):
       return false
 
     default:
-      assertionFailure("`MagazineLayout` only supports cells, headers, and backgrounds")
+      assertionFailure("`MagazineLayout` only supports cells, headers, footers, and backgrounds")
       return false
     }
   }
@@ -565,9 +614,18 @@ public final class MagazineLayout: UICollectionViewLayout {
         toPreferredHeight: preferredAttributes.size.height,
         forItemAt: preferredAttributes.indexPath)
     case .supplementaryView:
-      modelState.updateHeaderHeight(
-        toPreferredHeight: preferredAttributes.size.height,
-        forSectionAtIndex: preferredAttributes.indexPath.section)
+      switch preferredAttributes.representedElementKind {
+      case MagazineLayout.SupplementaryViewKind.sectionHeader?:
+        modelState.updateHeaderHeight(
+          toPreferredHeight: preferredAttributes.size.height,
+          forSectionAtIndex: preferredAttributes.indexPath.section)
+      case MagazineLayout.SupplementaryViewKind.sectionFooter?:
+        modelState.updateFooterHeight(
+          toPreferredHeight: preferredAttributes.size.height,
+          forSectionAtIndex: preferredAttributes.indexPath.section)
+      default:
+        break
+      }
     case .decorationView:
       assertionFailure("`MagazineLayout` does not support decoration views")
     }
@@ -659,6 +717,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   // The current layout attributes after batch updates have started and after they finish
   private var headerLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
+  private var footerLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var backgroundLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var itemLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
 
@@ -666,6 +725,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   // Used in `initialLayoutAttributesForAppearing*` and `finalLayoutAttributesForDisappearing*`
   private var previousItemLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var previousHeaderLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
+  private var previousFooterLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var previousBackgroundLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
 
   private struct PrepareActions: OptionSet {
@@ -719,7 +779,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private func visibilityModeForHeader(
     inSectionAtIndex sectionIndex: Int)
-    -> MagazineLayoutHeaderVisibilityMode
+    -> MagazineLayoutSupplementaryViewVisibilityMode
   {
     guard let delegateMagazineLayout = delegateMagazineLayout else {
       return MagazineLayout.Default.HeaderVisibilityMode
@@ -729,6 +789,20 @@ public final class MagazineLayout: UICollectionViewLayout {
       currentCollectionView,
       layout: self,
       visibilityModeForHeaderInSectionAtIndex: sectionIndex)
+  }
+
+  private func visibilityModeForFooter(
+    inSectionAtIndex sectionIndex: Int)
+    -> MagazineLayoutSupplementaryViewVisibilityMode
+  {
+    guard let delegateMagazineLayout = delegateMagazineLayout else {
+      return MagazineLayout.Default.FooterVisibilityMode
+    }
+
+    return delegateMagazineLayout.collectionView(
+      currentCollectionView,
+      layout: self,
+      visibilityModeForFooterInSectionAtIndex: sectionIndex)
   }
 
   private func visibilityModeForBackground(
@@ -745,12 +819,21 @@ public final class MagazineLayout: UICollectionViewLayout {
       visibilityModeForBackgroundInSectionAtIndex: sectionIndex)
   }
 
-  private func headerHeight(from headerHeightMode: MagazineLayoutHeaderHeightMode) -> CGFloat {
+  private func headerHeight(from headerHeightMode: MagazineLayoutSupplementaryViewHeightMode) -> CGFloat {
     switch headerHeightMode {
     case let .static(staticHeight):
       return staticHeight
     case .dynamic:
       return MagazineLayout.Default.HeaderHeight
+    }
+  }
+
+  private func footerHeight(from footerHeightMode: MagazineLayoutSupplementaryViewHeightMode) -> CGFloat {
+    switch footerHeightMode {
+    case let .static(staticHeight):
+      return staticHeight
+    case .dynamic:
+      return MagazineLayout.Default.FooterHeight
     }
   }
 
@@ -762,6 +845,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     return SectionModel(
       itemModels: itemModels,
       headerModel: headerModelForHeader(inSectionAtIndex: sectionIndex),
+      footerModel: footerModelForFooter(inSectionAtIndex: sectionIndex),
       backgroundModel: backgroundModelForBackground(inSectionAtIndex: sectionIndex),
       metrics: metricsForSection(atIndex: sectionIndex))
   }
@@ -783,6 +867,21 @@ public final class MagazineLayout: UICollectionViewLayout {
       return HeaderModel(
         heightMode: heightMode,
         height: headerHeight(from: heightMode))
+    case .hidden:
+      return nil
+    }
+  }
+
+  private func footerModelForFooter(
+    inSectionAtIndex sectionIndex: Int)
+    -> FooterModel?
+  {
+    let footerVisibilityMode = visibilityModeForFooter(inSectionAtIndex: sectionIndex)
+    switch footerVisibilityMode {
+    case let .visible(heightMode):
+      return FooterModel(
+        heightMode: heightMode,
+        height: footerHeight(from: heightMode))
     case .hidden:
       return nil
     }
@@ -812,6 +911,11 @@ public final class MagazineLayout: UICollectionViewLayout {
       previousHeaderLayoutAttributes[headerLocation] = copiedLayoutAttributes
     }
 
+    for (footerLocation, layoutAttributes) in footerLayoutAttributes {
+      let copiedLayoutAttributes = layoutAttributes.copy() as? MagazineLayoutCollectionViewLayoutAttributes
+      previousFooterLayoutAttributes[footerLocation] = copiedLayoutAttributes
+    }
+
     for (backgroundLocation, layoutAttributes) in backgroundLayoutAttributes {
       let copiedLayoutAttributes = layoutAttributes.copy() as? MagazineLayoutCollectionViewLayoutAttributes
       previousBackgroundLayoutAttributes[backgroundLocation] = copiedLayoutAttributes
@@ -820,6 +924,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private func clearPreviousLayoutAttributes() {
     previousHeaderLayoutAttributes.removeAll()
+    previousFooterLayoutAttributes.removeAll()
     previousBackgroundLayoutAttributes.removeAll()
     previousItemLayoutAttributes.removeAll()
   }
@@ -876,6 +981,15 @@ public final class MagazineLayout: UICollectionViewLayout {
     {
       headerLayoutAttributes.frame = headerFrame
       return headerLayoutAttributes
+    } else if
+      elementKind == MagazineLayout.SupplementaryViewKind.sectionFooter,
+      let footerLayoutAttributes = previousFooterLayoutAttributes[elementLocation],
+      let footerFrame = modelState.frameForFooter(
+        inSectionAtIndex: elementLocation.sectionIndex,
+        .beforeUpdates)
+    {
+      footerLayoutAttributes.frame = footerFrame
+      return footerLayoutAttributes
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionBackground,
       let backgroundLayoutAttributes = previousBackgroundLayoutAttributes[elementLocation],

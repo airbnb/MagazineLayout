@@ -43,7 +43,21 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     visibilityModeForHeaderInSectionAtIndex index: Int)
-    -> MagazineLayoutHeaderVisibilityMode
+    -> MagazineLayoutSupplementaryViewVisibilityMode
+
+  ///   Asks the delegate for the visibility mode of the footer in the specified section.
+  ///
+  ///   - Parameters:
+  ///      - collectionView: The collection view using the layout.
+  ///      - collectionViewLayout: The layout requesting the information.
+  ///      - index: The index of the section containing the footer.
+  ///
+  ///   - Returns: The visibility mode of the footer in the specified section.
+  func collectionView(
+    _ collectionView: UICollectionView,
+    layout collectionViewLayout: UICollectionViewLayout,
+    visibilityModeForFooterInSectionAtIndex index: Int)
+    -> MagazineLayoutSupplementaryViewVisibilityMode
 
 ///   Asks the delegate for the visibility mode of the background in the specified section.
 ///

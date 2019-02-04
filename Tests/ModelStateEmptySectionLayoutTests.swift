@@ -40,11 +40,13 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
       SectionModel(
         itemModels: [],
         headerModel: nil,
+        footerModel: nil,
         backgroundModel: nil,
         metrics: metrics0),
       SectionModel(
         itemModels: [],
         headerModel: nil,
+        footerModel: nil,
         backgroundModel: nil,
         metrics: metrics1),
       ]
@@ -56,7 +58,7 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
       "The layout has incorrect heights for its sections")
   }
 
-  func testEmptySectionsWithHeadersAndBackgroundsLayout() {
+  func testEmptySectionsWithHeadersFootersAndBackgroundsLayout() {
     var metrics0 = MagazineLayoutSectionMetrics.defaultSectionMetrics(forCollectionViewWidth: 320)
     metrics0.itemInsets = UIEdgeInsets(top: 10, left: 10, bottom: 20, right: 10)
 
@@ -67,11 +69,13 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
       SectionModel(
         itemModels: [],
         headerModel: HeaderModel(heightMode: .static(height: 45), height: 45),
+        footerModel: FooterModel(heightMode: .static(height: 45), height: 45),
         backgroundModel: BackgroundModel(),
         metrics: metrics0),
       SectionModel(
         itemModels: [],
         headerModel: HeaderModel(heightMode: .static(height: 65), height: 65),
+        footerModel: FooterModel(heightMode: .static(height: 65), height: 65),
         backgroundModel: BackgroundModel(),
         metrics: metrics1),
       ]
@@ -79,7 +83,7 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
 
     let expectedHeaderFrames = [
       CGRect(x: 0, y: 0, width: 320, height: 45),
-      CGRect(x: 0, y: 75, width: 320, height: 65),
+      CGRect(x: 0, y: 120, width: 320, height: 65),
     ]
     XCTAssert(
       FrameHelpers.expectedFrames(
@@ -89,8 +93,8 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
       "Header frames are incorrect")
 
     let expectedBackgroundFrames = [
-      CGRect(x: 0, y: 0, width: 320, height: 75),
-      CGRect(x: 0, y: 75, width: 320, height: 215),
+      CGRect(x: 0, y: 0, width: 320, height: 120),
+      CGRect(x: 0, y: 120, width: 320, height: 280),
     ]
     XCTAssert(
       FrameHelpers.expectedFrames(
@@ -98,6 +102,18 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
         matchBackgroundFramesInSectionIndexRange: 0..<modelState.numberOfSections(.afterUpdates),
         modelState: modelState),
       "Header frames are incorrect")
+
+    let expectedFooterFrames = [
+      CGRect(x: 0, y: 75, width: 320, height: 45),
+      CGRect(x: 0, y: 335, width: 320, height: 65)
+    ]
+    XCTAssert(
+      FrameHelpers.expectedFrames(
+        expectedFooterFrames,
+        matchFooterFramesInSectionIndexRange:
+        0..<modelState.numberOfSections(.afterUpdates),
+        modelState: modelState),
+      "Footer frames are incorrect")
   }
 
   // MARK: Private
