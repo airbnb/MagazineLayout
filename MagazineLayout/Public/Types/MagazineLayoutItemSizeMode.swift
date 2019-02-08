@@ -109,7 +109,7 @@ extension MagazineLayoutItemWidthMode: Equatable {
 
 }
 
-extension MagazineLayoutItemWidthMode {
+public extension MagazineLayoutItemWidthMode {
     var numberOfItemsInRow: Int {
         switch self {
         case .fullWidth: return 1
