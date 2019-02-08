@@ -91,6 +91,33 @@ public enum MagazineLayoutItemWidthMode: Hashable {
 
 }
 
+// MARK: Equatable
+
+extension MagazineLayoutItemWidthMode: Equatable {
+
+  public static func == (
+    lhs: MagazineLayoutItemWidthMode,
+    rhs: MagazineLayoutItemWidthMode)
+    -> Bool
+  {
+    switch (lhs, rhs) {
+    case (.fullWidth(let l), .fullWidth(let r)): return l == r
+    case (.fractionalWidth(let l), .fractionalWidth(let r)): return l == r
+    default: return false
+    }
+  }
+
+}
+
+extension MagazineLayoutItemWidthMode {
+    var numberOfItemsInRow: Int {
+        switch self {
+        case .fullWidth: return 1
+        case .fractionalWidth(let divisor): return Int(divisor)
+        }
+    }
+}
+
 // MARK: - MagazineLayoutItemHeightMode
 
 /// Represents the vertical sizing mode for an item.

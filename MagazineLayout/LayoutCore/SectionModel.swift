@@ -523,14 +523,14 @@ struct SectionModel {
         //Only for Pinterest style layout, change the currentY to isntead be the height of the previous cell in the column
         if metrics.isWaterfallLayout {
             let itemModelsBeforeStartingIndex = itemModels.prefix(itemIndex)
-            let numberOfItemsToConsiderInPreviousRow =  2
+            let numberOfItemsToConsiderInPreviousRow = itemModel.sizeMode.widthMode.numberOfItemsInRow
             let itemsToConsiderInPreviousRow = itemModelsBeforeStartingIndex.suffix(
                 numberOfItemsToConsiderInPreviousRow).reversed()
 
             let previousRow = Array(itemsToConsiderInPreviousRow)
-            if previousRow.count > 0 && itemIndex > 1 {
-                let previousItem = itemModels[itemIndex - 2]
-                currentY = previousItem.size.height + previousItem.originInSection.y + 6
+            if previousRow.count > 0 && itemIndex > (numberOfItemsToConsiderInPreviousRow - 1) {
+                let previousItem = itemModels[itemIndex - numberOfItemsToConsiderInPreviousRow]
+                currentY = previousItem.size.height + previousItem.originInSection.y + metrics.verticalSpacing
             }
         }
 
