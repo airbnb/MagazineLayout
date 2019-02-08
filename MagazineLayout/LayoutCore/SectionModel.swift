@@ -520,6 +520,20 @@ struct SectionModel {
         currentY += metrics.itemInsets.top
       }
 
+        //Only for Pinterest style layout, change the currentY to isntead be the height of the previous cell in the column
+        if metrics.isWaterfallLayout {
+            let itemModelsBeforeStartingIndex = itemModels.prefix(itemIndex)
+            let numberOfItemsToConsiderInPreviousRow =  2
+            let itemsToConsiderInPreviousRow = itemModelsBeforeStartingIndex.suffix(
+                numberOfItemsToConsiderInPreviousRow).reversed()
+
+            let previousRow = Array(itemsToConsiderInPreviousRow)
+            if previousRow.count > 0 && itemIndex > 1 {
+                let previousItem = itemModels[itemIndex - 2]
+                currentY = previousItem.size.height + previousItem.originInSection.y + 6
+            }
+        }
+
       let currentLeadingMargin: CGFloat
       let availableWidthForItems: CGFloat
       if itemModel.sizeMode.widthMode == .fullWidth(respectsHorizontalInsets: false) {
