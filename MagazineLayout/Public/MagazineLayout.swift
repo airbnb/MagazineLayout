@@ -45,7 +45,16 @@ public final class MagazineLayout: UICollectionViewLayout {
       } else {
         contentInset = collectionView.contentInset
       }
-      width = collectionView.bounds.width - contentInset.left - contentInset.right
+
+      // This is a workaround for `layoutAttributesForElementsInRect:` not getting invoked enough
+      // times if `collectionViewContentSize.width` is not smaller than the width of the collection
+      // view, minus horizontal insets. This results in visual defects when performing batch
+      // updates. To work around this, we subtract 0.0001 from our content size width calculation -
+      // this small decrease in `collectionViewContentSize.width` is enough to workaround the
+      // incorrect, internal collection view `CGRect` checks, without introducing any visual
+      // difference for elements in the collection view.
+      // See https://openradar.appspot.com/radar?id=5025850143539200 for more details.
+      width = collectionView.bounds.width - contentInset.left - contentInset.right - 0.0001
     } else {
       width = 0
     }
