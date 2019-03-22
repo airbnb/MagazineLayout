@@ -524,7 +524,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     switch (preferredAttributes.representedElementCategory, preferredAttributes.representedElementKind) {
     case (.cell, nil):
-      let itemHeightMode = modelState.itemModelHeightModeForPreferredAttributesCheck(
+      let itemHeightMode = modelState.itemModelHeightModeDuringPreferredAttributesCheck(
         at: preferredAttributes.indexPath)
       switch itemHeightMode {
       case .some(.static):
