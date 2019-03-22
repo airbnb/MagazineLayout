@@ -71,7 +71,7 @@ struct SectionModel {
   }
 
   mutating func calculateFrameForHeader() -> CGRect? {
-    guard let headerModel = headerModel else { return nil }
+    guard headerModel != nil else { return nil }
 
     if
       let indexOfFirstInvalidatedItem = indexOfFirstInvalidatedItem,
@@ -80,21 +80,36 @@ struct SectionModel {
       recomputeItemPositionsIfNecessary()
     }
 
-    return CGRect(
-      origin: CGPoint(x: headerModel.originInSection.x, y: headerModel.originInSection.y),
-      size: headerModel.size)
+    // `headerModel` is a value type that might be mutated in `recomputeItemPositionsIfNecessary`,
+    // so we can't use a copy made before that code executes (for example, in a
+    // `guard let headerModel = headerModel else { ... }` at the top of this function).
+    if let headerModel = headerModel {
+      return CGRect(
+        origin: CGPoint(x: headerModel.originInSection.x, y: headerModel.originInSection.y),
+        size: headerModel.size)
+    } else {
+      return nil
+    }
   }
 
   mutating func calculateFrameForBackground() -> CGRect? {
-    guard let backgroundModel = backgroundModel else { return nil }
+    guard backgroundModel != nil else { return nil }
 
     if indexOfFirstInvalidatedItem != nil {
       recomputeItemPositionsIfNecessary()
     }
 
-    return CGRect(
-      origin: CGPoint(x: backgroundModel.originInSection.x, y: backgroundModel.originInSection.y),
-      size: backgroundModel.size)
+    // `backgroundModel` is a value type that might be mutated in
+    // `recomputeItemPositionsIfNecessary`, so we can't use a copy made before that code executes
+    // (for example, in a `guard let backgroundModel = backgroundModel else { ... }` at the top of
+    // this function).
+    if let backgroundModel = backgroundModel {
+      return CGRect(
+        origin: CGPoint(x: backgroundModel.originInSection.x, y: backgroundModel.originInSection.y),
+        size: backgroundModel.size)
+    } else {
+      return nil
+    }
   }
 
   mutating func calculateFrameForItem(atIndex itemIndex: Int) -> CGRect {
