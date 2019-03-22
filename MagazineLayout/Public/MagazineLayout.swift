@@ -50,7 +50,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       // times if `collectionViewContentSize.width` is not smaller than the width of the collection
       // view, minus horizontal insets. This results in visual defects when performing batch
       // updates. To work around this, we subtract 0.0001 from our content size width calculation -
-      // this small decrease in `collectionViewContentSize.width` is enough to workaround the
+      // this small decrease in `collectionViewContentSize.width` is enough to work around the
       // incorrect, internal collection view `CGRect` checks, without introducing any visual
       // difference for elements in the collection view.
       // See https://openradar.appspot.com/radar?id=5025850143539200 for more details.
