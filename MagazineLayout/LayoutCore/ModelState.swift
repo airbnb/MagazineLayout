@@ -99,11 +99,11 @@ final class ModelState {
     return nil
   }
 
-  func itemModelHeightModeForPreferredAttributesCheck(
+  func itemModelHeightModeDuringPreferredAttributesCheck(
     at indexPath: IndexPath)
     -> MagazineLayoutItemHeightMode?
   {
-    func itemModelHeightModeForPreferredAttributesCheck(
+    func itemModelHeightModeDuringPreferredAttributesCheck(
       at indexPath: IndexPath,
       sectionModels: inout [SectionModel])
       -> MagazineLayoutItemHeightMode?
@@ -119,13 +119,13 @@ final class ModelState {
       return sectionModels[indexPath.section].itemModel(atIndex: indexPath.item).sizeMode.heightMode
     }
 
-    switch preferredHeightUpdateContext(forPreferredHeightUpdateToItemAt: indexPath) {
+    switch updateContextForItemPreferredHeightUpdate(at: indexPath) {
     case .updatePreviousModels, .updatePreviousAndCurrentModels:
-      return itemModelHeightModeForPreferredAttributesCheck(
+      return itemModelHeightModeDuringPreferredAttributesCheck(
         at: indexPath,
         sectionModels: &sectionModelsBeforeBatchUpdates)
     case .updateCurrentModels:
-      return itemModelHeightModeForPreferredAttributesCheck(
+      return itemModelHeightModeDuringPreferredAttributesCheck(
         at: indexPath,
         sectionModels: &currentSectionModels)
     }
@@ -135,12 +135,29 @@ final class ModelState {
     atSectionIndex sectionIndex: Int)
     -> MagazineLayoutHeaderHeightMode?
   {
-    guard sectionIndex < currentSectionModels.count else {
-      assertionFailure("Height mode for header at section index \(sectionIndex) is out of bounds")
-      return nil
+    func headerModelHeightModeDuringPreferredAttributesCheck(
+      atSectionIndex sectionIndex: Int,
+      sectionModels: inout [SectionModel])
+      -> MagazineLayoutHeaderHeightMode?
+    {
+      guard sectionIndex < sectionModels.count else {
+        assertionFailure("Height mode for header at section index \(sectionIndex) is out of bounds")
+        return nil
+      }
+
+      return sectionModels[sectionIndex].headerModel?.heightMode
     }
 
-    return currentSectionModels[sectionIndex].headerModel?.heightMode
+    switch updateContextForSupplementaryViewPreferredHeightUpdate(inSectionAtIndex: sectionIndex) {
+    case .updatePreviousModels, .updatePreviousAndCurrentModels:
+      return headerModelHeightModeDuringPreferredAttributesCheck(
+        atSectionIndex: sectionIndex,
+        sectionModels: &sectionModelsBeforeBatchUpdates)
+    case .updateCurrentModels:
+      return headerModelHeightModeDuringPreferredAttributesCheck(
+        atSectionIndex: sectionIndex,
+        sectionModels: &currentSectionModels)
+    }
   }
 
   func itemModelPreferredHeightDuringPreferredAttributesCheck(at indexPath: IndexPath) -> CGFloat? {
@@ -160,7 +177,7 @@ final class ModelState {
       return sectionModels[indexPath.section].preferredHeightForItemModel(atIndex: indexPath.item)
     }
 
-    switch preferredHeightUpdateContext(forPreferredHeightUpdateToItemAt: indexPath) {
+    switch updateContextForItemPreferredHeightUpdate(at: indexPath) {
     case .updatePreviousModels, .updatePreviousAndCurrentModels:
       return itemModelPreferredHeightDuringPreferredAttributesCheck(
         at: indexPath,
@@ -340,23 +357,6 @@ final class ModelState {
     return backgroundFrame
   }
 
-  func updateMetrics(
-    to sectionMetrics: MagazineLayoutSectionMetrics,
-    forSectionAtIndex sectionIndex: Int)
-  {
-    currentSectionModels[sectionIndex].updateMetrics(to: sectionMetrics)
-
-    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
-  }
-
-  func updateItemSizeMode(to sizeMode: MagazineLayoutItemSizeMode, forItemAt indexPath: IndexPath) {
-    currentSectionModels[indexPath.section].updateItemSizeMode(
-      to: sizeMode,
-      atIndex: indexPath.item)
-
-    invalidateSectionMaxYsCacheForSectionIndices(startingAt: indexPath.section)
-  }
-
   func updateItemHeight(
     toPreferredHeight preferredHeight: CGFloat,
     forItemAt indexPath: IndexPath)
@@ -377,11 +377,9 @@ final class ModelState {
       sectionModels[indexPath.section].updateItemHeight(
         toPreferredHeight: preferredHeight,
         atIndex: indexPath.item)
-
-      invalidateSectionMaxYsCacheForSectionIndices(startingAt: indexPath.section)
     }
 
-    switch preferredHeightUpdateContext(forPreferredHeightUpdateToItemAt: indexPath) {
+    switch updateContextForItemPreferredHeightUpdate(at: indexPath) {
     case .updatePreviousModels:
       updateItemHeight(
         toPreferredHeight: preferredHeight,
@@ -392,6 +390,7 @@ final class ModelState {
         toPreferredHeight: preferredHeight,
         forItemAt: indexPath,
         sectionModels: &currentSectionModels)
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: indexPath.section)
     case let .updatePreviousAndCurrentModels(previousIndexPath, currentIndexPath):
       updateItemHeight(
         toPreferredHeight: preferredHeight,
@@ -401,7 +400,67 @@ final class ModelState {
         toPreferredHeight: preferredHeight,
         forItemAt: currentIndexPath,
         sectionModels: &currentSectionModels)
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: currentIndexPath.section)
     }
+  }
+
+  func updateHeaderHeight(
+    toPreferredHeight preferredHeight: CGFloat,
+    forSectionAtIndex sectionIndex: Int)
+  {
+    func updateHeaderHeight(
+      toPreferredHeight preferredHeight: CGFloat,
+      forSectionAtIndex sectionIndex: Int,
+      sectionModels: inout [SectionModel])
+    {
+      guard sectionIndex < sectionModels.count else {
+        assertionFailure("Updating the preferred height for a header model at section index \(sectionIndex) is out of bounds")
+        return
+      }
+
+      sectionModels[sectionIndex].updateHeaderHeight(toPreferredHeight: preferredHeight)
+    }
+
+    switch updateContextForSupplementaryViewPreferredHeightUpdate(inSectionAtIndex: sectionIndex) {
+    case .updatePreviousModels:
+      updateHeaderHeight(
+        toPreferredHeight: preferredHeight,
+        forSectionAtIndex: sectionIndex,
+        sectionModels: &sectionModelsBeforeBatchUpdates)
+    case .updateCurrentModels:
+      updateHeaderHeight(
+        toPreferredHeight: preferredHeight,
+        forSectionAtIndex: sectionIndex,
+        sectionModels: &currentSectionModels)
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+    case let .updatePreviousAndCurrentModels(previousSectionIndex, currentSectionIndex):
+      updateHeaderHeight(
+        toPreferredHeight: preferredHeight,
+        forSectionAtIndex: previousSectionIndex,
+        sectionModels: &sectionModelsBeforeBatchUpdates)
+      updateHeaderHeight(
+        toPreferredHeight: preferredHeight,
+        forSectionAtIndex: currentSectionIndex,
+        sectionModels: &currentSectionModels)
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: currentSectionIndex)
+    }
+  }
+
+  func updateMetrics(
+    to sectionMetrics: MagazineLayoutSectionMetrics,
+    forSectionAtIndex sectionIndex: Int)
+  {
+    currentSectionModels[sectionIndex].updateMetrics(to: sectionMetrics)
+
+    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+  }
+
+  func updateItemSizeMode(to sizeMode: MagazineLayoutItemSizeMode, forItemAt indexPath: IndexPath) {
+    currentSectionModels[indexPath.section].updateItemSizeMode(
+      to: sizeMode,
+      atIndex: indexPath.item)
+
+    invalidateSectionMaxYsCacheForSectionIndices(startingAt: indexPath.section)
   }
 
   func setHeader(_ headerModel: HeaderModel, forSectionAtIndex sectionIndex: Int) {
@@ -412,20 +471,6 @@ final class ModelState {
 
   func removeHeader(forSectionAtIndex sectionIndex: Int) {
     currentSectionModels[sectionIndex].removeHeader()
-
-    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
-  }
-
-  func updateHeaderHeight(
-    toPreferredHeight preferredHeight: CGFloat,
-    forSectionAtIndex sectionIndex: Int)
-  {
-    guard sectionIndex < currentSectionModels.count else {
-      assertionFailure("Updating the preferred height for a header model at section index \(sectionIndex) is out of bounds")
-      return
-    }
-
-    currentSectionModels[sectionIndex].updateHeaderHeight(toPreferredHeight: preferredHeight)
 
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
   }
@@ -526,10 +571,16 @@ final class ModelState {
 
   // MARK: Private
 
-  private enum PreferredHeightUpdateContext {
+  private enum ItemPreferredHeightUpdateContext {
     case updatePreviousModels
     case updateCurrentModels
     case updatePreviousAndCurrentModels(previousIndexPath: IndexPath, currentIndexPath: IndexPath)
+  }
+
+  private enum SupplementaryViewPreferredHeightUpdateContext {
+    case updatePreviousModels
+    case updateCurrentModels
+    case updatePreviousAndCurrentModels(previousSectionIndex: Int, currentSectionIndex: Int)
   }
 
   private var currentSectionModels = [SectionModel]()
@@ -556,9 +607,9 @@ final class ModelState {
     }
   }
 
-  private func preferredHeightUpdateContext(
-    forPreferredHeightUpdateToItemAt indexPath: IndexPath)
-    -> PreferredHeightUpdateContext
+  private func updateContextForItemPreferredHeightUpdate(
+    at indexPath: IndexPath)
+    -> ItemPreferredHeightUpdateContext
   {
     // iOS 12 fixes an issue that causes `UICollectionView` to provide preferred attributes for old,
     // invalid item index paths. This happens when an item is deleted, causing an off-screen,
@@ -595,9 +646,7 @@ final class ModelState {
         indexPath.section < sectionModelsBeforeBatchUpdates.count,
         indexPath.item < sectionModelsBeforeBatchUpdates[indexPath.section].numberOfItems,
         let previousItemModelID = idForItemModel(at: indexPath, .beforeUpdates),
-        let currentIndexPath = indexPathForItemModel(
-          withID: previousItemModelID,
-          .afterUpdates)
+        let currentIndexPath = indexPathForItemModel(withID: previousItemModelID, .afterUpdates)
       {
         // If an item was moved, then it will have an ID in the section models before batch updates,
         // and that ID will match an index path in the current section models. In this scenario, we
@@ -605,6 +654,47 @@ final class ModelState {
         return .updatePreviousAndCurrentModels(
           previousIndexPath: indexPath,
           currentIndexPath: currentIndexPath)
+      }
+    }
+
+    return .updateCurrentModels
+  }
+
+  private func updateContextForSupplementaryViewPreferredHeightUpdate(
+    inSectionAtIndex sectionIndex: Int)
+    -> SupplementaryViewPreferredHeightUpdateContext
+  {
+    // An issue exists that causes `UICollectionView` to provide preferred attributes for old,
+    // invalid supplementary view index paths. This happens when a section is deleted, causing an
+    // off-screen, unsized supplementary view to slide up into view. At this point,
+    // `UICollectionView` sizes that supplementary view since it's now visible, but it provides the
+    // preferred attributes for the supplementary view's index path *before* the delete batch
+    // update.
+    // https://openradar.appspot.com/radar?id=5023315789873152
+    if !isPerformingBatchUpdates {
+      return .updateCurrentModels
+    } else {
+      if sectionIndicesToInsert.contains(sectionIndex) {
+        // If a section is being inserted, update the supplementary view's height in the section
+        // models after batch updates, since it won't exist in the previous section models.
+        return .updateCurrentModels
+      } else if sectionIndicesToDelete.contains(sectionIndex) {
+        // If a section is being deleted, update the supplementary view's height in the section
+        // models before batch updates, since it won't exist in the current section models.
+        return .updatePreviousModels
+      } else if
+        sectionIndex < sectionModelsBeforeBatchUpdates.count,
+        let previousSectionModelID = idForSectionModel(atIndex: sectionIndex, .beforeUpdates),
+        let currentSectionIndex = indexForSectionModel(
+          withID: previousSectionModelID,
+          .afterUpdates)
+      {
+        // If a supplementary view was moved, then it will have an ID in the section models before
+        // batch updates, and that ID will match a section index in the current section models. In
+        // this scenario, we want to update the section models from before and after batch updates.
+        return .updatePreviousAndCurrentModels(
+          previousSectionIndex: sectionIndex,
+          currentSectionIndex: currentSectionIndex)
       }
     }
 
