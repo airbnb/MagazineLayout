@@ -119,7 +119,7 @@ final class ModelState {
       return sectionModels[indexPath.section].itemModel(atIndex: indexPath.item).sizeMode.heightMode
     }
 
-    switch preferredHeightUpdateContextForPreferredHeightUpdateToItem(at: indexPath) {
+    switch updateContextForItemPreferredHeightUpdate(at: indexPath) {
     case .updatePreviousModels, .updatePreviousAndCurrentModels:
       return itemModelHeightModeDuringPreferredAttributesCheck(
         at: indexPath,
@@ -148,9 +148,7 @@ final class ModelState {
       return sectionModels[sectionIndex].headerModel?.heightMode
     }
 
-    let preferredHeightUpdateContext = preferredHeightUpdateContextForPreferredHeightUpdateToSupplementaryView(
-      inSectionAtIndex: sectionIndex)
-    switch preferredHeightUpdateContext {
+    switch updateContextForSupplementaryViewPreferredHeightUpdate(inSectionAtIndex: sectionIndex) {
     case .updatePreviousModels, .updatePreviousAndCurrentModels:
       return headerModelHeightModeDuringPreferredAttributesCheck(
         atSectionIndex: sectionIndex,
@@ -179,7 +177,7 @@ final class ModelState {
       return sectionModels[indexPath.section].preferredHeightForItemModel(atIndex: indexPath.item)
     }
 
-    switch preferredHeightUpdateContextForPreferredHeightUpdateToItem(at: indexPath) {
+    switch updateContextForItemPreferredHeightUpdate(at: indexPath) {
     case .updatePreviousModels, .updatePreviousAndCurrentModels:
       return itemModelPreferredHeightDuringPreferredAttributesCheck(
         at: indexPath,
@@ -381,7 +379,7 @@ final class ModelState {
         atIndex: indexPath.item)
     }
 
-    switch preferredHeightUpdateContextForPreferredHeightUpdateToItem(at: indexPath) {
+    switch updateContextForItemPreferredHeightUpdate(at: indexPath) {
     case .updatePreviousModels:
       updateItemHeight(
         toPreferredHeight: preferredHeight,
@@ -423,9 +421,7 @@ final class ModelState {
       sectionModels[sectionIndex].updateHeaderHeight(toPreferredHeight: preferredHeight)
     }
 
-    let preferredHeightUpdateContext = preferredHeightUpdateContextForPreferredHeightUpdateToSupplementaryView(
-      inSectionAtIndex: sectionIndex)
-    switch preferredHeightUpdateContext {
+    switch updateContextForSupplementaryViewPreferredHeightUpdate(inSectionAtIndex: sectionIndex) {
     case .updatePreviousModels:
       updateHeaderHeight(
         toPreferredHeight: preferredHeight,
@@ -611,7 +607,7 @@ final class ModelState {
     }
   }
 
-  private func preferredHeightUpdateContextForPreferredHeightUpdateToItem(
+  private func updateContextForItemPreferredHeightUpdate(
     at indexPath: IndexPath)
     -> ItemPreferredHeightUpdateContext
   {
@@ -664,7 +660,7 @@ final class ModelState {
     return .updateCurrentModels
   }
 
-  private func preferredHeightUpdateContextForPreferredHeightUpdateToSupplementaryView(
+  private func updateContextForSupplementaryViewPreferredHeightUpdate(
     inSectionAtIndex sectionIndex: Int)
     -> SupplementaryViewPreferredHeightUpdateContext
   {
