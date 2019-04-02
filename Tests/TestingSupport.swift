@@ -182,7 +182,7 @@ extension Array where Element == CGRect {
 extension CGRect: Hashable {
 
   public var hashValue: Int {
-    return NSCoder.string(for: self).hashValue
+    return NSStringFromCGRect(self).hashValue
   }
 
 }

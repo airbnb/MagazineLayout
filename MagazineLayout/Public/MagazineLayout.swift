@@ -34,6 +34,10 @@ public final class MagazineLayout: UICollectionViewLayout {
     return MagazineLayoutInvalidationContext.self
   }
 
+  override public var flipsHorizontallyInOppositeLayoutDirection: Bool {
+    return true
+  }
+
   override public var collectionViewContentSize: CGSize {
     let numberOfSections = modelState.numberOfSections(.afterUpdates)
 
