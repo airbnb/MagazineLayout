@@ -43,7 +43,7 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     visibilityModeForHeaderInSectionAtIndex index: Int)
-    -> MagazineLayoutSupplementaryViewVisibilityMode
+    -> MagazineLayoutHeaderVisibilityMode
 
   ///   Asks the delegate for the visibility mode of the footer in the specified section.
   ///
@@ -57,7 +57,7 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     visibilityModeForFooterInSectionAtIndex index: Int)
-    -> MagazineLayoutSupplementaryViewVisibilityMode
+    -> MagazineLayoutFooterVisibilityMode
 
 ///   Asks the delegate for the visibility mode of the background in the specified section.
 ///

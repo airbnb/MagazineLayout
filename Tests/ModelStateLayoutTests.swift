@@ -455,7 +455,7 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedBackgroundFrames1: expectedBackgroundFrames3)
   }
 
-  func testReplacingFooters() {
+  func testReplacingFooter() {
     modelState.removeFooter(forSectionAtIndex: 0)
 
     let expectedItemFrames0: [CGRect] = [
@@ -473,35 +473,36 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 170.0, y: 710.0, width: 60.0, height: 150.0),
       CGRect(x: 250.0, y: 710.0, width: 60.0, height: 150.0),
       CGRect(x: 10.0, y: 890.0, width: 44.0, height: 150.0),
-      CGRect(x: 10.0, y: 1180.0, width: 140.0, height: 10.0),
-      CGRect(x: 170.0, y: 1180.0, width: 140.0, height: 30.0),
-      CGRect(x: 10.0, y: 1240.0, width: 140.0, height: 25.0),
-      CGRect(x: 10.0, y: 1295.0, width: 87.0, height: 15.0),
-      CGRect(x: 10.0, y: 1340.0, width: 300.0, height: 20.0),
-      CGRect(x: 10.0, y: 1390.0, width: 87.0, height: 10.0),
-      CGRect(x: 10.0, y: 1430.0, width: 44.0, height: 15.0),
-      CGRect(x: 74.0, y: 1430.0, width: 44.0, height: 15.0),
-      CGRect(x: 138.0, y: 1430.0, width: 44.0, height: 25.0),
-      CGRect(x: 202.0, y: 1430.0, width: 44.0, height: 35.0),
-      CGRect(x: 266.0, y: 1430.0, width: 44.0, height: 30.0),
-      CGRect(x: 0.0, y: 1495.0, width: 320.0, height: 15.0),
+      CGRect(x: 10.0, y: 1130.0, width: 140.0, height: 10.0),
+      CGRect(x: 170.0, y: 1130.0, width: 140.0, height: 30.0),
+      CGRect(x: 10.0, y: 1190.0, width: 140.0, height: 25.0),
+      CGRect(x: 10.0, y: 1245.0, width: 87.0, height: 15.0),
+      CGRect(x: 10.0, y: 1290.0, width: 300.0, height: 20.0),
+      CGRect(x: 10.0, y: 1340.0, width: 87.0, height: 10.0),
+      CGRect(x: 10.0, y: 1380.0, width: 44.0, height: 15.0),
+      CGRect(x: 74.0, y: 1380.0, width: 44.0, height: 15.0),
+      CGRect(x: 138.0, y: 1380.0, width: 44.0, height: 25.0),
+      CGRect(x: 202.0, y: 1380.0, width: 44.0, height: 35.0),
+      CGRect(x: 266.0, y: 1380.0, width: 44.0, height: 30.0),
+      CGRect(x: 0.0, y: 1445.0, width: 320.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
       CGRect(x: 0.0, y: 0.0, width: 320.0, height: 50.0),
     ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 0.0, y: 1100.0, width: 320.0, height: 70.0),
+      CGRect(x: 0.0, y: 1050.0, width: 320.0, height: 70.0),
     ]
-    let expectedFooterFrames0 = [CGRect]()
+    let expectedFooterFrames0: [CGRect] = [
+    ]
     let expectedFooterFrames1: [CGRect] = [
-      CGRect(x: 0.0, y: 1520.0, width: 320.0, height: 70.0),
+      CGRect(x: 0.0, y: 1470.0, width: 320.0, height: 70.0),
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 0.0, y: 0.0, width: 320.0, height: 1100.0),
+      CGRect(x: 0.0, y: 0.0, width: 320.0, height: 1050.0),
     ]
     let expectedBackgroundFrames1: [CGRect] = [
-      CGRect(x: 0.0, y: 0.0, width: 320.0, height: 1100.0),
-      CGRect(x: 0.0, y: 1100.0, width: 320.0, height: 490.0),
+      CGRect(x: 0.0, y: 0.0, width: 320.0, height: 1050.0),
+      CGRect(x: 0.0, y: 1050.0, width: 320.0, height: 490.0),
     ]
 
     checkExpectedFrames(
@@ -514,11 +515,12 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedBackgroundFrames0: expectedBackgroundFrames0,
       expectedBackgroundFrames1: expectedBackgroundFrames1)
 
+
     modelState.setFooter(
-      FooterModel(heightMode: .static(height: 60), height: 60),
+      FooterModel(heightMode: .static(height: 40), height: 40),
       forSectionAtIndex: 0)
     modelState.setFooter(
-      FooterModel(heightMode: .dynamic, height: 100),
+      FooterModel(heightMode: .dynamic, height: 120),
       forSectionAtIndex: 1)
 
     let expectedItemFrames2: [CGRect] = [
@@ -527,7 +529,7 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 10.0, y: 290.0, width: 140.0, height: 10.0),
       CGRect(x: 170.0, y: 290.0, width: 140.0, height: 30.0),
       CGRect(x: 10.0, y: 350.0, width: 140.0, height: 150.0),
-      ]
+    ]
     let expectedItemFrames3: [CGRect] = [
       CGRect(x: 10.0, y: 530.0, width: 87.0, height: 150.0),
       CGRect(x: 117.0, y: 530.0, width: 87.0, height: 150.0),
@@ -536,38 +538,38 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 170.0, y: 710.0, width: 60.0, height: 150.0),
       CGRect(x: 250.0, y: 710.0, width: 60.0, height: 150.0),
       CGRect(x: 10.0, y: 890.0, width: 44.0, height: 150.0),
-      CGRect(x: 10.0, y: 1190.0, width: 140.0, height: 10.0),
-      CGRect(x: 170.0, y: 1190.0, width: 140.0, height: 30.0),
-      CGRect(x: 10.0, y: 1250.0, width: 140.0, height: 25.0),
-      CGRect(x: 10.0, y: 1305.0, width: 87.0, height: 15.0),
-      CGRect(x: 10.0, y: 1350.0, width: 300.0, height: 20.0),
-      CGRect(x: 10.0, y: 1400.0, width: 87.0, height: 10.0),
-      CGRect(x: 10.0, y: 1440.0, width: 44.0, height: 15.0),
-      CGRect(x: 74.0, y: 1440.0, width: 44.0, height: 15.0),
-      CGRect(x: 138.0, y: 1440.0, width: 44.0, height: 25.0),
-      CGRect(x: 202.0, y: 1440.0, width: 44.0, height: 35.0),
-      CGRect(x: 266.0, y: 1440.0, width: 44.0, height: 30.0),
-      CGRect(x: 0.0, y: 1505.0, width: 320.0, height: 15.0),
-      ]
+      CGRect(x: 10.0, y: 1170.0, width: 140.0, height: 10.0),
+      CGRect(x: 170.0, y: 1170.0, width: 140.0, height: 30.0),
+      CGRect(x: 10.0, y: 1230.0, width: 140.0, height: 25.0),
+      CGRect(x: 10.0, y: 1285.0, width: 87.0, height: 15.0),
+      CGRect(x: 10.0, y: 1330.0, width: 300.0, height: 20.0),
+      CGRect(x: 10.0, y: 1380.0, width: 87.0, height: 10.0),
+      CGRect(x: 10.0, y: 1420.0, width: 44.0, height: 15.0),
+      CGRect(x: 74.0, y: 1420.0, width: 44.0, height: 15.0),
+      CGRect(x: 138.0, y: 1420.0, width: 44.0, height: 25.0),
+      CGRect(x: 202.0, y: 1420.0, width: 44.0, height: 35.0),
+      CGRect(x: 266.0, y: 1420.0, width: 44.0, height: 30.0),
+      CGRect(x: 0.0, y: 1485.0, width: 320.0, height: 15.0),
+    ]
     let expectedHeaderFrames2: [CGRect] = [
       CGRect(x: 0.0, y: 0.0, width: 320.0, height: 50.0),
-      ]
+    ]
     let expectedHeaderFrames3: [CGRect] = [
-      CGRect(x: 0.0, y: 1110.0, width: 320.0, height: 70.0),
-      ]
+      CGRect(x: 0.0, y: 1090.0, width: 320.0, height: 70.0),
+    ]
     let expectedFooterFrames2: [CGRect] = [
-      CGRect(x: 0.0, y: 0.0, width: 0.0, height: 60.0),
-      ]
+    ]
     let expectedFooterFrames3: [CGRect] = [
-      CGRect(x: 0.0, y: 1110.0, width: 0.0, height: 100.0),
-      ]
+      CGRect(x: 0.0, y: 1050.0, width: 320.0, height: 40.0),
+      CGRect(x: 0.0, y: 1510.0, width: 320.0, height: 120.0),
+    ]
     let expectedBackgroundFrames2: [CGRect] = [
-      CGRect(x: 0.0, y: 0.0, width: 320.0, height: 1110.0),
-      ]
+      CGRect(x: 0.0, y: 0.0, width: 320.0, height: 1090.0),
+    ]
     let expectedBackgroundFrames3: [CGRect] = [
-      CGRect(x: 0.0, y: 0.0, width: 320.0, height: 1110.0),
-      CGRect(x: 0.0, y: 1110.0, width: 320.0, height: 520.0),
-      ]
+      CGRect(x: 0.0, y: 0.0, width: 320.0, height: 1090.0),
+      CGRect(x: 0.0, y: 1090.0, width: 320.0, height: 540.0),
+    ]
 
     checkExpectedFrames(
       expectedItemFrames0: expectedItemFrames2,

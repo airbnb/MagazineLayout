@@ -30,7 +30,7 @@ struct SectionInfo {
 
 struct HeaderInfo {
 
-  let visibilityMode: MagazineLayoutSupplementaryViewVisibilityMode
+  let visibilityMode: MagazineLayoutHeaderVisibilityMode
   let title: String
 
 }
@@ -39,7 +39,7 @@ struct HeaderInfo {
 
 struct FooterInfo {
 
-  let visibilityMode: MagazineLayoutSupplementaryViewVisibilityMode
+  let visibilityMode: MagazineLayoutFooterVisibilityMode
   let title: String
 
 }

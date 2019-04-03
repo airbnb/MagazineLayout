@@ -143,7 +143,7 @@ final class FrameHelpers {
 
       if
         expectedFrameIndex < expectedFrames.count &&
-          expectedFrames[expectedFrameIndex] != footerFrame
+        expectedFrames[expectedFrameIndex] != footerFrame
       {
         return false
       }

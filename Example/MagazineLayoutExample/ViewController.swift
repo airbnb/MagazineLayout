@@ -69,7 +69,7 @@ final class ViewController: UIViewController {
     collectionView.delegate = self
     collectionView.backgroundColor = .white
     collectionView.contentInsetAdjustmentBehavior = .always
-    collectionView.contentInset = UIEdgeInsets(top: 24, left: 1, bottom: 24, right: 1)
+    collectionView.contentInset = UIEdgeInsets(top: 24, left: 0, bottom: 24, right: 0)
     return collectionView
   }()
 
@@ -216,7 +216,7 @@ final class ViewController: UIViewController {
     let section1 = SectionInfo(
       headerInfo: HeaderInfo(
         visibilityMode: .visible(heightMode: .dynamic),
-        title: "Self-sizing headers work too!"),
+        title: "Self-sizing supplementary views (headers and footers) are also supported."),
       itemInfos: [
         ItemInfo(
           sizeMode: MagazineLayoutItemSizeMode(
@@ -425,7 +425,7 @@ extension ViewController: UICollectionViewDelegateMagazineLayout {
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     visibilityModeForHeaderInSectionAtIndex index: Int)
-    -> MagazineLayoutSupplementaryViewVisibilityMode
+    -> MagazineLayoutHeaderVisibilityMode
   {
     return dataSource.sectionInfos[index].headerInfo.visibilityMode
   }
@@ -434,7 +434,7 @@ extension ViewController: UICollectionViewDelegateMagazineLayout {
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     visibilityModeForFooterInSectionAtIndex index: Int)
-    -> MagazineLayoutSupplementaryViewVisibilityMode
+    -> MagazineLayoutFooterVisibilityMode
   {
     return dataSource.sectionInfos[index].footerInfo.visibilityMode
   }

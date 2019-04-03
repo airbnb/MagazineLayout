@@ -1,5 +1,4 @@
-// Created by Roman Laitarenko on 31/01/2019.
-// Copyright © 2019 Sanoma.
+// Created by Roman Laitarenko on 1/31/19.
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,24 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import CoreGraphics
+import Foundation
 
 /// Represents the layout information for a footer in a section.
 struct FooterModel {
 
-    // MARK: Lifecycle
+  // MARK: Lifecycle
 
-    init(heightMode: MagazineLayoutSupplementaryViewHeightMode, height: CGFloat) {
-        self.heightMode = heightMode
-        originInSection = .zero
-        size = CGSize(width: 0, height: height)
-    }
+  init(heightMode: MagazineLayoutFooterHeightMode, height: CGFloat) {
+    self.heightMode = heightMode
+    originInSection = .zero
+    size = CGSize(width: 0, height: height)
+  }
 
-    // MARK: Internal
+  // MARK: Internal
 
-    var heightMode: MagazineLayoutSupplementaryViewHeightMode
-    var originInSection: CGPoint
-    var size: CGSize
-    var preferredHeight: CGFloat?
+  var heightMode: MagazineLayoutFooterHeightMode
+  var originInSection: CGPoint
+  var size: CGSize
+  var preferredHeight: CGFloat?
+
 }

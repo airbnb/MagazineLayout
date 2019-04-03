@@ -1,5 +1,4 @@
-// Created by Roman Laitarenko on 04/02/2019.
-// Copyright © 2019 Sanoma. All rights reserved.
+// Created by Roman Laitarenko on 2/4/19.
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.

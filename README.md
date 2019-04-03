@@ -172,7 +172,7 @@ collectionView.register(MyCustomFooter.self, forSupplementaryViewOfKind: Magazin
 collectionView.register(MyCustomBackground.self, forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionBackground, withReuseIdentifier: "MyCustomBackgroundReuseIdentifier")
 ```
 
-Because cells, headers and footers can self-size (backgrounds do not self-size), in this example, `MyCustomCell`, `MyCustomHeader` and `MyCustomFooter` **must** have the correct implementation of `preferredLayoutAttributesFitting(_:)`. See [Setting up cells and headers](#setting-up-cells-and-headers).
+Because cells, headers, and footers can self-size (backgrounds do not self-size), in this example, `MyCustomCell`, `MyCustomHeader`, and `MyCustomFooter` **must** have the correct implementation of `preferredLayoutAttributesFitting(_:)`. See [Setting up cells and headers](#setting-up-cells-and-headers).
 
 #### Setting the data source
 Now that you've registered your view types with your collection view, it's time to wire up the data source. Like with any collection view integration, your data source needs to conform to `UICollectionViewDataSource`. If the same object that owns your collection view is also your data source, you can simply do this:

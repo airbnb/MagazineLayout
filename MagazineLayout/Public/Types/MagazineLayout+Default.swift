@@ -23,8 +23,8 @@ extension MagazineLayout {
     public static let ItemSizeMode = MagazineLayoutItemSizeMode(
       widthMode: .fullWidth(respectsHorizontalInsets: true),
       heightMode: MagazineLayoutItemHeightMode.static(height: ItemHeight))
-    public static let HeaderVisibilityMode = MagazineLayoutSupplementaryViewVisibilityMode.hidden
-    public static let FooterVisibilityMode = MagazineLayoutSupplementaryViewVisibilityMode.hidden
+    public static let HeaderVisibilityMode = MagazineLayoutHeaderVisibilityMode.hidden
+    public static let FooterVisibilityMode = MagazineLayoutFooterVisibilityMode.hidden
     public static let BackgroundVisibilityMode = MagazineLayoutBackgroundVisibilityMode.hidden
 
     public static let ItemHeight: CGFloat = 150

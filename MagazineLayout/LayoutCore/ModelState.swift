@@ -133,12 +133,12 @@ final class ModelState {
 
   func headerModelHeightModeDuringPreferredAttributesCheck(
     atSectionIndex sectionIndex: Int)
-    -> MagazineLayoutSupplementaryViewHeightMode?
+    -> MagazineLayoutHeaderHeightMode?
   {
     func headerModelHeightModeDuringPreferredAttributesCheck(
       atSectionIndex sectionIndex: Int,
       sectionModels: inout [SectionModel])
-      -> MagazineLayoutSupplementaryViewHeightMode?
+      -> MagazineLayoutHeaderHeightMode?
     {
       guard sectionIndex < sectionModels.count else {
         assertionFailure("Height mode for header at section index \(sectionIndex) is out of bounds")
@@ -162,12 +162,12 @@ final class ModelState {
 
   func footerModelHeightModeDuringPreferredAttributesCheck(
     atSectionIndex sectionIndex: Int)
-    -> MagazineLayoutSupplementaryViewHeightMode?
+    -> MagazineLayoutFooterHeightMode?
   {
     func footerModelHeightModeDuringPreferredAttributesCheck(
       atSectionIndex sectionIndex: Int,
       sectionModels: inout [SectionModel])
-      -> MagazineLayoutSupplementaryViewHeightMode?
+      -> MagazineLayoutFooterHeightMode?
     {
       guard sectionIndex < sectionModels.count else {
         assertionFailure("Height mode for footer at section index \(sectionIndex) is out of bounds")

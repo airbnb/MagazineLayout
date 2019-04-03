@@ -99,6 +99,12 @@ public final class MagazineLayout: UICollectionViewLayout {
           modelState.removeHeader(forSectionAtIndex: sectionIndex)
         }
 
+        if let footerModel = footerModelForFooter(inSectionAtIndex: sectionIndex) {
+          modelState.setFooter(footerModel, forSectionAtIndex: sectionIndex)
+        } else {
+          modelState.removeFooter(forSectionAtIndex: sectionIndex)
+        }
+
         if let backgroundModel = backgroundModelForBackground(inSectionAtIndex: sectionIndex) {
           modelState.setBackground(backgroundModel, forSectionAtIndex: sectionIndex)
         } else {
@@ -109,12 +115,6 @@ public final class MagazineLayout: UICollectionViewLayout {
         for itemIndex in 0..<numberOfItems {
           let indexPath = IndexPath(item: itemIndex, section: sectionIndex)
           modelState.updateItemSizeMode(to: sizeModeForItem(at: indexPath), forItemAt: indexPath)
-        }
-
-        if let footerModel = footerModelForFooter(inSectionAtIndex: sectionIndex) {
-          modelState.setFooter(footerModel, forSectionAtIndex: sectionIndex)
-        } else {
-          modelState.removeFooter(forSectionAtIndex: sectionIndex)
         }
       }
     }
@@ -577,9 +577,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       return headerHeightMode == .dynamic
 
     case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionFooter):
-      let headerHeightMode = modelState.footerModelHeightModeDuringPreferredAttributesCheck(
+      let footerHeightMode = modelState.footerModelHeightModeDuringPreferredAttributesCheck(
         atSectionIndex: preferredAttributes.indexPath.section)
-      return headerHeightMode == .dynamic
+      return footerHeightMode == .dynamic
 
     case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionBackground):
       return false
@@ -703,10 +703,10 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var lastSizedElementPreferredHeight: CGFloat?
 
   // The current layout attributes after batch updates have started and after they finish
+  private var itemLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var headerLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var footerLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var backgroundLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
-  private var itemLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
 
   private struct PrepareActions: OptionSet {
     let rawValue: UInt
@@ -759,7 +759,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private func visibilityModeForHeader(
     inSectionAtIndex sectionIndex: Int)
-    -> MagazineLayoutSupplementaryViewVisibilityMode
+    -> MagazineLayoutHeaderVisibilityMode
   {
     guard let delegateMagazineLayout = delegateMagazineLayout else {
       return MagazineLayout.Default.HeaderVisibilityMode
@@ -773,7 +773,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private func visibilityModeForFooter(
     inSectionAtIndex sectionIndex: Int)
-    -> MagazineLayoutSupplementaryViewVisibilityMode
+    -> MagazineLayoutFooterVisibilityMode
   {
     guard let delegateMagazineLayout = delegateMagazineLayout else {
       return MagazineLayout.Default.FooterVisibilityMode
@@ -799,7 +799,10 @@ public final class MagazineLayout: UICollectionViewLayout {
       visibilityModeForBackgroundInSectionAtIndex: sectionIndex)
   }
 
-  private func headerHeight(from headerHeightMode: MagazineLayoutSupplementaryViewHeightMode) -> CGFloat {
+  private func headerHeight(
+    from headerHeightMode: MagazineLayoutHeaderHeightMode)
+    -> CGFloat
+  {
     switch headerHeightMode {
     case let .static(staticHeight):
       return staticHeight
@@ -808,7 +811,10 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
   }
 
-  private func footerHeight(from footerHeightMode: MagazineLayoutSupplementaryViewHeightMode) -> CGFloat {
+  private func footerHeight(
+    from footerHeightMode: MagazineLayoutFooterHeightMode)
+    -> CGFloat
+  {
     switch footerHeightMode {
     case let .static(staticHeight):
       return staticHeight
