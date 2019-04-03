@@ -952,13 +952,11 @@ public final class MagazineLayout: UICollectionViewLayout {
       layoutAttributes.frame = headerFrame
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionFooter,
-      let footerLayoutAttributes = previousFooterLayoutAttributes[elementLocation],
       let footerFrame = modelState.frameForFooter(
-        inSectionAtIndex: elementLocation.sectionIndex,
+        inSectionAtIndex: indexPath.section,
         .beforeUpdates)
     {
-      footerLayoutAttributes.frame = footerFrame
-      return footerLayoutAttributes
+      layoutAttributes.frame = footerFrame
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionBackground,
       let backgroundFrame = modelState.frameForBackground(

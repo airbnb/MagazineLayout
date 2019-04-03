@@ -131,18 +131,6 @@ final class ModelState {
     }
   }
 
-  func footerModelHeightModeDuringPreferredAttributesCheck(
-    atSectionIndex sectionIndex: Int)
-    -> MagazineLayoutSupplementaryViewHeightMode?
-  {
-    guard sectionIndex < currentSectionModels.count else {
-      assertionFailure("Height mode for footer at section index \(sectionIndex) is out of bounds")
-      return nil
-    }
-
-    return currentSectionModels[sectionIndex].footerModel?.heightMode
-  }
-
   func headerModelHeightModeDuringPreferredAttributesCheck(
     atSectionIndex sectionIndex: Int)
     -> MagazineLayoutSupplementaryViewHeightMode?
@@ -150,7 +138,7 @@ final class ModelState {
     func headerModelHeightModeDuringPreferredAttributesCheck(
       atSectionIndex sectionIndex: Int,
       sectionModels: inout [SectionModel])
-      -> MagazineLayoutHeaderHeightMode?
+      -> MagazineLayoutSupplementaryViewHeightMode?
     {
       guard sectionIndex < sectionModels.count else {
         assertionFailure("Height mode for header at section index \(sectionIndex) is out of bounds")
@@ -167,6 +155,35 @@ final class ModelState {
         sectionModels: &sectionModelsBeforeBatchUpdates)
     case .updateCurrentModels:
       return headerModelHeightModeDuringPreferredAttributesCheck(
+        atSectionIndex: sectionIndex,
+        sectionModels: &currentSectionModels)
+    }
+  }
+
+  func footerModelHeightModeDuringPreferredAttributesCheck(
+    atSectionIndex sectionIndex: Int)
+    -> MagazineLayoutSupplementaryViewHeightMode?
+  {
+    func footerModelHeightModeDuringPreferredAttributesCheck(
+      atSectionIndex sectionIndex: Int,
+      sectionModels: inout [SectionModel])
+      -> MagazineLayoutSupplementaryViewHeightMode?
+    {
+      guard sectionIndex < sectionModels.count else {
+        assertionFailure("Height mode for footer at section index \(sectionIndex) is out of bounds")
+        return nil
+      }
+
+      return sectionModels[sectionIndex].footerModel?.heightMode
+    }
+
+    switch updateContextForSupplementaryViewPreferredHeightUpdate(inSectionAtIndex: sectionIndex) {
+    case .updatePreviousModels, .updatePreviousAndCurrentModels:
+      return footerModelHeightModeDuringPreferredAttributesCheck(
+        atSectionIndex: sectionIndex,
+        sectionModels: &sectionModelsBeforeBatchUpdates)
+    case .updateCurrentModels:
+      return footerModelHeightModeDuringPreferredAttributesCheck(
         atSectionIndex: sectionIndex,
         sectionModels: &currentSectionModels)
     }
@@ -502,14 +519,42 @@ final class ModelState {
     toPreferredHeight preferredHeight: CGFloat,
     forSectionAtIndex sectionIndex: Int)
   {
-    guard sectionIndex < currentSectionModels.count else {
-      assertionFailure("Updating the preferred height for a footer model at section index \(sectionIndex) is out of bounds")
-      return
+    func updateFooterHeight(
+      toPreferredHeight preferredHeight: CGFloat,
+      forSectionAtIndex sectionIndex: Int,
+      sectionModels: inout [SectionModel])
+    {
+      guard sectionIndex < sectionModels.count else {
+        assertionFailure("Updating the preferred height for a footer model at section index \(sectionIndex) is out of bounds")
+        return
+      }
+
+      sectionModels[sectionIndex].updateFooterHeight(toPreferredHeight: preferredHeight)
     }
 
-    currentSectionModels[sectionIndex].updateFooterHeight(toPreferredHeight: preferredHeight)
-
-    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+    switch updateContextForSupplementaryViewPreferredHeightUpdate(inSectionAtIndex: sectionIndex) {
+    case .updatePreviousModels:
+      updateFooterHeight(
+        toPreferredHeight: preferredHeight,
+        forSectionAtIndex: sectionIndex,
+        sectionModels: &sectionModelsBeforeBatchUpdates)
+    case .updateCurrentModels:
+      updateFooterHeight(
+        toPreferredHeight: preferredHeight,
+        forSectionAtIndex: sectionIndex,
+        sectionModels: &currentSectionModels)
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+    case let .updatePreviousAndCurrentModels(previousSectionIndex, currentSectionIndex):
+      updateFooterHeight(
+        toPreferredHeight: preferredHeight,
+        forSectionAtIndex: previousSectionIndex,
+        sectionModels: &sectionModelsBeforeBatchUpdates)
+      updateFooterHeight(
+        toPreferredHeight: preferredHeight,
+        forSectionAtIndex: currentSectionIndex,
+        sectionModels: &currentSectionModels)
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: currentSectionIndex)
+    }
   }
 
   func updateMetrics(
