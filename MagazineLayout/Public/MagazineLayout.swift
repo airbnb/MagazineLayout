@@ -145,6 +145,7 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         newHeaderLayoutAttributes[headerLocation]?.shouldVerticallySelfSize = heightMode == .dynamic
+        newHeaderLayoutAttributes[headerLocation]?.zIndex = ElementZIndex.header.rawValue
       }
 
       // Create footer layout attributes if necessary
@@ -175,6 +176,7 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         newBackgroundLayoutAttributes[backgroundLocation]?.shouldVerticallySelfSize = false
+        newBackgroundLayoutAttributes[backgroundLocation]?.zIndex = ElementZIndex.background.rawValue
       }
 
       // Create item layout attributes if necessary
@@ -194,6 +196,8 @@ public final class MagazineLayout: UICollectionViewLayout {
         } else {
           newItemLayoutAttributes[itemLocation]?.shouldVerticallySelfSize = true
         }
+
+        newItemLayoutAttributes[itemLocation]?.zIndex = ElementZIndex.item.rawValue
       }
     }
 
