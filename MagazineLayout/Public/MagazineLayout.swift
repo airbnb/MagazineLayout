@@ -125,7 +125,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     var newBackgroundLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
 
     var sections = [SectionModel]()
-    for sectionIndex in (0..<currentCollectionView.numberOfSections) {
+    for sectionIndex in 0..<currentCollectionView.numberOfSections {
       // Recreate section models from scratch if necessary
       if prepareActions.contains(.recreateSectionModels) {
         let sectionModel = sectionModelForSection(atIndex: sectionIndex)
@@ -183,7 +183,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
 
       // Create item layout attributes if necessary
-      for itemIndex in (0..<numberOfItems) {
+      for itemIndex in 0..<numberOfItems {
         let itemLocation = ElementLocation(elementIndex: itemIndex, sectionIndex: sectionIndex)
 
         if let itemLayoutAttributes = itemLayoutAttributes[itemLocation] {
