@@ -199,11 +199,7 @@ extension  ViewController: UICollectionViewDelegateMagazineLayout {
     return MagazineLayoutItemSizeMode(widthMode: widthMode, heightMode: heightMode)
   }
 
-  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, visibilityModeForHeaderInSectionAtIndex index: Int) -> MagazineLayoutSupplementaryViewVisibilityMode {
-    return .visible(heightMode: .dynamic)
-  }
-
-  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, visibilityModeForFooterInSectionAtIndex index: Int) -> MagazineLayoutSupplementaryViewVisibilityMode {
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, visibilityModeForHeaderInSectionAtIndex index: Int) -> MagazineLayoutHeaderVisibilityMode {
     return .visible(heightMode: .dynamic)
   }
 
