@@ -132,6 +132,8 @@ public final class MagazineLayout: UICollectionViewLayout {
         sections.append(sectionModel)
       }
 
+      let numberOfItems = currentCollectionView.numberOfItems(inSection: sectionIndex)
+
       // Create header layout attributes if necessary
       if case let .visible(heightMode) = visibilityModeForHeader(inSectionAtIndex: sectionIndex) {
         let headerLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
@@ -145,7 +147,7 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         newHeaderLayoutAttributes[headerLocation]?.shouldVerticallySelfSize = heightMode == .dynamic
-        newHeaderLayoutAttributes[headerLocation]?.zIndex = ElementZIndex.header.rawValue
+        newHeaderLayoutAttributes[headerLocation]?.zIndex = numberOfItems + 1
       }
 
       // Create footer layout attributes if necessary
@@ -161,6 +163,7 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         newFooterLayoutAttributes[footerLocation]?.shouldVerticallySelfSize = heightMode == .dynamic
+        newFooterLayoutAttributes[footerLocation]?.zIndex = numberOfItems + 1
       }
 
       // Create background layout attributes if necessary
@@ -176,11 +179,11 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         newBackgroundLayoutAttributes[backgroundLocation]?.shouldVerticallySelfSize = false
-        newBackgroundLayoutAttributes[backgroundLocation]?.zIndex = ElementZIndex.background.rawValue
+        newBackgroundLayoutAttributes[backgroundLocation]?.zIndex = 0
       }
 
       // Create item layout attributes if necessary
-      for itemIndex in (0..<currentCollectionView.numberOfItems(inSection: sectionIndex)) {
+      for itemIndex in (0..<numberOfItems) {
         let itemLocation = ElementLocation(elementIndex: itemIndex, sectionIndex: sectionIndex)
 
         if let itemLayoutAttributes = itemLayoutAttributes[itemLocation] {
@@ -197,7 +200,7 @@ public final class MagazineLayout: UICollectionViewLayout {
           newItemLayoutAttributes[itemLocation]?.shouldVerticallySelfSize = true
         }
 
-        newItemLayoutAttributes[itemLocation]?.zIndex = ElementZIndex.item.rawValue
+        newItemLayoutAttributes[itemLocation]?.zIndex = numberOfItems - itemIndex
       }
     }
 
