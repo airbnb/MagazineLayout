@@ -21,9 +21,9 @@ import UIKit
 struct SectionInfo {
 
   var headerInfo: HeaderInfo
-  var backgroundInfo: BackgroundInfo
   var itemInfos: [ItemInfo]
   var footerInfo: FooterInfo
+  var backgroundInfo: BackgroundInfo
 
 }
 
@@ -36,7 +36,7 @@ struct HeaderInfo {
 
 }
 
-// MARK: - Footer
+// MARK: - FooterInfo
 
 struct FooterInfo {
 

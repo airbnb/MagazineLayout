@@ -96,7 +96,6 @@ final class ViewController: UIViewController {
       headerInfo: HeaderInfo(
         visibilityMode: .visible(heightMode: .dynamic),
         title: "Welcome!"),
-      backgroundInfo: BackgroundInfo(visibilityMode: .hidden),
       itemInfos: [
         ItemInfo(
           sizeMode: MagazineLayoutItemSizeMode(
@@ -215,14 +214,14 @@ final class ViewController: UIViewController {
       ],
       footerInfo: FooterInfo(
         visibilityMode: .hidden,
-        title: "")
+        title: ""),
+      backgroundInfo: BackgroundInfo(visibilityMode: .hidden)
     )
 
     let section1 = SectionInfo(
       headerInfo: HeaderInfo(
         visibilityMode: .visible(heightMode: .dynamic),
         title: "Self-sizing supplementary views (headers and footers) are also supported."),
-      backgroundInfo: BackgroundInfo(visibilityMode: .hidden),
       itemInfos: [
         ItemInfo(
           sizeMode: MagazineLayoutItemSizeMode(
@@ -257,14 +256,14 @@ final class ViewController: UIViewController {
       ],
       footerInfo: FooterInfo(
         visibilityMode: .hidden,
-        title: "")
+        title: ""),
+      backgroundInfo: BackgroundInfo(visibilityMode: .visible)
     )
 
     let section2 = SectionInfo(
       headerInfo: HeaderInfo(
         visibilityMode: .visible(heightMode: .dynamic),
         title: "Using this app:"),
-      backgroundInfo: BackgroundInfo(visibilityMode: .hidden),
       itemInfos: [
         ItemInfo(
           sizeMode: MagazineLayoutItemSizeMode(
@@ -305,7 +304,8 @@ final class ViewController: UIViewController {
       ],
       footerInfo: FooterInfo(
         visibilityMode: .visible(heightMode: .dynamic),
-        title: "Enjoy using MagazineLayout!")
+        title: "Enjoy using MagazineLayout!"),
+      backgroundInfo: BackgroundInfo(visibilityMode: .hidden)
     )
 
     dataSource.insert(section0, atSectionIndex: 0)
@@ -378,11 +378,11 @@ final class ViewController: UIViewController {
               headerInfo: HeaderInfo(
                 visibilityMode: .visible(heightMode: .dynamic),
                 title: "Header"),
-              backgroundInfo: BackgroundInfo(visibilityMode: .visible),
               itemInfos: [itemInfo],
               footerInfo: FooterInfo(
                 visibilityMode: .visible(heightMode: .dynamic),
-                title: "Footer")
+                title: "Footer"),
+              backgroundInfo: BackgroundInfo(visibilityMode: .hidden)
             )
             self?.dataSource.insert(sectionInfo, atSectionIndex: state.sectionIndex)
             self?.collectionView.insertSections(IndexSet(integer: state.sectionIndex))
