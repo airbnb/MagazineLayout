@@ -64,6 +64,10 @@ final class ViewController: UIViewController {
       Footer.self,
       forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionFooter,
       withReuseIdentifier: Footer.description())
+    collectionView.register(
+      Background.self,
+      forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionBackground,
+      withReuseIdentifier: Background.description())
     collectionView.isPrefetchingEnabled = false
     collectionView.dataSource = dataSource
     collectionView.delegate = self
@@ -210,7 +214,8 @@ final class ViewController: UIViewController {
       ],
       footerInfo: FooterInfo(
         visibilityMode: .hidden,
-        title: "")
+        title: ""),
+      backgroundInfo: BackgroundInfo(visibilityMode: .hidden)
     )
 
     let section1 = SectionInfo(
@@ -251,7 +256,8 @@ final class ViewController: UIViewController {
       ],
       footerInfo: FooterInfo(
         visibilityMode: .hidden,
-        title: "")
+        title: ""),
+      backgroundInfo: BackgroundInfo(visibilityMode: .visible)
     )
 
     let section2 = SectionInfo(
@@ -298,7 +304,8 @@ final class ViewController: UIViewController {
       ],
       footerInfo: FooterInfo(
         visibilityMode: .visible(heightMode: .dynamic),
-        title: "Enjoy using MagazineLayout!")
+        title: "Enjoy using MagazineLayout!"),
+      backgroundInfo: BackgroundInfo(visibilityMode: .hidden)
     )
 
     dataSource.insert(section0, atSectionIndex: 0)
@@ -374,7 +381,8 @@ final class ViewController: UIViewController {
               itemInfos: [itemInfo],
               footerInfo: FooterInfo(
                 visibilityMode: .visible(heightMode: .dynamic),
-                title: "Footer")
+                title: "Footer"),
+              backgroundInfo: BackgroundInfo(visibilityMode: .hidden)
             )
             self?.dataSource.insert(sectionInfo, atSectionIndex: state.sectionIndex)
             self?.collectionView.insertSections(IndexSet(integer: state.sectionIndex))
@@ -445,7 +453,7 @@ extension ViewController: UICollectionViewDelegateMagazineLayout {
     visibilityModeForBackgroundInSectionAtIndex index: Int)
     -> MagazineLayoutBackgroundVisibilityMode
   {
-    return .hidden
+    return dataSource.sectionInfos[index].backgroundInfo.visibilityMode
   }
 
   func collectionView(

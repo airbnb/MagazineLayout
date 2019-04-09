@@ -23,6 +23,7 @@ struct SectionInfo {
   var headerInfo: HeaderInfo
   var itemInfos: [ItemInfo]
   var footerInfo: FooterInfo
+  var backgroundInfo: BackgroundInfo
 
 }
 
@@ -35,7 +36,7 @@ struct HeaderInfo {
 
 }
 
-// MARK: - Footer
+// MARK: - FooterInfo
 
 struct FooterInfo {
 
@@ -51,5 +52,13 @@ struct ItemInfo {
   let sizeMode: MagazineLayoutItemSizeMode
   let text: String
   let color: UIColor
+
+}
+
+// MARK: - BackgroundInfo
+
+struct BackgroundInfo {
+
+  let visibilityMode: MagazineLayoutBackgroundVisibilityMode
 
 }

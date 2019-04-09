@@ -125,12 +125,14 @@ public final class MagazineLayout: UICollectionViewLayout {
     var newBackgroundLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
 
     var sections = [SectionModel]()
-    for sectionIndex in (0..<currentCollectionView.numberOfSections) {
+    for sectionIndex in 0..<currentCollectionView.numberOfSections {
       // Recreate section models from scratch if necessary
       if prepareActions.contains(.recreateSectionModels) {
         let sectionModel = sectionModelForSection(atIndex: sectionIndex)
         sections.append(sectionModel)
       }
+
+      let numberOfItems = currentCollectionView.numberOfItems(inSection: sectionIndex)
 
       // Create header layout attributes if necessary
       if case let .visible(heightMode) = visibilityModeForHeader(inSectionAtIndex: sectionIndex) {
@@ -145,6 +147,7 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         newHeaderLayoutAttributes[headerLocation]?.shouldVerticallySelfSize = heightMode == .dynamic
+        newHeaderLayoutAttributes[headerLocation]?.zIndex = numberOfItems + 1
       }
 
       // Create footer layout attributes if necessary
@@ -160,6 +163,7 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         newFooterLayoutAttributes[footerLocation]?.shouldVerticallySelfSize = heightMode == .dynamic
+        newFooterLayoutAttributes[footerLocation]?.zIndex = numberOfItems + 1
       }
 
       // Create background layout attributes if necessary
@@ -175,10 +179,11 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         newBackgroundLayoutAttributes[backgroundLocation]?.shouldVerticallySelfSize = false
+        newBackgroundLayoutAttributes[backgroundLocation]?.zIndex = 0
       }
 
       // Create item layout attributes if necessary
-      for itemIndex in (0..<currentCollectionView.numberOfItems(inSection: sectionIndex)) {
+      for itemIndex in 0..<numberOfItems {
         let itemLocation = ElementLocation(elementIndex: itemIndex, sectionIndex: sectionIndex)
 
         if let itemLayoutAttributes = itemLayoutAttributes[itemLocation] {
@@ -194,6 +199,8 @@ public final class MagazineLayout: UICollectionViewLayout {
         } else {
           newItemLayoutAttributes[itemLocation]?.shouldVerticallySelfSize = true
         }
+
+        newItemLayoutAttributes[itemLocation]?.zIndex = numberOfItems - itemIndex
       }
     }
 

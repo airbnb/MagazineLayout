@@ -91,15 +91,22 @@ extension DataSource: UICollectionViewDataSource {
     case MagazineLayout.SupplementaryViewKind.sectionHeader:
       let header = collectionView.dequeueReusableSupplementaryView(
         ofKind: MagazineLayout.SupplementaryViewKind.sectionHeader,
-        withReuseIdentifier: Header.description(), for: indexPath) as! Header
+        withReuseIdentifier: Header.description(),
+        for: indexPath) as! Header
       header.set(sectionInfos[indexPath.section].headerInfo)
       return header
     case MagazineLayout.SupplementaryViewKind.sectionFooter:
       let header = collectionView.dequeueReusableSupplementaryView(
         ofKind: MagazineLayout.SupplementaryViewKind.sectionFooter,
-        withReuseIdentifier: Footer.description(), for: indexPath) as! Footer
+        withReuseIdentifier: Footer.description(),
+        for: indexPath) as! Footer
       header.set(sectionInfos[indexPath.section].footerInfo)
       return header
+    case MagazineLayout.SupplementaryViewKind.sectionBackground:
+      return collectionView.dequeueReusableSupplementaryView(
+        ofKind: kind,
+        withReuseIdentifier: Background.description(),
+        for: indexPath)
     default:
       fatalError("Not supported")
     }

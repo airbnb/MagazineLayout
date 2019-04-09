@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		FCAC642A2208870300973F4C /* Footer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAC64292208870300973F4C /* Footer.swift */; };
+		8F78E959225BD81000CAE309 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F78E958225BD81000CAE309 /* Background.swift */; };
 		FD138CD421B201D0006BFABC /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CD321B201D0006BFABC /* Data.swift */; };
 		FD138CD621B20875006BFABC /* Cell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CD521B20875006BFABC /* Cell.swift */; };
 		FD138CD821B226A7006BFABC /* Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CD721B226A7006BFABC /* Header.swift */; };
@@ -40,6 +41,7 @@
 
 /* Begin PBXFileReference section */
 		FCAC64292208870300973F4C /* Footer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Footer.swift; sourceTree = "<group>"; };
+		8F78E958225BD81000CAE309 /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
 		FD138CD321B201D0006BFABC /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
 		FD138CD521B20875006BFABC /* Cell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cell.swift; sourceTree = "<group>"; };
 		FD138CD721B226A7006BFABC /* Header.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Header.swift; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 				FD138CD721B226A7006BFABC /* Header.swift */,
 				FCAC64292208870300973F4C /* Footer.swift */,
 				FD138CD521B20875006BFABC /* Cell.swift */,
+				8F78E958225BD81000CAE309 /* Background.swift */,
 				FD138CDC21B22BBE006BFABC /* ItemCreationPanelView.swift */,
 			);
 			path = Views;
@@ -202,6 +205,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F78E959225BD81000CAE309 /* Background.swift in Sources */,
 				FD138CDF21B2310A006BFABC /* DataSourceCountsProvider.swift in Sources */,
 				FD89ED1921BFAD7D00607E70 /* Colors.swift in Sources */,
 				FD138CE121B23D64006BFABC /* CreationPanelViewController.swift in Sources */,
