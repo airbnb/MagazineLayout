@@ -22,15 +22,12 @@ struct HeaderModel {
   // MARK: Lifecycle
 
   init(heightMode: MagazineLayoutHeaderHeightMode, height: CGFloat) {
-    id = NSUUID().uuidString
     self.heightMode = heightMode
     originInSection = .zero
     size = CGSize(width: 0, height: height)
   }
 
   // MARK: Internal
-
-  let id: String
 
   var heightMode: MagazineLayoutHeaderHeightMode
   var originInSection: CGPoint

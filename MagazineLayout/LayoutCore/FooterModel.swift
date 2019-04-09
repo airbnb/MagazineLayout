@@ -1,5 +1,4 @@
-// Created by bryankeller on 10/18/18.
-// Copyright © 2018 Airbnb, Inc.
+// Created by Roman Laitarenko on 1/31/19.
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,15 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extension MagazineLayout {
+import CoreGraphics
+import Foundation
 
-  /// Constants for supported supplementary view element kinds.
-  public enum SupplementaryViewKind {
+/// Represents the layout information for a footer in a section.
+struct FooterModel {
 
-    public static let sectionHeader = "MagazineLayoutSupplementaryViewKindSectionHeader"
-    public static let sectionFooter = "MagazineLayoutSupplementaryViewKindSectionFooter"
-    public static let sectionBackground = "MagazineLayoutSupplementaryViewKindSectionBackground"
+  // MARK: Lifecycle
 
+  init(heightMode: MagazineLayoutFooterHeightMode, height: CGFloat) {
+    self.heightMode = heightMode
+    originInSection = .zero
+    size = CGSize(width: 0, height: height)
   }
+
+  // MARK: Internal
+
+  var heightMode: MagazineLayoutFooterHeightMode
+  var originInSection: CGPoint
+  var size: CGSize
+  var preferredHeight: CGFloat?
 
 }

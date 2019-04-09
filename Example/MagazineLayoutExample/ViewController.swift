@@ -60,12 +60,16 @@ final class ViewController: UIViewController {
       Header.self,
       forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionHeader,
       withReuseIdentifier: Header.description())
+    collectionView.register(
+      Footer.self,
+      forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionFooter,
+      withReuseIdentifier: Footer.description())
     collectionView.isPrefetchingEnabled = false
     collectionView.dataSource = dataSource
     collectionView.delegate = self
     collectionView.backgroundColor = .white
     collectionView.contentInsetAdjustmentBehavior = .always
-    collectionView.contentInset = UIEdgeInsets(top: 24, left: 1, bottom: 24, right: 1)
+    collectionView.contentInset = UIEdgeInsets(top: 24, left: 0, bottom: 24, right: 0)
     return collectionView
   }()
 
@@ -203,12 +207,16 @@ final class ViewController: UIViewController {
             heightMode: .dynamic),
           text: ":)",
           color: Colors.blue),
-      ])
+      ],
+      footerInfo: FooterInfo(
+        visibilityMode: .hidden,
+        title: "")
+    )
 
     let section1 = SectionInfo(
       headerInfo: HeaderInfo(
         visibilityMode: .visible(heightMode: .dynamic),
-        title: "Self-sizing headers work too!"),
+        title: "Self-sizing supplementary views (headers and footers) are also supported."),
       itemInfos: [
         ItemInfo(
           sizeMode: MagazineLayoutItemSizeMode(
@@ -240,7 +248,11 @@ final class ViewController: UIViewController {
             heightMode: .dynamicAndStretchToTallestItemInRow),
           text: "and I'll match your height!",
           color: Colors.orange),
-      ])
+      ],
+      footerInfo: FooterInfo(
+        visibilityMode: .hidden,
+        title: "")
+    )
 
     let section2 = SectionInfo(
       headerInfo: HeaderInfo(
@@ -283,13 +295,11 @@ final class ViewController: UIViewController {
             heightMode: .dynamicAndStretchToTallestItemInRow),
           text: "or invoke reloadData().",
           color: Colors.green),
-        ItemInfo(
-          sizeMode: MagazineLayoutItemSizeMode(
-            widthMode: .fullWidth(respectsHorizontalInsets: true),
-            heightMode: .dynamic),
-          text: "Enjoy using MagazineLayout!",
-          color: Colors.blue),
-      ])
+      ],
+      footerInfo: FooterInfo(
+        visibilityMode: .visible(heightMode: .dynamic),
+        title: "Enjoy using MagazineLayout!")
+    )
 
     dataSource.insert(section0, atSectionIndex: 0)
     dataSource.insert(section1, atSectionIndex: 1)
@@ -361,7 +371,11 @@ final class ViewController: UIViewController {
               headerInfo: HeaderInfo(
                 visibilityMode: .visible(heightMode: .dynamic),
                 title: "Header"),
-              itemInfos: [itemInfo])
+              itemInfos: [itemInfo],
+              footerInfo: FooterInfo(
+                visibilityMode: .visible(heightMode: .dynamic),
+                title: "Footer")
+            )
             self?.dataSource.insert(sectionInfo, atSectionIndex: state.sectionIndex)
             self?.collectionView.insertSections(IndexSet(integer: state.sectionIndex))
           }
@@ -414,6 +428,15 @@ extension ViewController: UICollectionViewDelegateMagazineLayout {
     -> MagazineLayoutHeaderVisibilityMode
   {
     return dataSource.sectionInfos[index].headerInfo.visibilityMode
+  }
+
+  func collectionView(
+    _ collectionView: UICollectionView,
+    layout collectionViewLayout: UICollectionViewLayout,
+    visibilityModeForFooterInSectionAtIndex index: Int)
+    -> MagazineLayoutFooterVisibilityMode
+  {
+    return dataSource.sectionInfos[index].footerInfo.visibilityMode
   }
 
   func collectionView(
