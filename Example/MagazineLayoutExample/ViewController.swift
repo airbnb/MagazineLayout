@@ -73,7 +73,6 @@ final class ViewController: UIViewController {
     collectionView.delegate = self
     collectionView.backgroundColor = .white
     collectionView.contentInsetAdjustmentBehavior = .always
-    collectionView.contentInset = UIEdgeInsets(top: 24, left: 0, bottom: 24, right: 0)
     return collectionView
   }()
 
@@ -251,7 +250,7 @@ final class ViewController: UIViewController {
           sizeMode: MagazineLayoutItemSizeMode(
             widthMode: .halfWidth,
             heightMode: .dynamicAndStretchToTallestItemInRow),
-          text: "and I'll match your height!",
+          text: "and I'll stretch to match your height.",
           color: Colors.orange),
       ],
       footerInfo: FooterInfo(
@@ -281,7 +280,7 @@ final class ViewController: UIViewController {
           sizeMode: MagazineLayoutItemSizeMode(
             widthMode: .fullWidth(respectsHorizontalInsets: true),
             heightMode: .dynamic),
-          text: "Tap tap the reload icon in the top left to...",
+          text: "Tap the reload icon in the top left to...",
           color: Colors.green),
         ItemInfo(
           sizeMode: MagazineLayoutItemSizeMode(
@@ -477,10 +476,19 @@ extension ViewController: UICollectionViewDelegateMagazineLayout {
   func collectionView(
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
+    insetsForSectionAtIndex index: Int)
+    -> UIEdgeInsets
+  {
+    return UIEdgeInsets(top: 24, left: 4, bottom: 24, right: 4)
+  }
+
+  func collectionView(
+    _ collectionView: UICollectionView,
+    layout collectionViewLayout: UICollectionViewLayout,
     insetsForItemsInSectionAtIndex index: Int)
     -> UIEdgeInsets
   {
-    return UIEdgeInsets(top: 24, left: 0, bottom: 24, right: 0)
+    return UIEdgeInsets(top: 24, left: 4, bottom: 24, right: 4)
   }
 
 }
