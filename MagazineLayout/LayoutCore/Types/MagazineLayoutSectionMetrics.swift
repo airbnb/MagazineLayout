@@ -26,23 +26,34 @@ struct MagazineLayoutSectionMetrics: Equatable {
     layout: UICollectionViewLayout,
     delegate: UICollectionViewDelegateMagazineLayout)
   {
+    sectionInsets = delegate.collectionView(
+      collectionView,
+      layout: layout,
+      insetsForSectionAtIndex: sectionIndex)
+
+    let contentInsetAdjustedWidth: CGFloat
     if #available(iOS 11.0, *) {
-      width = collectionView.bounds.width -
+      contentInsetAdjustedWidth = collectionView.bounds.width -
         collectionView.adjustedContentInset.left -
         collectionView.adjustedContentInset.right
     } else {
-      width = collectionView.bounds.width -
+      contentInsetAdjustedWidth = collectionView.bounds.width -
         collectionView.contentInset.left -
         collectionView.contentInset.right
     }
+
+    width = contentInsetAdjustedWidth - sectionInsets.left - sectionInsets.right
+
     verticalSpacing = delegate.collectionView(
       collectionView,
       layout: layout,
       verticalSpacingForElementsInSectionAtIndex: sectionIndex)
+
     horizontalSpacing = delegate.collectionView(
       collectionView,
       layout: layout,
       horizontalSpacingForItemsInSectionAtIndex: sectionIndex)
+
     itemInsets = delegate.collectionView(
       collectionView,
       layout: layout,
@@ -53,11 +64,13 @@ struct MagazineLayoutSectionMetrics: Equatable {
     width: CGFloat,
     verticalSpacing: CGFloat,
     horizontalSpacing: CGFloat,
+    sectionInsets: UIEdgeInsets,
     itemInsets: UIEdgeInsets)
   {
     self.width = width
     self.verticalSpacing = verticalSpacing
     self.horizontalSpacing = horizontalSpacing
+    self.sectionInsets = sectionInsets
     self.itemInsets = itemInsets
   }
 
@@ -66,6 +79,7 @@ struct MagazineLayoutSectionMetrics: Equatable {
   var width: CGFloat
   var verticalSpacing: CGFloat
   var horizontalSpacing: CGFloat
+  var sectionInsets: UIEdgeInsets
   var itemInsets: UIEdgeInsets
 
   static func defaultSectionMetrics(
@@ -76,6 +90,7 @@ struct MagazineLayoutSectionMetrics: Equatable {
       width: width,
       verticalSpacing: MagazineLayout.Default.VerticalSpacing,
       horizontalSpacing: MagazineLayout.Default.HorizontalSpacing,
+      sectionInsets: MagazineLayout.Default.SectionInsets,
       itemInsets: MagazineLayout.Default.ItemInsets)
   }
 
