@@ -32,6 +32,7 @@ extension MagazineLayout {
     public static let FooterHeight: CGFloat = 44
     public static let VerticalSpacing: CGFloat = 0
     public static let HorizontalSpacing: CGFloat = 0
+    public static let SectionInsets: UIEdgeInsets = .zero
     public static let ItemInsets: UIEdgeInsets = .zero
 
   }

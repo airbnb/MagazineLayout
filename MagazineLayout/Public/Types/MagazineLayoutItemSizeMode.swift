@@ -45,13 +45,12 @@ public struct MagazineLayoutItemSizeMode {
 /// room.
 public enum MagazineLayoutItemWidthMode {
 
-  /// Full width items will fill the entire width of the collection view.
+  /// Full width items will fill the available width in a section.
   ///
   /// Use this width mode to create lists of items.
-  /// `respectsHorizontalInsets` specifies whether the item should be edge-to-edge in the collection
-  /// view, or if it should be inset by `contentInset.left` and `contentInset.right`. On iOS 11 and
-  /// higher, this will also take the safe area insets into account by insetting the item by
-  /// `adjustedContentInset.left` and `adjustedContentInset.right`.
+  /// `respectsHorizontalInsets` specifies whether the item should be edge-to-edge in a section, or
+  /// if it should be inset by the item insets specified for a section. `respectsHorizontalInsets`
+  /// does not take into account section insets or the collection view's content inset.
   case fullWidth(respectsHorizontalInsets: Bool)
 
   /// Fractional width items will take up `1/divisor` of the available width for a given row of

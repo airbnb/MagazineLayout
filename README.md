@@ -23,6 +23,7 @@ A collection view layout capable of laying out views in vertically scrolling gri
 Other features:
 - Specifying horizontal item spacing on a per-section basis
 - Specifying vertical row spacing on a per-section basis
+- Specifying section insets on a per-section basis
 - Specifying item insets on a per-section basis
 
 These capabilities have allowed us to build a wide variety of screens in the Airbnb app, many of which are among our highest-traffic screens. Here are just a few examples of screens laid out using `MagazineLayout`:
@@ -217,6 +218,10 @@ extension  ViewController: UICollectionViewDelegateMagazineLayout {
 
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, verticalSpacingForElementsInSectionAtIndex index: Int) -> CGFloat {
     return  12
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetsForSectionAtIndex index: Int) -> UIEdgeInsets {
+    return UIEdgeInsets(top: 0, left: 8, bottom: 24, right: 8)
   }
 
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetsForItemsInSectionAtIndex index: Int) -> UIEdgeInsets {

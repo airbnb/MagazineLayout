@@ -350,11 +350,11 @@ struct SectionModel {
       return
     }
 
-    var currentY = CGFloat(0)
+    var currentY = metrics.sectionInsets.top
 
     // Section header calculation if rebuilding entire section
     if var newHeaderItemModel = headerModel, startingIndex == 0 {
-      newHeaderItemModel.originInSection = .zero
+      newHeaderItemModel.originInSection = CGPoint(x: metrics.sectionInsets.left, y: currentY)
       newHeaderItemModel.size.width = metrics.width
       newHeaderItemModel.size.height = newHeaderItemModel.preferredHeight ?? newHeaderItemModel.size.height
       headerModel = newHeaderItemModel
@@ -438,17 +438,17 @@ struct SectionModel {
       }
 
       let currentLeadingMargin: CGFloat
-      let availableWidth: CGFloat
+      let availableWidthForItems: CGFloat
       if itemModel.sizeMode.widthMode == .fullWidth(respectsHorizontalInsets: false) {
-        currentLeadingMargin = 0
-        availableWidth = metrics.width
+        currentLeadingMargin = metrics.sectionInsets.left
+        availableWidthForItems = metrics.width
       } else {
-        currentLeadingMargin = metrics.itemInsets.left
-        availableWidth = metrics.width - metrics.itemInsets.left - metrics.itemInsets.right
+        currentLeadingMargin = metrics.sectionInsets.left + metrics.itemInsets.left
+        availableWidthForItems = metrics.width - metrics.itemInsets.left - metrics.itemInsets.right
       }
 
       let totalSpacing = metrics.horizontalSpacing * (itemModel.sizeMode.widthMode.widthDivisor - 1)
-      let itemWidth = ((availableWidth - totalSpacing) / itemModel.sizeMode.widthMode.widthDivisor).rounded()
+      let itemWidth = ((availableWidthForItems - totalSpacing) / itemModel.sizeMode.widthMode.widthDivisor).rounded()
 
       let itemX = CGFloat(indexInCurrentRow) * itemWidth +
         CGFloat(indexInCurrentRow) * metrics.horizontalSpacing +
@@ -491,18 +491,25 @@ struct SectionModel {
 
     // Update the footer item
     if var newFooterModel = footerModel {
-      newFooterModel.originInSection = CGPoint(x: 0, y: currentY)
+      newFooterModel.originInSection = CGPoint(x: metrics.sectionInsets.left, y: currentY)
       newFooterModel.size.width = metrics.width
       newFooterModel.size.height = newFooterModel.preferredHeight ?? newFooterModel.size.height
       footerModel = newFooterModel
       currentHeight += newFooterModel.size.height
     }
 
-    // Update the background item
-    backgroundModel?.originInSection = .zero
-    backgroundModel?.size.width = metrics.width
-    backgroundModel?.size.height = currentHeight
-
+    // Finish our section height calculation
+    currentHeight += metrics.sectionInsets.bottom
     calculatedHeight = currentHeight
+
+    // Update the background item
+    backgroundModel?.originInSection = CGPoint(
+      x: metrics.sectionInsets.left,
+      y: metrics.sectionInsets.top)
+    backgroundModel?.size.width = metrics.width
+    backgroundModel?.size.height = currentHeight -
+      metrics.sectionInsets.top -
+      metrics.sectionInsets.bottom
   }
+
 }
