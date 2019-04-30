@@ -24,9 +24,25 @@ import UIKit
 /// change how many items are displayed in a row and how each item sizes vertically.
 public final class MagazineLayout: UICollectionViewLayout {
 
+  // MARK: Lifecycle
+
+  /// - Parameters:
+  ///   - flipsHorizontallyInOppositeLayoutDirection: Indicates whether the horizontal coordinate
+  ///     system is automatically flipped at appropriate times. In practice, this is used to support
+  ///     right-to-left layout.
+  public init(flipsHorizontallyInOppositeLayoutDirection: Bool = true) {
+    _flipsHorizontallyInOppositeLayoutDirection = flipsHorizontallyInOppositeLayoutDirection
+    super.init()
+  }
+
+  required init?(coder aDecoder: NSCoder) {
+    _flipsHorizontallyInOppositeLayoutDirection = true
+    super.init(coder: aDecoder)
+  }
+
   // MARK: Public
 
-  override public class  var layoutAttributesClass: AnyClass {
+  override public class var layoutAttributesClass: AnyClass {
     return MagazineLayoutCollectionViewLayoutAttributes.self
   }
 
@@ -35,7 +51,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public var flipsHorizontallyInOppositeLayoutDirection: Bool {
-    return true
+    return _flipsHorizontallyInOppositeLayoutDirection
   }
 
   override public var collectionViewContentSize: CGSize {
@@ -701,6 +717,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   private let modelState = ModelState()
+  private let _flipsHorizontallyInOppositeLayoutDirection: Bool
+  
   private var cachedCollectionViewWidth: CGFloat?
 
   // These properties are used to prevent scroll jumpiness due to self-sizing after rotation; see
