@@ -384,6 +384,13 @@ struct SectionModel {
       }
 
       indexInCurrentRow = consecutiveSameItemWidthModes % Int(startingItemWidthMode.widthDivisor) - 1
+
+      if indexInCurrentRow >= 0 {
+        for row in 0...indexInCurrentRow {
+          heightOfTallestItemInCurrentRow = max(heightOfTallestItemInCurrentRow, itemModels[startingIndex - row - 1].size.height)
+        }
+      }
+
       if indexInCurrentRow + 1 > 0 {
         // This is an item added to an existing row, so our `currentY` is just the preceding item's
         // `minY`.
