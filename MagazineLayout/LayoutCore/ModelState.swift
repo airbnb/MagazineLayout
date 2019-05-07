@@ -19,6 +19,12 @@ import Foundation
 /// Manages the state of section and element models.
 final class ModelState {
 
+  // MARK: Lifecycle
+
+  init(currentVisibleBoundsProvider: @escaping () -> CGRect) {
+    self.currentVisibleBoundsProvider = currentVisibleBoundsProvider
+  }
+
   // MARK: Internal
 
   enum BatchUpdateStage {
@@ -362,7 +368,13 @@ final class ModelState {
     let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
     let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
 
-    var headerFrame = sectionModels[sectionIndex].calculateFrameForHeader()
+    let currentVisibleBounds = currentVisibleBoundsProvider()
+    var headerFrame = sectionModels[sectionIndex].calculateFrameForHeader(
+      inSectionVisibleBounds: CGRect(
+        x: currentVisibleBounds.minX,
+        y: currentVisibleBounds.minY - sectionMinY,
+        width: currentVisibleBounds.width,
+        height: currentVisibleBounds.height))
     headerFrame?.origin.y += sectionMinY
     return headerFrame
   }
@@ -382,7 +394,13 @@ final class ModelState {
     let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
     let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
 
-    var footerFrame = sectionModels[sectionIndex].calculateFrameForFooter()
+    let currentVisibleBounds = currentVisibleBoundsProvider()
+    var footerFrame = sectionModels[sectionIndex].calculateFrameForFooter(
+      inSectionVisibleBounds: CGRect(
+        x: currentVisibleBounds.minX,
+        y: currentVisibleBounds.minY - sectionMinY,
+        width: currentVisibleBounds.width,
+        height: currentVisibleBounds.height))
     footerFrame?.origin.y += sectionMinY
     return footerFrame
   }
@@ -701,6 +719,8 @@ final class ModelState {
     case updateCurrentModels
     case updatePreviousAndCurrentModels(previousSectionIndex: Int, currentSectionIndex: Int)
   }
+
+  private let currentVisibleBoundsProvider: () -> CGRect
 
   private var currentSectionModels = [SectionModel]()
   private var sectionModelsBeforeBatchUpdates = [SectionModel]()

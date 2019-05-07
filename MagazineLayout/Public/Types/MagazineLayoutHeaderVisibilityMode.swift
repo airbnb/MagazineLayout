@@ -21,8 +21,9 @@ import CoreGraphics
 public enum MagazineLayoutHeaderVisibilityMode {
 
   /// This visibility mode will cause the header to be displayed using the specified height mode in
-  /// its respective section.
-  case visible(heightMode: MagazineLayoutHeaderHeightMode)
+  /// its respective section. If `pinToVisibleBounds` is true, the header will pin to the visible
+  /// bounds of the collection view while its containing section is visible.
+  case visible(heightMode: MagazineLayoutHeaderHeightMode, pinToVisibleBounds: Bool)
 
   /// This visibility mode will cause the header to not be visibile in its respective section.
   case hidden

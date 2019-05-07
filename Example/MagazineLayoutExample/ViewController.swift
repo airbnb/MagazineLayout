@@ -93,7 +93,7 @@ final class ViewController: UIViewController {
 
     let section0 = SectionInfo(
       headerInfo: HeaderInfo(
-        visibilityMode: .visible(heightMode: .dynamic),
+        visibilityMode: .visible(heightMode: .dynamic, pinToVisibleBounds: true),
         title: "Welcome!"),
       itemInfos: [
         ItemInfo(
@@ -219,7 +219,7 @@ final class ViewController: UIViewController {
 
     let section1 = SectionInfo(
       headerInfo: HeaderInfo(
-        visibilityMode: .visible(heightMode: .dynamic),
+        visibilityMode: .visible(heightMode: .dynamic, pinToVisibleBounds: false),
         title: "Self-sizing supplementary views (headers and footers) are also supported."),
       itemInfos: [
         ItemInfo(
@@ -261,7 +261,7 @@ final class ViewController: UIViewController {
 
     let section2 = SectionInfo(
       headerInfo: HeaderInfo(
-        visibilityMode: .visible(heightMode: .dynamic),
+        visibilityMode: .visible(heightMode: .dynamic, pinToVisibleBounds: false),
         title: "Using this app:"),
       itemInfos: [
         ItemInfo(
@@ -302,7 +302,7 @@ final class ViewController: UIViewController {
           color: Colors.green),
       ],
       footerInfo: FooterInfo(
-        visibilityMode: .visible(heightMode: .dynamic),
+        visibilityMode: .visible(heightMode: .dynamic, pinToVisibleBounds: true),
         title: "Enjoy using MagazineLayout!"),
       backgroundInfo: BackgroundInfo(visibilityMode: .hidden)
     )
@@ -375,11 +375,11 @@ final class ViewController: UIViewController {
           } else {
             let sectionInfo = SectionInfo(
               headerInfo: HeaderInfo(
-                visibilityMode: .visible(heightMode: .dynamic),
+                visibilityMode: .visible(heightMode: .dynamic, pinToVisibleBounds: true),
                 title: "Header"),
               itemInfos: [itemInfo],
               footerInfo: FooterInfo(
-                visibilityMode: .visible(heightMode: .dynamic),
+                visibilityMode: .visible(heightMode: .dynamic, pinToVisibleBounds: true),
                 title: "Footer"),
               backgroundInfo: BackgroundInfo(visibilityMode: .hidden)
             )

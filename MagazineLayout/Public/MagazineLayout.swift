@@ -99,6 +99,13 @@ public final class MagazineLayout: UICollectionViewLayout {
       cachedCollectionViewWidth = currentCollectionView.bounds.width
     }
 
+    if
+      prepareActions.contains(.updateLayoutMetrics) ||
+      prepareActions.contains(.recreateSectionModels)
+    {
+      hasPinnedHeaderOrFooter = false
+    }
+
     // Update layout metrics if necessary
     if
       prepareActions.contains(.updateLayoutMetrics) &&
@@ -110,12 +117,14 @@ public final class MagazineLayout: UICollectionViewLayout {
         modelState.updateMetrics(to: sectionMetrics, forSectionAtIndex: sectionIndex)
 
         if let headerModel = headerModelForHeader(inSectionAtIndex: sectionIndex) {
+          hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || headerModel.pinToVisibleBounds
           modelState.setHeader(headerModel, forSectionAtIndex: sectionIndex)
         } else {
           modelState.removeHeader(forSectionAtIndex: sectionIndex)
         }
 
         if let footerModel = footerModelForFooter(inSectionAtIndex: sectionIndex) {
+          hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || footerModel.pinToVisibleBounds
           modelState.setFooter(footerModel, forSectionAtIndex: sectionIndex)
         } else {
           modelState.removeFooter(forSectionAtIndex: sectionIndex)
@@ -151,7 +160,12 @@ public final class MagazineLayout: UICollectionViewLayout {
       let numberOfItems = currentCollectionView.numberOfItems(inSection: sectionIndex)
 
       // Create header layout attributes if necessary
-      if case let .visible(heightMode) = visibilityModeForHeader(inSectionAtIndex: sectionIndex) {
+      if
+        case let .visible(heightMode, pinToVisibleBounds) = visibilityModeForHeader(
+          inSectionAtIndex: sectionIndex)
+      {
+        hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || pinToVisibleBounds
+
         let headerLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
 
         if let headerLayoutAttributes = headerLayoutAttributes[headerLocation] {
@@ -167,7 +181,12 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
 
       // Create footer layout attributes if necessary
-      if case let .visible(heightMode) = visibilityModeForFooter(inSectionAtIndex: sectionIndex) {
+      if
+        case let .visible(heightMode, pinToVisibleBounds) = visibilityModeForFooter(
+          inSectionAtIndex: sectionIndex)
+      {
+        hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || pinToVisibleBounds
+
         let footerLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
 
         if let footerLayoutAttributes = footerLayoutAttributes[footerLocation] {
@@ -342,6 +361,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
       layoutAttributes.frame = headerFrame
       layoutAttributesInRect.append(layoutAttributes)
+
     }
 
     let footerLocationFramePairs = modelState.footerLocationFramePairs(forFootersIn: rect)
@@ -556,7 +576,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-    return collectionView?.bounds.size.width != .some(newBounds.size.width)
+    return  collectionView?.bounds.size.width != .some(newBounds.size.width) ||
+      hasPinnedHeaderOrFooter
   }
 
   override public func invalidationContext(
@@ -721,7 +742,12 @@ public final class MagazineLayout: UICollectionViewLayout {
     return collectionView
   }
 
-  private let modelState = ModelState()
+  private lazy var modelState: ModelState = {
+    return ModelState(currentVisibleBoundsProvider: { [weak self] in
+      return self?.currentVisibleBounds ?? .zero
+    })
+  }()
+
   private let _flipsHorizontallyInOppositeLayoutDirection: Bool
   
   private var cachedCollectionViewWidth: CGFloat?
@@ -731,6 +757,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   // details.
   private var lastSizedElementMinY: CGFloat?
   private var lastSizedElementPreferredHeight: CGFloat?
+
+  private var hasPinnedHeaderOrFooter: Bool = false
 
   // Cached layout attributes; lazily populated using information from the model state.
   private var itemLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
@@ -747,6 +775,21 @@ public final class MagazineLayout: UICollectionViewLayout {
     static let cachePreviousWidth = PrepareActions(rawValue: 1 << 3)
   }
   private var prepareActions: PrepareActions = []
+
+  private var currentVisibleBounds: CGRect {
+    let contentInset: UIEdgeInsets
+    if #available(iOS 11.0, *) {
+      contentInset = currentCollectionView.adjustedContentInset
+    } else {
+      contentInset = currentCollectionView.contentInset
+    }
+
+    return CGRect(
+      x: currentCollectionView.bounds.minX + contentInset.left,
+      y: currentCollectionView.bounds.minY + contentInset.top,
+      width: currentCollectionView.bounds.width - contentInset.left - contentInset.right,
+      height: currentCollectionView.bounds.height - contentInset.top - contentInset.bottom)
+  }
 
   private var delegateMagazineLayout: UICollectionViewDelegateMagazineLayout? {
     return currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
@@ -879,10 +922,10 @@ public final class MagazineLayout: UICollectionViewLayout {
   {
     let headerVisibilityMode = visibilityModeForHeader(inSectionAtIndex: sectionIndex)
     switch headerVisibilityMode {
-    case let .visible(heightMode):
+    case let .visible(heightMode, pinToVisibleBounds):
       return HeaderModel(
         heightMode: heightMode,
-        height: headerHeight(from: heightMode))
+        height: headerHeight(from: heightMode), pinToVisibleBounds: pinToVisibleBounds)
     case .hidden:
       return nil
     }
@@ -894,10 +937,10 @@ public final class MagazineLayout: UICollectionViewLayout {
   {
     let footerVisibilityMode = visibilityModeForFooter(inSectionAtIndex: sectionIndex)
     switch footerVisibilityMode {
-    case let .visible(heightMode):
+    case let .visible(heightMode, pinToVisibleBounds):
       return FooterModel(
         heightMode: heightMode,
-        height: footerHeight(from: heightMode))
+        height: footerHeight(from: heightMode), pinToVisibleBounds: pinToVisibleBounds)
     case .hidden:
       return nil
     }
