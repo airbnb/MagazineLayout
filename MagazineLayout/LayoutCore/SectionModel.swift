@@ -47,6 +47,7 @@ struct SectionModel {
 
   private(set) var headerModel: HeaderModel?
   private(set) var footerModel: FooterModel?
+  private(set) var backgroundModel: BackgroundModel?
 
   var numberOfItems: Int {
     return itemModels.count
@@ -262,7 +263,6 @@ struct SectionModel {
   // MARK: Private
 
   private var itemModels: [ItemModel]
-  private var backgroundModel: BackgroundModel?
   private var metrics: MagazineLayoutSectionMetrics
   private var calculatedHeight: CGFloat
   private var indexOfFirstInvalidatedItem: Int?

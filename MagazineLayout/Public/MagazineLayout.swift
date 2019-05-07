@@ -331,9 +331,10 @@ public final class MagazineLayout: UICollectionViewLayout {
   {
     var layoutAttributesInRect = [UICollectionViewLayoutAttributes]()
 
-    for headerLocationAndFramePair in modelState.headerFrameInfo(forHeadersIn: rect) {
-      let headerLocation = headerLocationAndFramePair.elementLocation
-      let headerFrame = headerLocationAndFramePair.frame
+    let headerLocationFramePairs = modelState.headerLocationFramePairs(forHeadersIn: rect)
+    for headerLocationFramePair in headerLocationFramePairs {
+      let headerLocation = headerLocationFramePair.elementLocation
+      let headerFrame = headerLocationFramePair.frame
 
       guard let layoutAttributes = headerLayoutAttributes[headerLocation] else {
         continue
@@ -343,9 +344,10 @@ public final class MagazineLayout: UICollectionViewLayout {
       layoutAttributesInRect.append(layoutAttributes)
     }
 
-    for footerLocationAndFramePair in modelState.footerFrameInfo(forFootersIn: rect) {
-      let footerLocation = footerLocationAndFramePair.elementLocation
-      let footerFrame = footerLocationAndFramePair.frame
+    let footerLocationFramePairs = modelState.footerLocationFramePairs(forFootersIn: rect)
+    for footerLocationFramePair in footerLocationFramePairs {
+      let footerLocation = footerLocationFramePair.elementLocation
+      let footerFrame = footerLocationFramePair.frame
 
       guard let layoutAttributes = footerLayoutAttributes[footerLocation] else {
         continue
@@ -355,9 +357,11 @@ public final class MagazineLayout: UICollectionViewLayout {
       layoutAttributesInRect.append(layoutAttributes)
     }
 
-    for backgroundLocationAndFramePair in modelState.backgroundFrameInfo(forBackgroundsIn: rect) {
-      let backgroundLocation = backgroundLocationAndFramePair.elementLocation
-      let backgroundFrame = backgroundLocationAndFramePair.frame
+    let backgroundLocationFramePairs = modelState.backgroundLocationFramePairs(
+      forBackgroundsIn: rect)
+    for backgroundLocationFramePair in backgroundLocationFramePairs {
+      let backgroundLocation = backgroundLocationFramePair.elementLocation
+      let backgroundFrame = backgroundLocationFramePair.frame
 
       guard let layoutAttributes = backgroundLayoutAttributes[backgroundLocation] else {
         continue
@@ -367,9 +371,10 @@ public final class MagazineLayout: UICollectionViewLayout {
       layoutAttributesInRect.append(layoutAttributes)
     }
 
-    for itemLocationAndFramePair in modelState.itemFrameInfo(forItemsIn: rect) {
-      let itemLocation = itemLocationAndFramePair.elementLocation
-      let itemFrame = itemLocationAndFramePair.frame
+    let itemLocationFramePairs = modelState.itemLocationFramePairs(forItemsIn: rect)
+    for itemLocationFramePair in itemLocationFramePairs {
+      let itemLocation = itemLocationFramePair.elementLocation
+      let itemFrame = itemLocationFramePair.frame
 
       guard let layoutAttributes = itemLayoutAttributes[itemLocation] else {
         continue
@@ -727,7 +732,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var lastSizedElementMinY: CGFloat?
   private var lastSizedElementPreferredHeight: CGFloat?
 
-  // The current layout attributes after batch updates have started and after they finish
+  // Cached layout attributes; lazily populated using information from the model state.
   private var itemLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var headerLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var footerLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
