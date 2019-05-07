@@ -65,10 +65,11 @@ final class FrameHelpers {
     match elementLocationFramePairs: ElementLocationFramePairs)
     -> Bool
   {
+    let expectedFrames = Set(expectedFrames)
     var checkedFramesCount = 0
 
-    for (i, elementLocationFramePair) in elementLocationFramePairs.enumerated() {
-      if i < expectedFrames.count && expectedFrames[i] != elementLocationFramePair.frame {
+    for elementLocationFramePair in elementLocationFramePairs {
+      if !expectedFrames.contains(elementLocationFramePair.frame) {
         return false
       }
 
@@ -224,50 +225,50 @@ final class DebugHelpers {
     visibleRect1: CGRect)
   {
     print("let expectedItemFrames0: [CGRect] = [")
-    for foo in modelState.itemFrameInfo(forItemsIn: visibleRect0) {
-      print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
+    for pair in modelState.itemLocationFramePairs(forItemsIn: visibleRect0) {
+      print("\tCGRect(x: \(pair.frame.minX), y: \(pair.frame.minY), width: \(pair.frame.width), height: \(pair.frame.height)),")
     }
     print("]")
 
     print("let expectedItemFrames1: [CGRect] = [")
-    for foo in modelState.itemFrameInfo(forItemsIn: visibleRect1) {
-      print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
+    for pair in modelState.itemLocationFramePairs(forItemsIn: visibleRect1) {
+      print("\tCGRect(x: \(pair.frame.minX), y: \(pair.frame.minY), width: \(pair.frame.width), height: \(pair.frame.height)),")
     }
     print("]")
 
     print("let expectedHeaderFrames0: [CGRect] = [")
-    for foo in modelState.headerFrameInfo(forHeadersIn: visibleRect0) {
-      print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
+    for pair in modelState.headerLocationFramePairs(forHeadersIn: visibleRect0) {
+      print("\tCGRect(x: \(pair.frame.minX), y: \(pair.frame.minY), width: \(pair.frame.width), height: \(pair.frame.height)),")
     }
     print("]")
 
     print("let expectedHeaderFrames1: [CGRect] = [")
-    for foo in modelState.headerFrameInfo(forHeadersIn: visibleRect1) {
-      print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
+    for pair in modelState.headerLocationFramePairs(forHeadersIn: visibleRect1) {
+      print("\tCGRect(x: \(pair.frame.minX), y: \(pair.frame.minY), width: \(pair.frame.width), height: \(pair.frame.height)),")
     }
     print("]")
 
     print("let expectedFooterFrames0: [CGRect] = [")
-    for foo in modelState.footerFrameInfo(forFootersIn: visibleRect0) {
-      print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
+    for pair in modelState.footerLocationFramePairs(forFootersIn: visibleRect0) {
+      print("\tCGRect(x: \(pair.frame.minX), y: \(pair.frame.minY), width: \(pair.frame.width), height: \(pair.frame.height)),")
     }
     print("]")
 
     print("let expectedFooterFrames1: [CGRect] = [")
-    for foo in modelState.footerFrameInfo(forFootersIn: visibleRect1) {
-      print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
+    for pair in modelState.footerLocationFramePairs(forFootersIn: visibleRect1) {
+      print("\tCGRect(x: \(pair.frame.minX), y: \(pair.frame.minY), width: \(pair.frame.width), height: \(pair.frame.height)),")
     }
     print("]")
 
     print("let expectedBackgroundFrames0: [CGRect] = [")
-    for foo in modelState.backgroundFrameInfo(forBackgroundsIn: visibleRect0) {
-      print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
+    for pair in modelState.backgroundLocationFramePairs(forBackgroundsIn: visibleRect0) {
+      print("\tCGRect(x: \(pair.frame.minX), y: \(pair.frame.minY), width: \(pair.frame.width), height: \(pair.frame.height)),")
     }
     print("]")
 
     print("let expectedBackgroundFrames1: [CGRect] = [")
-    for foo in modelState.backgroundFrameInfo(forBackgroundsIn: visibleRect1) {
-      print("\tCGRect(x: \(foo.frame.minX), y: \(foo.frame.minY), width: \(foo.frame.width), height: \(foo.frame.height)),")
+    for pair in modelState.backgroundLocationFramePairs(forBackgroundsIn: visibleRect1) {
+      print("\tCGRect(x: \(pair.frame.minX), y: \(pair.frame.minY), width: \(pair.frame.width), height: \(pair.frame.height)),")
     }
     print("]")
   }
