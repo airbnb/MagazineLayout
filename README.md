@@ -262,6 +262,7 @@ I'd also like to thank the following people, who have all helped pave the way fo
 - Yong Li
 - Luke Hiesterman
 - Jordan Harband
+- Chansim Youk
 
 ## License
 
