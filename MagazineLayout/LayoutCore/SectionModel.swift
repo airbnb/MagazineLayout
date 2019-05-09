@@ -377,17 +377,27 @@ struct SectionModel {
       let startingItemWidthMode = itemModels[startingIndex].sizeMode.widthMode
       previousWidthMode = itemModels[startingIndex - 1].sizeMode.widthMode
 
-      var consecutiveSameItemWidthModes = 0
+      let previousItemMinY = frameForItem(atIndex: startingIndex - 1).minY
+      var consecutiveSameItemWidthModesInRow = 0
       for itemModel in itemModelsBeforeStartingIndex {
-        guard itemModel.sizeMode.widthMode == startingItemWidthMode else { break }
-        consecutiveSameItemWidthModes += 1
+        guard
+          itemModel.sizeMode.widthMode == startingItemWidthMode,
+          itemModel.originInSection.y == previousItemMinY else
+        {
+          break
+        }
+
+        consecutiveSameItemWidthModesInRow += 1
+        heightOfTallestItemInCurrentRow = max(
+          heightOfTallestItemInCurrentRow,
+          itemModel.size.height)
       }
 
-      indexInCurrentRow = consecutiveSameItemWidthModes % Int(startingItemWidthMode.widthDivisor) - 1
+      indexInCurrentRow = consecutiveSameItemWidthModesInRow % Int(startingItemWidthMode.widthDivisor) - 1
       if indexInCurrentRow + 1 > 0 {
         // This is an item added to an existing row, so our `currentY` is just the preceding item's
         // `minY`.
-        currentY = frameForItem(atIndex: startingIndex - 1).minY
+        currentY = previousItemMinY
       }
       else {
         // This is the start of a new row, so our `currentY` is the `maxY` of the items in the
