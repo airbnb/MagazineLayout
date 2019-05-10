@@ -871,12 +871,12 @@ final class ModelStateLayoutTests: XCTestCase {
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedItemFrames0,
-        match: modelState.itemFrameInfo(forItemsIn: visibleRect0)),
+        match: modelState.itemLocationFramePairs(forItemsIn: visibleRect0)),
       "Item frames are incorrect")
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedItemFrames1,
-        match: modelState.itemFrameInfo(forItemsIn: visibleRect1)),
+        match: modelState.itemLocationFramePairs(forItemsIn: visibleRect1)),
       "Item frames are incorrect")
     XCTAssert(
       FrameHelpers.expectedFrames(
@@ -888,12 +888,12 @@ final class ModelStateLayoutTests: XCTestCase {
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedHeaderFrames0,
-        match: modelState.headerFrameInfo(forHeadersIn: visibleRect0)),
+        match: modelState.headerLocationFramePairs(forHeadersIn: visibleRect0)),
       "Header frames are incorrect")
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedHeaderFrames1,
-        match: modelState.headerFrameInfo(forHeadersIn: visibleRect1)),
+        match: modelState.headerLocationFramePairs(forHeadersIn: visibleRect1)),
       "Header frames are incorrect")
     XCTAssert(
       FrameHelpers.expectedFrames(
@@ -905,12 +905,12 @@ final class ModelStateLayoutTests: XCTestCase {
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedFooterFrames0,
-        match: modelState.footerFrameInfo(forFootersIn: visibleRect0)),
+        match: modelState.footerLocationFramePairs(forFootersIn: visibleRect0)),
       "Footer frames are incorrect")
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedFooterFrames1,
-        match: modelState.footerFrameInfo(forFootersIn: visibleRect1)),
+        match: modelState.footerLocationFramePairs(forFootersIn: visibleRect1)),
       "Footer frames are incorrect")
     XCTAssert(
       FrameHelpers.expectedFrames(
@@ -922,12 +922,12 @@ final class ModelStateLayoutTests: XCTestCase {
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedBackgroundFrames0,
-        match: modelState.backgroundFrameInfo(forBackgroundsIn: visibleRect0)),
+        match: modelState.backgroundLocationFramePairs(forBackgroundsIn: visibleRect0)),
       "Background frames are incorrect")
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedBackgroundFrames1,
-        match: modelState.backgroundFrameInfo(forBackgroundsIn: visibleRect1)),
+        match: modelState.backgroundLocationFramePairs(forBackgroundsIn: visibleRect1)),
       "Background frames are incorrect")
     XCTAssert(
       FrameHelpers.expectedFrames(

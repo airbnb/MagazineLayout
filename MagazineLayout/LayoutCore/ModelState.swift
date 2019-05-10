@@ -218,81 +218,67 @@ final class ModelState {
     }
   }
 
-  func itemFrameInfo(forItemsIn visibleRect: CGRect) -> ElementLocationFramePairs {
-    var itemLocationFramePairs = ElementLocationFramePairs()
-
-    for sectionIndex in 0..<currentSectionModels.count {
-      for itemIndex in 0..<currentSectionModels[sectionIndex].numberOfItems {
-        let itemLocation = ElementLocation(
-          elementIndex: itemIndex,
-          sectionIndex: sectionIndex)
-
-        let frame = frameForItem(at: itemLocation, .afterUpdates)
-        guard frame.intersects(visibleRect) else { continue }
-
-        itemLocationFramePairs.append(
-          ElementLocationFramePair(elementLocation: itemLocation, frame: frame))
-      }
-    }
-
-    return itemLocationFramePairs
+  func itemLocationFramePairs(forItemsIn rect: CGRect) -> ElementLocationFramePairs {
+    return elementLocationFramePairsForElements(
+      in: rect,
+      withElementLocationsForFlattenedIndices: itemLocationsForFlattenedIndices,
+      andFramesProvidedBy: { itemLocation -> CGRect in
+        return frameForItem(at: itemLocation, .afterUpdates)
+      })
   }
 
-  func headerFrameInfo(forHeadersIn visibleRect: CGRect) -> ElementLocationFramePairs {
-    var headerLocationFramePairs = ElementLocationFramePairs()
+  func headerLocationFramePairs(forHeadersIn rect: CGRect) -> ElementLocationFramePairs {
+    return elementLocationFramePairsForElements(
+      in: rect,
+      withElementLocationsForFlattenedIndices: headerLocationsForFlattenedIndices,
+      andFramesProvidedBy: { headerLocation -> CGRect in
+        guard
+          let footerFrame = frameForHeader(
+            inSectionAtIndex: headerLocation.sectionIndex,
+            .afterUpdates) else
+        {
+          assertionFailure("Expected a frame for header in section at \(headerLocation.sectionIndex)")
+          return .zero
+        }
 
-    for sectionIndex in 0..<currentSectionModels.count {
-      guard
-        let frame = frameForHeader(inSectionAtIndex: sectionIndex, .afterUpdates),
-        frame.intersects(visibleRect) else
-      {
-        continue
-      }
-
-      let headerLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
-      headerLocationFramePairs.append(
-        ElementLocationFramePair(elementLocation: headerLocation, frame: frame))
-    }
-
-    return headerLocationFramePairs
+        return footerFrame
+      })
   }
 
-  func footerFrameInfo(forFootersIn visibleRect: CGRect) -> ElementLocationFramePairs {
-    var footerLocationFramePairs = ElementLocationFramePairs()
+  func footerLocationFramePairs(forFootersIn rect: CGRect) -> ElementLocationFramePairs {
+    return elementLocationFramePairsForElements(
+      in: rect,
+      withElementLocationsForFlattenedIndices: footerLocationsForFlattenedIndices,
+      andFramesProvidedBy: { footerLocation -> CGRect in
+        guard
+          let footerFrame = frameForFooter(
+            inSectionAtIndex: footerLocation.sectionIndex,
+            .afterUpdates) else
+        {
+          assertionFailure("Expected a frame for footer in section at \(footerLocation.sectionIndex)")
+          return .zero
+        }
 
-    for sectionIndex in 0..<currentSectionModels.count {
-      guard
-        let frame = frameForFooter(inSectionAtIndex: sectionIndex, .afterUpdates),
-        frame.intersects(visibleRect) else
-      {
-        continue
-      }
-
-      let footerLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
-      footerLocationFramePairs.append(
-        ElementLocationFramePair(elementLocation: footerLocation, frame: frame))
-    }
-
-    return footerLocationFramePairs
+        return footerFrame
+      })
   }
 
-  func backgroundFrameInfo(forBackgroundsIn visibleRect: CGRect) -> ElementLocationFramePairs {
-    var backgroundLocationFramePairs = ElementLocationFramePairs()
+  func backgroundLocationFramePairs(forBackgroundsIn rect: CGRect) -> ElementLocationFramePairs {
+    return elementLocationFramePairsForElements(
+      in: rect,
+      withElementLocationsForFlattenedIndices: backgroundLocationsForFlattenedIndices,
+      andFramesProvidedBy: { backgroundLocation -> CGRect in
+        guard
+          let backgroundFrame = frameForBackground(
+            inSectionAtIndex: backgroundLocation.sectionIndex,
+            .afterUpdates) else
+        {
+          assertionFailure("Expected a frame for background in section at \(backgroundLocation.sectionIndex)")
+          return .zero
+        }
 
-    for sectionIndex in 0..<currentSectionModels.count {
-      guard
-        let frame = frameForBackground(inSectionAtIndex: sectionIndex, .afterUpdates),
-        frame.intersects(visibleRect) else
-      {
-        continue
-      }
-
-      let backgroundLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
-      backgroundLocationFramePairs.append(
-        ElementLocationFramePair(elementLocation: backgroundLocation, frame: frame))
-    }
-
-    return backgroundLocationFramePairs
+        return backgroundFrame
+      })
   }
 
   func sectionMaxY(
@@ -578,24 +564,32 @@ final class ModelState {
     currentSectionModels[sectionIndex].setHeader(headerModel)
 
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+
+    prepareElementLocationsForFlattenedIndices()
   }
 
   func removeHeader(forSectionAtIndex sectionIndex: Int) {
     currentSectionModels[sectionIndex].removeHeader()
 
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+
+    prepareElementLocationsForFlattenedIndices()
   }
 
   func setFooter(_ footerModel: FooterModel, forSectionAtIndex sectionIndex: Int) {
     currentSectionModels[sectionIndex].setFooter(footerModel)
 
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+
+    prepareElementLocationsForFlattenedIndices()
   }
 
   func removeFooter(forSectionAtIndex sectionIndex: Int) {
     currentSectionModels[sectionIndex].removeFooter()
 
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+
+    prepareElementLocationsForFlattenedIndices()
   }
 
   func setBackground(
@@ -603,18 +597,23 @@ final class ModelState {
     forSectionAtIndex sectionIndex: Int)
   {
     currentSectionModels[sectionIndex].setBackground(backgroundModel)
+
+    prepareElementLocationsForFlattenedIndices()
   }
 
   func removeBackground(forSectionAtIndex sectionIndex: Int) {
     currentSectionModels[sectionIndex].removeBackground()
+
+    prepareElementLocationsForFlattenedIndices()
   }
 
   func setSections(_ sectionModels: [SectionModel]) {
     currentSectionModels = sectionModels
 
     invalidateEntireSectionMaxYsCache()
-
     allocateMemoryForSectionMaxYsCache()
+
+    prepareElementLocationsForFlattenedIndices()
   }
 
   func applyUpdates(
@@ -679,6 +678,8 @@ final class ModelState {
     insertItemModels(itemModelInsertIndexPathPairs: itemModelInsertIndexPathPairs)
 
     allocateMemoryForSectionMaxYsCache()
+
+    prepareElementLocationsForFlattenedIndices()
   }
 
   func clearInProgressBatchUpdateState() {
@@ -711,6 +712,11 @@ final class ModelState {
 
   private var sectionMaxYsCache = [CGFloat?]()
 
+  private var headerLocationsForFlattenedIndices = [Int: ElementLocation]()
+  private var footerLocationsForFlattenedIndices = [Int: ElementLocation]()
+  private var backgroundLocationsForFlattenedIndices = [Int: ElementLocation]()
+  private var itemLocationsForFlattenedIndices = [Int: ElementLocation]()
+
   private func sectionModels(_ batchUpdateStage: BatchUpdateStage) -> [SectionModel] {
     switch batchUpdateStage {
     case .beforeUpdates: return sectionModelsBeforeBatchUpdates
@@ -728,6 +734,146 @@ final class ModelState {
     case .beforeUpdates: return UnsafeMutableRawPointer(mutating: &sectionModelsBeforeBatchUpdates)
     case .afterUpdates: return UnsafeMutableRawPointer(mutating: &currentSectionModels)
     }
+  }
+
+  private func prepareElementLocationsForFlattenedIndices() {
+    headerLocationsForFlattenedIndices.removeAll()
+    footerLocationsForFlattenedIndices.removeAll()
+    backgroundLocationsForFlattenedIndices.removeAll()
+    itemLocationsForFlattenedIndices.removeAll()
+
+    var flattenedHeaderIndex = 0
+    var flattenedFooterIndex = 0
+    var flattenedBackgroundIndex = 0
+    var flattenedItemIndex = 0
+    for sectionIndex in 0..<currentSectionModels.count {
+      if currentSectionModels[sectionIndex].headerModel != nil {
+        headerLocationsForFlattenedIndices[flattenedHeaderIndex] = ElementLocation(
+          elementIndex: 0,
+          sectionIndex: sectionIndex)
+        flattenedHeaderIndex += 1
+      }
+
+      if currentSectionModels[sectionIndex].footerModel != nil {
+        footerLocationsForFlattenedIndices[flattenedFooterIndex] = ElementLocation(
+          elementIndex: 0,
+          sectionIndex: sectionIndex)
+        flattenedFooterIndex += 1
+      }
+
+      if currentSectionModels[sectionIndex].backgroundModel != nil {
+        backgroundLocationsForFlattenedIndices[flattenedBackgroundIndex] = ElementLocation(
+          elementIndex: 0,
+          sectionIndex: sectionIndex)
+        flattenedBackgroundIndex += 1
+      }
+
+      for itemIndex in 0..<currentSectionModels[sectionIndex].numberOfItems {
+        itemLocationsForFlattenedIndices[flattenedItemIndex] = ElementLocation(
+          elementIndex: itemIndex,
+          sectionIndex: sectionIndex)
+        flattenedItemIndex += 1
+      }
+    }
+  }
+
+  private func elementLocationFramePairsForElements(
+    in rect: CGRect,
+    withElementLocationsForFlattenedIndices elementLocationsForFlattenedIndices: [Int: ElementLocation],
+    andFramesProvidedBy frameProvider: ((ElementLocation) -> CGRect))
+    -> ElementLocationFramePairs
+  {
+    var elementLocationFramePairs = ElementLocationFramePairs()
+
+    guard
+      let indexOfFirstFoundElement = indexOfFirstFoundElement(
+        in: rect,
+        withElementLocationsForFlattenedIndices: elementLocationsForFlattenedIndices,
+        andFramesProvidedBy: frameProvider) else
+    {
+      return elementLocationFramePairs
+    }
+
+    // Used to handle the case where we encounter an element that doesn't intersect the rect, but
+    // previous elements in the same row might.
+    var minYOfNonIntersectingElement: CGFloat?
+
+    // Look backward to find visible elements
+    for elementLocationIndex in (0..<indexOfFirstFoundElement).reversed() {
+      let elementLocation = self.elementLocation(
+        forFlattenedIndex: elementLocationIndex,
+        in: elementLocationsForFlattenedIndices)
+      let frame = frameProvider(elementLocation)
+
+      guard frame.maxY > rect.minY else {
+        if let minY = minYOfNonIntersectingElement, frame.minY < minY {
+          // We're in a previous row, so we know we've captured all intersecting rects for the
+          // subsequent row.
+          break
+        } else {
+          // We've found a non-intersecting item, but still need to check other items in the same
+          // row.
+          minYOfNonIntersectingElement = frame.minY
+          continue
+        }
+      }
+
+      elementLocationFramePairs.append(
+        ElementLocationFramePair(elementLocation: elementLocation, frame: frame))
+    }
+
+    // Look forward to find visible elements
+    for elementLocationIndex in indexOfFirstFoundElement..<elementLocationsForFlattenedIndices.count {
+      let elementLocation = self.elementLocation(
+        forFlattenedIndex: elementLocationIndex,
+        in: elementLocationsForFlattenedIndices)
+      let frame = frameProvider(elementLocation)
+      guard frame.minY < rect.maxY else { break }
+
+      elementLocationFramePairs.append(
+        ElementLocationFramePair(elementLocation: elementLocation, frame: frame))
+    }
+
+    return elementLocationFramePairs
+  }
+
+  private func indexOfFirstFoundElement(
+    in rect: CGRect,
+    withElementLocationsForFlattenedIndices elementLocationsForFlattenedIndices: [Int: ElementLocation],
+    andFramesProvidedBy frameProvider: ((ElementLocation) -> CGRect))
+    -> Int?
+  {
+    var lowerBound = 0
+    var upperBound = elementLocationsForFlattenedIndices.count - 1
+
+    while lowerBound <= upperBound {
+      let index = (lowerBound + upperBound) / 2
+      let elementLocation = self.elementLocation(
+        forFlattenedIndex: index,
+        in: elementLocationsForFlattenedIndices)
+      let elementFrame = frameProvider(elementLocation)
+      if elementFrame.maxY <= rect.minY {
+        lowerBound = index + 1
+      } else if elementFrame.minY >= rect.maxY {
+        upperBound = index - 1
+      } else {
+        return index
+      }
+    }
+
+    return nil
+  }
+
+  private func elementLocation(
+    forFlattenedIndex index: Int,
+    in elementLocationsForFlattenedIndices: [Int: ElementLocation])
+    -> ElementLocation
+  {
+    guard let elementLocation = elementLocationsForFlattenedIndices[index] else {
+      preconditionFailure("`elementLocationsForFlattenedIndices` must have a complete mapping of indices in 0..<\(elementLocationsForFlattenedIndices.count) to element locations")
+    }
+
+    return elementLocation
   }
 
   private func updateContextForItemPreferredHeightUpdate(
