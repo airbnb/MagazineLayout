@@ -742,37 +742,37 @@ final class ModelState {
     backgroundLocationsForFlattenedIndices.removeAll()
     itemLocationsForFlattenedIndices.removeAll()
 
-    var flatennedHeaderIndex = 0
-    var flatennedFooterIndex = 0
-    var flatennedBackgroundIndex = 0
-    var flatennedItemIndex = 0
+    var flattenedHeaderIndex = 0
+    var flattenedFooterIndex = 0
+    var flattenedBackgroundIndex = 0
+    var flattenedItemIndex = 0
     for sectionIndex in 0..<currentSectionModels.count {
       if currentSectionModels[sectionIndex].headerModel != nil {
-        headerLocationsForFlattenedIndices[flatennedHeaderIndex] = ElementLocation(
+        headerLocationsForFlattenedIndices[flattenedHeaderIndex] = ElementLocation(
           elementIndex: 0,
           sectionIndex: sectionIndex)
-        flatennedHeaderIndex += 1
+        flattenedHeaderIndex += 1
       }
 
       if currentSectionModels[sectionIndex].footerModel != nil {
-        footerLocationsForFlattenedIndices[flatennedFooterIndex] = ElementLocation(
+        footerLocationsForFlattenedIndices[flattenedFooterIndex] = ElementLocation(
           elementIndex: 0,
           sectionIndex: sectionIndex)
-        flatennedFooterIndex += 1
+        flattenedFooterIndex += 1
       }
 
       if currentSectionModels[sectionIndex].backgroundModel != nil {
-        backgroundLocationsForFlattenedIndices[flatennedBackgroundIndex] = ElementLocation(
+        backgroundLocationsForFlattenedIndices[flattenedBackgroundIndex] = ElementLocation(
           elementIndex: 0,
           sectionIndex: sectionIndex)
-        flatennedBackgroundIndex += 1
+        flattenedBackgroundIndex += 1
       }
 
       for itemIndex in 0..<currentSectionModels[sectionIndex].numberOfItems {
-        itemLocationsForFlattenedIndices[flatennedItemIndex] = ElementLocation(
+        itemLocationsForFlattenedIndices[flattenedItemIndex] = ElementLocation(
           elementIndex: itemIndex,
           sectionIndex: sectionIndex)
-        flatennedItemIndex += 1
+        flattenedItemIndex += 1
       }
     }
   }
@@ -786,7 +786,7 @@ final class ModelState {
     var elementLocationFramePairs = ElementLocationFramePairs()
 
     guard
-      let indexOfFirstElement = indexOfFirstElement(
+      let indexOfFirstFoundElement = indexOfFirstFoundElement(
         in: rect,
         withElementLocationsForFlattenedIndices: elementLocationsForFlattenedIndices,
         andFramesProvidedBy: frameProvider) else
@@ -799,7 +799,7 @@ final class ModelState {
     var minYOfNonIntersectingElement: CGFloat?
 
     // Look backward to find visible elements
-    for elementLocationIndex in (0..<indexOfFirstElement).reversed() {
+    for elementLocationIndex in (0..<indexOfFirstFoundElement).reversed() {
       let elementLocation = self.elementLocation(
         forFlattenedIndex: elementLocationIndex,
         in: elementLocationsForFlattenedIndices)
@@ -823,7 +823,7 @@ final class ModelState {
     }
 
     // Look forward to find visible elements
-    for elementLocationIndex in indexOfFirstElement..<elementLocationsForFlattenedIndices.count {
+    for elementLocationIndex in indexOfFirstFoundElement..<elementLocationsForFlattenedIndices.count {
       let elementLocation = self.elementLocation(
         forFlattenedIndex: elementLocationIndex,
         in: elementLocationsForFlattenedIndices)
@@ -837,7 +837,7 @@ final class ModelState {
     return elementLocationFramePairs
   }
 
-  private func indexOfFirstElement(
+  private func indexOfFirstFoundElement(
     in rect: CGRect,
     withElementLocationsForFlattenedIndices elementLocationsForFlattenedIndices: [Int: ElementLocation],
     andFramesProvidedBy frameProvider: ((ElementLocation) -> CGRect))
