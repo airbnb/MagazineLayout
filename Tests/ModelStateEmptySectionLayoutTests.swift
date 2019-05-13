@@ -54,9 +54,11 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
       ]
     modelState.setSections(initialSections)
 
+    let expectedHeightOfSection0 = metrics0.sectionInsets.top + metrics0.sectionInsets.bottom
+    let expectedHeightOfSection1 = metrics1.sectionInsets.top + metrics1.sectionInsets.bottom
     XCTAssert(
-      (modelState.sectionMaxY(forSectionAtIndex: 0, .afterUpdates) == 30 &&
-       modelState.sectionMaxY(forSectionAtIndex: 1, .afterUpdates) == 30 + 145),
+      (modelState.sectionMaxY(forSectionAtIndex: 0, .afterUpdates) == expectedHeightOfSection0 &&
+       modelState.sectionMaxY(forSectionAtIndex: 1, .afterUpdates) == expectedHeightOfSection1),
       "The layout has incorrect heights for its sections")
   }
 
@@ -87,7 +89,7 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
 
     let expectedHeaderFrames = [
       CGRect(x: 5, y: 10, width: 310, height: 45),
-      CGRect(x: 0, y: 150, width: 320, height: 65),
+      CGRect(x: 0, y: 120, width: 320, height: 65),
     ]
     XCTAssert(
       FrameHelpers.expectedFrames(
@@ -97,8 +99,8 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
       "Header frames are incorrect")
 
     let expectedFooterFrames = [
-      CGRect(x: 5, y: 85, width: 310, height: 45),
-      CGRect(x: 0, y: 365, width: 320, height: 65)
+      CGRect(x: 5, y: 55, width: 310, height: 45),
+      CGRect(x: 0, y: 185, width: 320, height: 65)
     ]
     XCTAssert(
       FrameHelpers.expectedFrames(
@@ -109,8 +111,8 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
       "Footer frames are incorrect")
 
     let expectedBackgroundFrames = [
-      CGRect(x: 5, y: 10, width: 310, height: 120),
-      CGRect(x: 0, y: 150, width: 320, height: 280),
+      CGRect(x: 5, y: 10, width: 310, height: 90),
+      CGRect(x: 0, y: 120, width: 320, height: 130),
     ]
     XCTAssert(
       FrameHelpers.expectedFrames(

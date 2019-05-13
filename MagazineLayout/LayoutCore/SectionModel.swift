@@ -361,9 +361,6 @@ struct SectionModel {
       currentY += newHeaderItemModel.size.height
     }
 
-    // Apply top item inset now that we're laying out items
-    currentY += metrics.itemInsets.top
-
     var indexInCurrentRow = 0
     var stretchToTallestItemInRowItemIndicesInCurrentRow = Set<Int>()
     var heightOfTallestItemInCurrentRow = CGFloat(0)
@@ -447,6 +444,11 @@ struct SectionModel {
         }
       }
 
+      if itemIndex == 0 {
+        // Apply top item inset now that we're laying out items
+        currentY += metrics.itemInsets.top
+      }
+
       let currentLeadingMargin: CGFloat
       let availableWidthForItems: CGFloat
       if itemModel.sizeMode.widthMode == .fullWidth(respectsHorizontalInsets: false) {
@@ -496,7 +498,11 @@ struct SectionModel {
     }
 
     // Update the current caluclated height
-    currentY = currentHeight + metrics.itemInsets.bottom
+    currentY = currentHeight
+    if numberOfItems > 0 {
+      // Apply bottom item inset now that we're done laying out items
+      currentY += metrics.itemInsets.bottom
+    }
     currentHeight = currentY
 
     // Update the footer item
