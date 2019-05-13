@@ -85,24 +85,23 @@ final class FrameHelpers {
     modelState: ModelState)
     -> Bool
   {
-    var expectedFrameIndex = 0
+    let expectedFrames = Set(expectedFrames)
+    var checkedFramesCount = 0
+
     for sectionIndex in sectionIndexRange {
       for itemIndex in 0..<modelState.numberOfItems(inSectionAtIndex: sectionIndex, .afterUpdates) {
         let itemFrame = modelState.frameForItem(
           at: ElementLocation(elementIndex: itemIndex, sectionIndex: sectionIndex),
           .afterUpdates)
-        if
-          expectedFrameIndex < expectedFrames.count &&
-          expectedFrames[expectedFrameIndex] != itemFrame
-        {
+        if !expectedFrames.contains(itemFrame) {
           return false
         }
 
-        expectedFrameIndex += 1
+        checkedFramesCount += 1
       }
     }
 
-    return true
+    return checkedFramesCount == expectedFrames.count
   }
 
   static func expectedFrames(
