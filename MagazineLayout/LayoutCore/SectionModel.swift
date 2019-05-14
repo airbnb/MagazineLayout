@@ -248,7 +248,7 @@ struct SectionModel {
   mutating func setBackground(_ backgroundModel: BackgroundModel) {
     self.backgroundModel = backgroundModel
 
-    let indexOfLastRow = indexOfFooterRow() ?? indexOfLastRowOfItems() ?? indexOfHeaderRow() ?? -1
+    let indexOfLastRow = indexOfFooterRow() ?? indexOfLastItemsRow() ?? indexOfHeaderRow() ?? -1
     updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfLastRow + 1)
   }
 
@@ -302,19 +302,19 @@ struct SectionModel {
     return 0
   }
 
-  private func indexOfFirstRowOfItems() -> Int? {
+  private func indexOfFirstItemsRow() -> Int? {
     guard numberOfItems > 0 else { return nil }
     return headerModel == nil ? 0 : 1
   }
 
-  private func indexOfLastRowOfItems() -> Int? {
+  private func indexOfLastItemsRow() -> Int? {
     guard numberOfItems > 0 else { return nil }
     return rowIndicesForItemIndices[numberOfItems - 1]
   }
 
   private func indexOfFooterRow() -> Int? {
     guard footerModel != nil else { return nil }
-    return (indexOfLastRowOfItems() ?? indexOfHeaderRow() ?? -1) + 1
+    return (indexOfLastItemsRow() ?? indexOfHeaderRow() ?? -1) + 1
   }
 
   private func frameForItem(atIndex itemIndex: Int) -> CGRect {
@@ -334,7 +334,9 @@ struct SectionModel {
       return
     }
 
-    // Clean up item / row index mappings
+    // Clean up item / row index mappings starting at our `indexOfFirstInvalidatedRow`; we'll make
+    // new mappings for those row indices as we do layout calculations below. Since all item / row
+    // index mappings before `indexOfFirstInvalidatedRow` are still valid, we'll leave those alone.
     for rowIndexKey in itemIndicesForRowIndices.keys {
       guard rowIndexKey >= rowIndex else { continue }
 
@@ -380,7 +382,7 @@ struct SectionModel {
       // Our starting row is after the last row of items, so we'll skip item layout.
       startingItemIndex = numberOfItems
       if
-        let lastRowIndex = indexOfLastRowOfItems(),
+        let lastRowIndex = indexOfLastItemsRow(),
         rowIndex > lastRowIndex,
         let maxYOfLastRowOfItems = maxYForItemsRow(atIndex: lastRowIndex)
       {
@@ -479,7 +481,7 @@ struct SectionModel {
     }
 
     // Footer frame calculations
-    if var newFooterModel = footerModel {
+    if rowIndex == indexOfFooterRow(), var newFooterModel = footerModel {
       newFooterModel.originInSection = CGPoint(x: metrics.sectionInsets.left, y: currentY)
       newFooterModel.size.width = metrics.width
       newFooterModel.size.height = newFooterModel.preferredHeight ?? newFooterModel.size.height
