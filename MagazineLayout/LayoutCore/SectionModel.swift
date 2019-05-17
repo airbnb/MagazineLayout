@@ -168,10 +168,7 @@ struct SectionModel {
     updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: index)
   }
 
-  mutating func updateItemHeight(
-    toPreferredHeight preferredHeight: CGFloat,
-    atIndex index: Int)
-  {
+  mutating func updateItemHeight(toPreferredHeight preferredHeight: CGFloat, atIndex index: Int) {
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
     // and Swift retain / releases calls.
     let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
@@ -393,10 +390,12 @@ struct SectionModel {
       }
     }
 
-    var indexInCurrentRow = 0
-    var heightOfTallestItemInCurrentRow = CGFloat(0)
-    var stretchToTallestItemInRowItemIndicesInCurrentRow = Set<Int>()
+    // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
+    // and Swift retain / release calls.
+    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
+    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
 
+    var indexInCurrentRow = 0
     for itemIndex in startingItemIndex..<numberOfItems {
       // Create item / row index mappings
       itemIndicesForRowIndices[rowIndex] = itemIndicesForRowIndices[rowIndex] ?? []
@@ -428,28 +427,8 @@ struct SectionModel {
         metrics.horizontalSpacing + currentLeadingMargin
       let itemY = currentY
 
-      // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
-      // and Swift retain / release calls.
-      let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-      let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
-
       directlyMutableItemModels[itemIndex].originInSection = CGPoint(x: itemX, y: itemY)
       directlyMutableItemModels[itemIndex].size.width = itemWidth
-      directlyMutableItemModels[itemIndex].size.height = itemModel.preferredHeight ?? itemModel.size.height
-
-      // Handle stretch to tallest item in row height mode for current row
-
-      if itemModel.sizeMode.heightMode == .dynamicAndStretchToTallestItemInRow {
-        stretchToTallestItemInRowItemIndicesInCurrentRow.insert(itemIndex)
-      }
-
-      heightOfTallestItemInCurrentRow = max(
-        heightOfTallestItemInCurrentRow,
-        itemModels[itemIndex].size.height)
-
-      for stretchToTallestItemInRowItemIndex in stretchToTallestItemInRowItemIndicesInCurrentRow {
-        directlyMutableItemModels[stretchToTallestItemInRowItemIndex].size.height = heightOfTallestItemInCurrentRow
-      }
 
       if
         (indexInCurrentRow == Int(itemModel.sizeMode.widthMode.widthDivisor) - 1) ||
@@ -459,11 +438,10 @@ struct SectionModel {
         // We've reached the end of the current row, or there are no more items to lay out, or we're
         // about to lay out an item with a different width mode. In all cases, we're done laying out
         // the current row of items.
+        let heightOfTallestItemInCurrentRow = updateHeightsForItemsInRow(at: rowIndex)
         currentY += heightOfTallestItemInCurrentRow
         rowIndex += 1
         indexInCurrentRow = 0
-        heightOfTallestItemInCurrentRow = 0
-        stretchToTallestItemInRowItemIndicesInCurrentRow.removeAll()
 
         // If there are more items to layout, add vertical spacing
         if itemIndex < numberOfItems - 1 {
@@ -501,6 +479,41 @@ struct SectionModel {
       metrics.sectionInsets.bottom
 
     indexOfFirstInvalidatedRow = nil
+  }
+
+  private mutating func updateHeightsForItemsInRow(at rowIndex: Int) -> CGFloat {
+    guard let indicesForItemsInRow = itemIndicesForRowIndices[rowIndex] else {
+      assertionFailure("Expected item indices for row \(rowIndex)")
+      return 0
+    }
+
+    // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
+    // and Swift retain / release calls.
+    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
+    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
+
+    var heightOfTallestItem = CGFloat(0)
+    var stretchToTallestItemInRowItemIndices = Set<Int>()
+
+    for itemIndex in indicesForItemsInRow {
+      let preferredHeight = itemModels[itemIndex].preferredHeight
+      let existingHeight = itemModels[itemIndex].size.height
+      directlyMutableItemModels[itemIndex].size.height = preferredHeight ?? existingHeight
+
+      // Handle stretch to tallest item in row height mode for current row
+
+      if itemModels[itemIndex].sizeMode.heightMode == .dynamicAndStretchToTallestItemInRow {
+        stretchToTallestItemInRowItemIndices.insert(itemIndex)
+      }
+
+      heightOfTallestItem = max(heightOfTallestItem, itemModels[itemIndex].size.height)
+    }
+
+    for stretchToTallestItemInRowItemIndex in stretchToTallestItemInRowItemIndices{
+      directlyMutableItemModels[stretchToTallestItemInRowItemIndex].size.height = heightOfTallestItem
+    }
+
+    return heightOfTallestItem
   }
 
 }
