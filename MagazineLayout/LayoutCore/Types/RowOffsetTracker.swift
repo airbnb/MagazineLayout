@@ -15,7 +15,7 @@
 
 import CoreGraphics
 
-/// Tracks offsets for rows using a Segment Tree for O(logn) lookups and updates.
+/// Tracks offsets for rows using a Segment Tree for O(log n) lookups and updates.
 struct RowOffsetTracker {
 
   // MARK: Lifecycle
