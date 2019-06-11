@@ -297,7 +297,8 @@ final class ModelState {
         return 0
       }
 
-      let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
+      let sectionModels = sectionModelsPointer.assumingMemoryBound(
+        to: SectionModel.self)
 
       var totalHeight: CGFloat = 0
       for sectionIndex in 0...targetSectionIndex {
@@ -338,7 +339,8 @@ final class ModelState {
     }
 
     let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
-    let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
+    let sectionModels = sectionModelsPointer.assumingMemoryBound(
+      to: SectionModel.self)
 
     var itemFrame = sectionModels[itemLocation.sectionIndex].calculateFrameForItem(
       atIndex: itemLocation.elementIndex)
@@ -360,7 +362,8 @@ final class ModelState {
     }
 
     let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
-    let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
+    let sectionModels = sectionModelsPointer.assumingMemoryBound(
+      to: SectionModel.self)
 
     var headerFrame = sectionModels[sectionIndex].calculateFrameForHeader()
     headerFrame?.origin.y += sectionMinY
@@ -380,7 +383,8 @@ final class ModelState {
     }
 
     let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
-    let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
+    let sectionModels = sectionModelsPointer.assumingMemoryBound(
+      to: SectionModel.self)
 
     var footerFrame = sectionModels[sectionIndex].calculateFrameForFooter()
     footerFrame?.origin.y += sectionMinY
@@ -400,7 +404,8 @@ final class ModelState {
     }
 
     let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
-    let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
+    let sectionModels = sectionModelsPointer.assumingMemoryBound(
+      to: SectionModel.self)
 
     var backgroundFrame = sectionModels[sectionIndex].calculateFrameForBackground()
     backgroundFrame?.origin.y += sectionMinY
@@ -724,7 +729,7 @@ final class ModelState {
     -> UnsafeMutableRawPointer
   {
     // Accessing these arrays using unsafe, untyped (raw) pointers
-    // avoids expensive copy-on-writes and Swift retain / release calls.
+    // avoids expensive copy-on-writes and Swift retain / releases calls.
     switch batchUpdateStage {
     case .beforeUpdates: return UnsafeMutableRawPointer(mutating: &sectionModelsBeforeBatchUpdates)
     case .afterUpdates: return UnsafeMutableRawPointer(mutating: &currentSectionModels)
