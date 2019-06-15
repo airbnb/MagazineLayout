@@ -35,6 +35,7 @@ struct SectionModel {
     self.backgroundModel = backgroundModel
     self.metrics = metrics
     calculatedHeight = 0
+    numberOfRows = 0
 
     updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: 0)
     calculateElementFramesIfNecessary()
@@ -79,7 +80,7 @@ struct SectionModel {
 
     var origin = itemModels[index].originInSection
     if let rowIndex = rowIndicesForItemIndices[index] {
-      origin.y += rowOffsetTracker.offsetForRow(at: rowIndex)
+      origin.y += rowOffsetTracker?.offsetForRow(at: rowIndex) ?? 0
     } else {
       assertionFailure("Expected a row and a row height for item at \(index).")
     }
@@ -109,7 +110,7 @@ struct SectionModel {
 
     var origin = footerModel?.originInSection
     if let rowIndex = indexOfFooterRow() {
-      origin?.y += rowOffsetTracker.offsetForRow(at: rowIndex)
+      origin?.y += rowOffsetTracker?.offsetForRow(at: rowIndex) ?? 0
     } else {
       assertionFailure("Expected a row and a corresponding section footer.")
     }
@@ -152,9 +153,9 @@ struct SectionModel {
   }
 
   mutating func insert(_ itemModel: ItemModel, atIndex indexOfInsertion: Int) {
-    itemModels.insert(itemModel, at: indexOfInsertion)
-
     updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: indexOfInsertion)
+    
+    itemModels.insert(itemModel, at: indexOfInsertion)
   }
 
   mutating func updateMetrics(to metrics: MagazineLayoutSectionMetrics) {
@@ -245,7 +246,7 @@ struct SectionModel {
 
       let firstAffectedRowIndex = rowIndex + 1
       if firstAffectedRowIndex < numberOfRows {
-        rowOffsetTracker.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
+        rowOffsetTracker?.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
       }
     } else {
       assertionFailure("Expected a row and a row height for item at \(index).")
@@ -265,7 +266,7 @@ struct SectionModel {
       
       let firstAffectedRowIndex = indexOfHeaderRow + 1
       if firstAffectedRowIndex < numberOfRows {
-        rowOffsetTracker.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
+        rowOffsetTracker?.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
       }
     } else {
       assertionFailure("Expected a row, a row height, and a corresponding section header.")
@@ -285,7 +286,7 @@ struct SectionModel {
       
       let firstAffectedRowIndex = indexOfFooterRow + 1
       if firstAffectedRowIndex < numberOfRows {
-        rowOffsetTracker.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
+        rowOffsetTracker?.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
       }
     } else {
       assertionFailure("Expected a row, a row height, and a corresponding section footer.")
@@ -305,22 +306,23 @@ struct SectionModel {
 
   // MARK: Private
 
+  private var numberOfRows: Int
   private var itemModels: [ItemModel]
   private var metrics: MagazineLayoutSectionMetrics
   private var calculatedHeight: CGFloat
 
-  private var indexOfFirstInvalidatedRow: Int?
+  private var indexOfFirstInvalidatedRow: Int? {
+    didSet {
+      guard indexOfFirstInvalidatedRow != nil else { return }
+      applyRowOffsetsIfNecessary()
+    }
+  }
+
   private var itemIndicesForRowIndices = [Int: [Int]]()
   private var rowIndicesForItemIndices = [Int: Int]()
   private var itemRowHeightsForRowIndices = [Int: CGFloat]()
 
-  private var rowOffsetTracker = RowOffsetTracker(numberOfRows: 0)
-
-  private var numberOfRows: Int {
-    return (headerModel != nil ? 1 : 0) +
-      itemIndicesForRowIndices.count +
-      (footerModel != nil ? 1 : 0)
-  }
+  private var rowOffsetTracker: RowOffsetTracker?
 
   private func maxYForItemsRow(atIndex rowIndex: Int) -> CGFloat? {
     guard
@@ -351,7 +353,7 @@ struct SectionModel {
 
   private func indexOfFooterRow() -> Int? {
     guard footerModel != nil else { return nil }
-    return (indexOfLastItemsRow() ?? indexOfHeaderRow() ?? -1) + 1
+    return numberOfRows - 1
   }
   
   private mutating func updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex changedIndex: Int) {
@@ -370,6 +372,24 @@ struct SectionModel {
     toProposedIndex proposedIndex: Int)
   {
     indexOfFirstInvalidatedRow = min(proposedIndex, indexOfFirstInvalidatedRow ?? proposedIndex)
+  }
+  
+  private mutating func applyRowOffsetsIfNecessary() {
+    guard let rowOffsetTracker = rowOffsetTracker else { return }
+
+    for rowIndex in 0..<numberOfRows {
+      let rowOffset = rowOffsetTracker.offsetForRow(at: rowIndex)
+      switch rowIndex {
+      case indexOfHeaderRow(): headerModel?.originInSection.y += rowOffset
+      case indexOfFooterRow(): footerModel?.originInSection.y += rowOffset
+      default:
+        for itemIndex in itemIndicesForRowIndices[rowIndex] ?? [] {
+          itemModels[itemIndex].originInSection.y += rowOffset
+        }
+      }
+    }
+
+    self.rowOffsetTracker = nil
   }
 
   private mutating func calculateElementFramesIfNecessary() {
@@ -395,15 +415,14 @@ struct SectionModel {
     }
 
     // Header frame calculation
-    if rowIndex == indexOfHeaderRow(), var headerModel = headerModel {
-      headerModel.originInSection = CGPoint(
+    if rowIndex == indexOfHeaderRow(), let existingHeaderModel = headerModel {
+      rowIndex = 1
+
+      headerModel?.originInSection = CGPoint(
         x: metrics.sectionInsets.left,
         y: metrics.sectionInsets.top)
-      headerModel.size.width = metrics.width
-      updateHeaderHeight(withMetricsFrom: headerModel)
-      self.headerModel = headerModel
-
-      rowIndex = 1
+      headerModel?.size.width = metrics.width
+      updateHeaderHeight(withMetricsFrom: existingHeaderModel)
     }
 
     var currentY: CGFloat
@@ -490,12 +509,12 @@ struct SectionModel {
         // the current row of items.
         let heightOfTallestItemInCurrentRow = updateHeightsForItemsInRow(at: rowIndex)
         currentY += heightOfTallestItemInCurrentRow
-        rowIndex += 1
         indexInCurrentRow = 0
 
-        // If there are more items to layout, add vertical spacing
+        // If there are more items to layout, add vertical spacing and increment the row index
         if itemIndex < numberOfItems - 1 {
           currentY += metrics.verticalSpacing
+          rowIndex += 1
         }
       } else {
         // We're still adding to the current row
@@ -509,12 +528,15 @@ struct SectionModel {
     }
 
     // Footer frame calculations
-    if rowIndex == indexOfFooterRow(), var footerModel = footerModel {
-      footerModel.originInSection = CGPoint(x: metrics.sectionInsets.left, y: currentY)
-      footerModel.size.width = metrics.width
-      updateFooterHeight(withMetricsFrom: footerModel)
-      self.footerModel = footerModel
+    if let existingFooterModel = footerModel {
+      rowIndex += 1
+
+      footerModel?.originInSection = CGPoint(x: metrics.sectionInsets.left, y: currentY)
+      footerModel?.size.width = metrics.width
+      updateFooterHeight(withMetricsFrom: existingFooterModel)
     }
+
+    numberOfRows = rowIndex + 1
 
     // Final height calculation
     calculatedHeight = currentY + (footerModel?.size.height ?? 0) + metrics.sectionInsets.bottom
