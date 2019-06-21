@@ -35,6 +35,7 @@ struct SectionModel {
     self.backgroundModel = backgroundModel
     self.metrics = metrics
     calculatedHeight = 0
+    numberOfRows = 0
 
     updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: 0)
     calculateElementFramesIfNecessary()
@@ -70,7 +71,21 @@ struct SectionModel {
 
   mutating func calculateHeight() -> CGFloat {
     calculateElementFramesIfNecessary()
+    
     return calculatedHeight
+  }
+
+  mutating func calculateFrameForItem(atIndex index: Int) -> CGRect {
+    calculateElementFramesIfNecessary()
+
+    var origin = itemModels[index].originInSection
+    if let rowIndex = rowIndicesForItemIndices[index] {
+      origin.y += rowOffsetTracker?.offsetForRow(at: rowIndex) ?? 0
+    } else {
+      assertionFailure("Expected a row and a row height for item at \(index).")
+    }
+
+    return CGRect(origin: origin, size: itemModels[index].size)
   }
 
   mutating func calculateFrameForHeader() -> CGRect? {
@@ -78,13 +93,11 @@ struct SectionModel {
 
     calculateElementFramesIfNecessary()
 
-    // `headerModel` is a value type that might be mutated in `recomputeItemPositionsIfNecessary`,
+    // `headerModel` is a value type that might be mutated in `calculateElementFramesIfNecessary`,
     // so we can't use a copy made before that code executes (for example, in a
     // `guard let headerModel = headerModel else { ... }` at the top of this function).
     if let headerModel = headerModel {
-      return CGRect(
-        origin: CGPoint(x: headerModel.originInSection.x, y: headerModel.originInSection.y),
-        size: headerModel.size)
+      return CGRect(origin: headerModel.originInSection, size: headerModel.size)
     } else {
       return nil
     }
@@ -95,27 +108,34 @@ struct SectionModel {
 
     calculateElementFramesIfNecessary()
 
-    // `footerModel` is a value type that might be mutated in `recomputeItemPositionsIfNecessary`,
+    var origin = footerModel?.originInSection
+    if let rowIndex = indexOfFooterRow() {
+      origin?.y += rowOffsetTracker?.offsetForRow(at: rowIndex) ?? 0
+    } else {
+      assertionFailure("Expected a row and a corresponding section footer.")
+    }
+
+    // `footerModel` is a value type that might be mutated in `calculateElementFramesIfNecessary`,
     // so we can't use a copy made before that code executes (for example, in a
     // `guard let footerModel = footerModel else { ... }` at the top of this function).
     if let footerModel = footerModel {
-      return CGRect(
-        origin: CGPoint(x: footerModel.originInSection.x, y: footerModel.originInSection.y),
-        size: footerModel.size)
+      return CGRect(origin: origin ?? footerModel.originInSection, size: footerModel.size)
     } else {
       return nil
     }
   }
 
   mutating func calculateFrameForBackground() -> CGRect? {
-    guard backgroundModel != nil else { return nil }
+    let calculatedHeight = calculateHeight()
 
-    calculateElementFramesIfNecessary()
+    backgroundModel?.originInSection = CGPoint(
+      x: metrics.sectionInsets.left,
+      y: metrics.sectionInsets.top)
+    backgroundModel?.size.width = metrics.width
+    backgroundModel?.size.height = calculatedHeight -
+      metrics.sectionInsets.top -
+      metrics.sectionInsets.bottom
 
-    // `backgroundModel` is a value type that might be mutated in
-    // `recomputeItemPositionsIfNecessary`, so we can't use a copy made before that code executes
-    // (for example, in a `guard let backgroundModel = backgroundModel else { ... }` at the top of
-    // this function).
     if let backgroundModel = backgroundModel {
       return CGRect(
         origin: CGPoint(x: backgroundModel.originInSection.x, y: backgroundModel.originInSection.y),
@@ -123,12 +143,6 @@ struct SectionModel {
     } else {
       return nil
     }
-  }
-
-  mutating func calculateFrameForItem(atIndex itemIndex: Int) -> CGRect {
-    calculateElementFramesIfNecessary()
-
-    return frameForItem(atIndex: itemIndex)
   }
 
   @discardableResult
@@ -139,9 +153,9 @@ struct SectionModel {
   }
 
   mutating func insert(_ itemModel: ItemModel, atIndex indexOfInsertion: Int) {
-    itemModels.insert(itemModel, at: indexOfInsertion)
-
     updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: indexOfInsertion)
+    
+    itemModels.insert(itemModel, at: indexOfInsertion)
   }
 
   mutating func updateMetrics(to metrics: MagazineLayoutSectionMetrics) {
@@ -154,31 +168,15 @@ struct SectionModel {
 
   mutating func updateItemSizeMode(to sizeMode: MagazineLayoutItemSizeMode, atIndex index: Int) {
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
-    // and Swift retain / releases calls.
+    // and Swift retain / release calls.
     let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(
-      to: ItemModel.self)
+    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
 
     directlyMutableItemModels[index].sizeMode = sizeMode
 
     if case let .static(staticHeight) = sizeMode.heightMode {
       directlyMutableItemModels[index].size.height = staticHeight
     }
-
-    updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: index)
-  }
-
-  mutating func updateItemHeight(
-    toPreferredHeight preferredHeight: CGFloat,
-    atIndex index: Int)
-  {
-    // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
-    // and Swift retain / releases calls.
-    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(
-      to: ItemModel.self)
-
-    directlyMutableItemModels[index].preferredHeight = preferredHeight
 
     updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: index)
   }
@@ -229,61 +227,102 @@ struct SectionModel {
     footerModel = nil
   }
 
+  mutating func updateItemHeight(toPreferredHeight preferredHeight: CGFloat, atIndex index: Int) {
+    // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
+    // and Swift retain / release calls.
+    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
+    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
+
+    directlyMutableItemModels[index].preferredHeight = preferredHeight
+
+    if
+      let rowIndex = rowIndicesForItemIndices[index],
+      let rowHeight = itemRowHeightsForRowIndices[rowIndex]
+    {
+      let newRowHeight = updateHeightsForItemsInRow(at: rowIndex)
+      let heightDelta = newRowHeight - rowHeight
+
+      calculatedHeight += heightDelta
+
+      let firstAffectedRowIndex = rowIndex + 1
+      if firstAffectedRowIndex < numberOfRows {
+        rowOffsetTracker?.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
+      }
+    } else {
+      assertionFailure("Expected a row and a row height for item at \(index).")
+      return
+    }
+  }
+
   mutating func updateHeaderHeight(toPreferredHeight preferredHeight: CGFloat) {
     headerModel?.preferredHeight = preferredHeight
 
-    if let indexOfHeader = indexOfHeaderRow() {
-      updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfHeader)
+    if let indexOfHeaderRow = indexOfHeaderRow(), let headerModel = headerModel {
+      let rowHeight = headerModel.size.height
+      let newRowHeight = updateHeaderHeight(withMetricsFrom: headerModel)
+      let heightDelta = newRowHeight - rowHeight
+      
+      calculatedHeight += heightDelta
+      
+      let firstAffectedRowIndex = indexOfHeaderRow + 1
+      if firstAffectedRowIndex < numberOfRows {
+        rowOffsetTracker?.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
+      }
+    } else {
+      assertionFailure("Expected a row, a row height, and a corresponding section header.")
+      return
     }
   }
 
   mutating func updateFooterHeight(toPreferredHeight preferredHeight: CGFloat) {
     footerModel?.preferredHeight = preferredHeight
 
-    if let indexOfFooter = indexOfFooterRow() {
-      updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfFooter)
+    if let indexOfFooterRow = indexOfFooterRow(), let footerModel = footerModel {
+      let rowHeight = footerModel.size.height
+      let newRowHeight = updateFooterHeight(withMetricsFrom: footerModel)
+      let heightDelta = newRowHeight - rowHeight
+    
+      calculatedHeight += heightDelta
+      
+      let firstAffectedRowIndex = indexOfFooterRow + 1
+      if firstAffectedRowIndex < numberOfRows {
+        rowOffsetTracker?.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
+      }
+    } else {
+      assertionFailure("Expected a row, a row height, and a corresponding section footer.")
+      return
     }
   }
-
+      
   mutating func setBackground(_ backgroundModel: BackgroundModel) {
     self.backgroundModel = backgroundModel
-
-    let indexOfLastRow = indexOfFooterRow() ?? indexOfLastItemsRow() ?? indexOfHeaderRow() ?? -1
-    updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfLastRow + 1)
+    // No need to invalidate since the background doesn't affect the layout.
   }
 
   mutating func removeBackground() {
     backgroundModel = nil
-    // No need to invalidate since no frames will be adjusted
+    // No need to invalidate since the background doesn't affect the layout.
   }
 
   // MARK: Private
 
+  private var numberOfRows: Int
   private var itemModels: [ItemModel]
   private var metrics: MagazineLayoutSectionMetrics
   private var calculatedHeight: CGFloat
 
-  private var indexOfFirstInvalidatedRow: Int?
+  private var indexOfFirstInvalidatedRow: Int? {
+    didSet {
+      guard indexOfFirstInvalidatedRow != nil else { return }
+      applyRowOffsetsIfNecessary()
+    }
+  }
+
   private var itemIndicesForRowIndices = [Int: [Int]]()
   private var rowIndicesForItemIndices = [Int: Int]()
+  private var itemRowHeightsForRowIndices = [Int: CGFloat]()
 
-  private mutating func updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex changedIndex: Int) {
-    guard
-      let indexOfCurrentRow = rowIndicesForItemIndices[changedIndex],
-      indexOfCurrentRow > 0 else
-    {
-      indexOfFirstInvalidatedRow = rowIndicesForItemIndices[0] ?? 0
-      return
-    }
-
-    updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfCurrentRow - 1)
-  }
-
-  private mutating func updateIndexOfFirstInvalidatedRowIfNecessary(
-    toProposedIndex proposedIndex: Int)
-  {
-    indexOfFirstInvalidatedRow = min(proposedIndex, indexOfFirstInvalidatedRow ?? proposedIndex)
-  }
+  private var rowOffsetTracker: RowOffsetTracker?
 
   private func maxYForItemsRow(atIndex rowIndex: Int) -> CGFloat? {
     guard
@@ -314,17 +353,43 @@ struct SectionModel {
 
   private func indexOfFooterRow() -> Int? {
     guard footerModel != nil else { return nil }
-    return (indexOfLastItemsRow() ?? indexOfHeaderRow() ?? -1) + 1
+    return numberOfRows - 1
   }
+  
+  private mutating func updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex changedIndex: Int) {
+    guard
+      let indexOfCurrentRow = rowIndicesForItemIndices[changedIndex],
+      indexOfCurrentRow > 0 else
+    {
+      indexOfFirstInvalidatedRow = rowIndicesForItemIndices[0] ?? 0
+      return
+    }
+    
+    updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfCurrentRow - 1)
+  }
+  
+  private mutating func updateIndexOfFirstInvalidatedRowIfNecessary(
+    toProposedIndex proposedIndex: Int)
+  {
+    indexOfFirstInvalidatedRow = min(proposedIndex, indexOfFirstInvalidatedRow ?? proposedIndex)
+  }
+  
+  private mutating func applyRowOffsetsIfNecessary() {
+    guard let rowOffsetTracker = rowOffsetTracker else { return }
 
-  private func frameForItem(atIndex itemIndex: Int) -> CGRect {
-    let itemModel = itemModels[itemIndex]
+    for rowIndex in 0..<numberOfRows {
+      let rowOffset = rowOffsetTracker.offsetForRow(at: rowIndex)
+      switch rowIndex {
+      case indexOfHeaderRow(): headerModel?.originInSection.y += rowOffset
+      case indexOfFooterRow(): footerModel?.originInSection.y += rowOffset
+      default:
+        for itemIndex in itemIndicesForRowIndices[rowIndex] ?? [] {
+          itemModels[itemIndex].originInSection.y += rowOffset
+        }
+      }
+    }
 
-    return CGRect(
-      origin: CGPoint(
-        x: itemModel.originInSection.x,
-        y: itemModel.originInSection.y),
-      size: itemModel.size)
+    self.rowOffsetTracker = nil
   }
 
   private mutating func calculateElementFramesIfNecessary() {
@@ -334,9 +399,10 @@ struct SectionModel {
       return
     }
 
-    // Clean up item / row index mappings starting at our `indexOfFirstInvalidatedRow`; we'll make
-    // new mappings for those row indices as we do layout calculations below. Since all item / row
-    // index mappings before `indexOfFirstInvalidatedRow` are still valid, we'll leave those alone.
+    // Clean up item / row / height mappings starting at our `indexOfFirstInvalidatedRow`; we'll
+    // make new mappings for those row indices as we do layout calculations below. Since all
+    // item / row index mappings before `indexOfFirstInvalidatedRow` are still valid, we'll leave
+    // those alone.
     for rowIndexKey in itemIndicesForRowIndices.keys {
       guard rowIndexKey >= rowIndex else { continue }
 
@@ -345,18 +411,18 @@ struct SectionModel {
       }
 
       itemIndicesForRowIndices[rowIndexKey] = nil
+      itemRowHeightsForRowIndices[rowIndex] = nil
     }
 
     // Header frame calculation
-    if rowIndex == indexOfHeaderRow(), var newHeaderItemModel = headerModel {
-      newHeaderItemModel.originInSection = CGPoint(
+    if rowIndex == indexOfHeaderRow(), let existingHeaderModel = headerModel {
+      rowIndex = 1
+
+      headerModel?.originInSection = CGPoint(
         x: metrics.sectionInsets.left,
         y: metrics.sectionInsets.top)
-      newHeaderItemModel.size.width = metrics.width
-      newHeaderItemModel.size.height = newHeaderItemModel.preferredHeight ?? newHeaderItemModel.size.height
-      headerModel = newHeaderItemModel
-
-      rowIndex = 1
+      headerModel?.size.width = metrics.width
+      updateHeaderHeight(withMetricsFrom: existingHeaderModel)
     }
 
     var currentY: CGFloat
@@ -393,10 +459,12 @@ struct SectionModel {
       }
     }
 
-    var indexInCurrentRow = 0
-    var heightOfTallestItemInCurrentRow = CGFloat(0)
-    var stretchToTallestItemInRowItemIndicesInCurrentRow = Set<Int>()
+    // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
+    // and Swift retain / release calls.
+    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
+    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
 
+    var indexInCurrentRow = 0
     for itemIndex in startingItemIndex..<numberOfItems {
       // Create item / row index mappings
       itemIndicesForRowIndices[rowIndex] = itemIndicesForRowIndices[rowIndex] ?? []
@@ -428,46 +496,25 @@ struct SectionModel {
         metrics.horizontalSpacing + currentLeadingMargin
       let itemY = currentY
 
-      // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
-      // and Swift retain / release calls.
-      let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-      let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
-
       directlyMutableItemModels[itemIndex].originInSection = CGPoint(x: itemX, y: itemY)
       directlyMutableItemModels[itemIndex].size.width = itemWidth
-      directlyMutableItemModels[itemIndex].size.height = itemModel.preferredHeight ?? itemModel.size.height
-
-      // Handle stretch to tallest item in row height mode for current row
-
-      if itemModel.sizeMode.heightMode == .dynamicAndStretchToTallestItemInRow {
-        stretchToTallestItemInRowItemIndicesInCurrentRow.insert(itemIndex)
-      }
-
-      heightOfTallestItemInCurrentRow = max(
-        heightOfTallestItemInCurrentRow,
-        itemModels[itemIndex].size.height)
-
-      for stretchToTallestItemInRowItemIndex in stretchToTallestItemInRowItemIndicesInCurrentRow {
-        directlyMutableItemModels[stretchToTallestItemInRowItemIndex].size.height = heightOfTallestItemInCurrentRow
-      }
 
       if
         (indexInCurrentRow == Int(itemModel.sizeMode.widthMode.widthDivisor) - 1) ||
-        (itemIndex == numberOfItems - 1) ||
-        (itemIndex < numberOfItems - 1 && itemModels[itemIndex + 1].sizeMode.widthMode != itemModel.sizeMode.widthMode)
+          (itemIndex == numberOfItems - 1) ||
+          (itemIndex < numberOfItems - 1 && itemModels[itemIndex + 1].sizeMode.widthMode != itemModel.sizeMode.widthMode)
       {
         // We've reached the end of the current row, or there are no more items to lay out, or we're
         // about to lay out an item with a different width mode. In all cases, we're done laying out
         // the current row of items.
+        let heightOfTallestItemInCurrentRow = updateHeightsForItemsInRow(at: rowIndex)
         currentY += heightOfTallestItemInCurrentRow
-        rowIndex += 1
         indexInCurrentRow = 0
-        heightOfTallestItemInCurrentRow = 0
-        stretchToTallestItemInRowItemIndicesInCurrentRow.removeAll()
 
-        // If there are more items to layout, add vertical spacing
+        // If there are more items to layout, add vertical spacing and increment the row index
         if itemIndex < numberOfItems - 1 {
           currentY += metrics.verticalSpacing
+          rowIndex += 1
         }
       } else {
         // We're still adding to the current row
@@ -481,26 +528,76 @@ struct SectionModel {
     }
 
     // Footer frame calculations
-    if rowIndex == indexOfFooterRow(), var newFooterModel = footerModel {
-      newFooterModel.originInSection = CGPoint(x: metrics.sectionInsets.left, y: currentY)
-      newFooterModel.size.width = metrics.width
-      newFooterModel.size.height = newFooterModel.preferredHeight ?? newFooterModel.size.height
-      footerModel = newFooterModel
+    if let existingFooterModel = footerModel {
+      rowIndex += 1
+
+      footerModel?.originInSection = CGPoint(x: metrics.sectionInsets.left, y: currentY)
+      footerModel?.size.width = metrics.width
+      updateFooterHeight(withMetricsFrom: existingFooterModel)
     }
+
+    numberOfRows = rowIndex + 1
 
     // Final height calculation
     calculatedHeight = currentY + (footerModel?.size.height ?? 0) + metrics.sectionInsets.bottom
 
-    // Background frame calculations
-    backgroundModel?.originInSection = CGPoint(
-      x: metrics.sectionInsets.left,
-      y: metrics.sectionInsets.top)
-    backgroundModel?.size.width = metrics.width
-    backgroundModel?.size.height = calculatedHeight -
-      metrics.sectionInsets.top -
-      metrics.sectionInsets.bottom
+    // The background frame is calculated just-in-time, since its value doesn't affect the layout.
 
+    // Create a row offset tracker now that we know how many rows we have
+    rowOffsetTracker = RowOffsetTracker(numberOfRows: numberOfRows)
+
+    // Mark the layout as clean / no longer invalid
     indexOfFirstInvalidatedRow = nil
   }
 
+  private mutating func updateHeightsForItemsInRow(at rowIndex: Int) -> CGFloat {
+    guard let indicesForItemsInRow = itemIndicesForRowIndices[rowIndex] else {
+      assertionFailure("Expected item indices for row \(rowIndex).")
+      return 0
+    }
+
+    // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
+    // and Swift retain / release calls.
+    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
+    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
+
+    var heightOfTallestItem = CGFloat(0)
+    var stretchToTallestItemInRowItemIndices = Set<Int>()
+
+    for itemIndex in indicesForItemsInRow {
+      let preferredHeight = itemModels[itemIndex].preferredHeight
+      let height = itemModels[itemIndex].size.height
+      directlyMutableItemModels[itemIndex].size.height = preferredHeight ?? height
+
+      // Handle stretch to tallest item in row height mode for current row
+
+      if itemModels[itemIndex].sizeMode.heightMode == .dynamicAndStretchToTallestItemInRow {
+        stretchToTallestItemInRowItemIndices.insert(itemIndex)
+      }
+
+      heightOfTallestItem = max(heightOfTallestItem, itemModels[itemIndex].size.height)
+    }
+
+    for stretchToTallestItemInRowItemIndex in stretchToTallestItemInRowItemIndices{
+      directlyMutableItemModels[stretchToTallestItemInRowItemIndex].size.height = heightOfTallestItem
+    }
+
+    itemRowHeightsForRowIndices[rowIndex] = heightOfTallestItem
+    return heightOfTallestItem
+  }
+  
+  @discardableResult
+  private mutating func updateHeaderHeight(withMetricsFrom headerModel: HeaderModel) -> CGFloat {
+    let height = headerModel.preferredHeight ?? headerModel.size.height
+    self.headerModel?.size.height = height
+    return height
+  }
+  
+  @discardableResult
+  private mutating func updateFooterHeight(withMetricsFrom footerModel: FooterModel) -> CGFloat {
+    let height = footerModel.preferredHeight ?? footerModel.size.height
+    self.footerModel?.size.height = height
+    return height
+  }
+  
 }
