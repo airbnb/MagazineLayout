@@ -28,6 +28,15 @@ public enum MagazineLayoutHeaderVisibilityMode {
   /// This visibility mode will cause the header to not be visibile in its respective section.
   case hidden
 
+  /// This visibility mode will cause the header to be displayed using the specified height mode in
+  /// its respective section.
+  public static func visible(
+    heightMode: MagazineLayoutHeaderHeightMode)
+    -> MagazineLayoutHeaderVisibilityMode
+  {
+    return .visible(heightMode: heightMode, pinToVisibleBounds: false)
+  }
+
 }
 
 // MARK: - MagazineLayoutHeaderHeightMode

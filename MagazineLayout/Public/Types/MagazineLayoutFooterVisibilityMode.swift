@@ -27,6 +27,15 @@ public enum MagazineLayoutFooterVisibilityMode {
   /// This visibility mode will cause the footer to not be visibile in its respective section.
   case hidden
 
+  /// This visibility mode will cause the footer to be displayed using the specified height mode in
+  /// its respective section.
+  public static func visible(
+    heightMode: MagazineLayoutFooterHeightMode)
+    -> MagazineLayoutFooterVisibilityMode
+  {
+    return .visible(heightMode: heightMode, pinToVisibleBounds: false)
+  }
+
 }
 
 // MARK: - MagazineLayoutFooterHeightMode
