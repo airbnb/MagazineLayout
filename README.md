@@ -18,6 +18,7 @@ A collection view layout capable of laying out views in vertically scrolling gri
 - Per-item self-sizing preferences (self-size and statically-size items anywhere in your collection view)
 - Self-sizing headers and footers
 - Hiding or showing headers and footers on a per-section basis
+- Pinned (sticky) headers and footers
 - Section backgrounds that can be hidden / visible on a per-section basis
 
 Other features:
@@ -192,7 +193,7 @@ collectionView.delegate = self
 Here's an example delegate implementation:
 
 ```swift
-extension  ViewController: UICollectionViewDelegateMagazineLayout {
+extension ViewController: UICollectionViewDelegateMagazineLayout {
 
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeModeForItemAt indexPath: IndexPath) -> MagazineLayoutItemSizeMode {
     let widthMode = MagazineLayoutItemWidthMode.halfWidth
@@ -201,11 +202,11 @@ extension  ViewController: UICollectionViewDelegateMagazineLayout {
   }
 
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, visibilityModeForHeaderInSectionAtIndex index: Int) -> MagazineLayoutSupplementaryViewVisibilityMode {
-    return .visible(heightMode: .dynamic)
+    return .visible(heightMode: .dynamic, pinToVisibleBounds: true)
   }
 
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, visibilityModeForFooterInSectionAtIndex index: Int) -> MagazineLayoutSupplementaryViewVisibilityMode {
-    return .visible(heightMode: .dynamic)
+    return .visible(heightMode: .dynamic, pinToVisibleBounds: false)
   }
 
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, visibilityModeForBackgroundInSectionAtIndex index: Int) -> MagazineLayoutBackgroundVisibilityMode {
