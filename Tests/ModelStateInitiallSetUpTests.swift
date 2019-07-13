@@ -22,7 +22,7 @@ final class ModelStateInitialSetUpTests: XCTestCase {
   // MARK: Internal
 
   override func setUp() {
-    modelState = ModelState()
+    modelState = ModelState(currentVisibleBoundsProvider: { return .zero })
   }
 
   override func tearDown() {

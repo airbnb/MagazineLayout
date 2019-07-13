@@ -31,23 +31,25 @@ final class ModelStateLayoutTests: XCTestCase {
     let sections = [
       (headerModel0, sizeModesAndHeights0, footerModel0),
       (headerModel1, sizeModesAndHeights1, footerModel1)
-      ].map { headerModel, sizeModesAndHeights, footerModel in
-        SectionModel(
-          itemModels: sizeModesAndHeights.map { sizeMode, height in
-            switch sizeMode.heightMode {
-            case .static:
-              return ItemModel(sizeMode: sizeMode, height: height)
-            case .dynamic, .dynamicAndStretchToTallestItemInRow:
-              return ItemModel(sizeMode: sizeMode, height: 150)
-            }
-          },
-          headerModel: headerModel,
-          footerModel: footerModel,
-          backgroundModel: BackgroundModel(),
-          metrics: metrics)
-      }
+    ].map { headerModel, sizeModesAndHeights, footerModel in
+      SectionModel(
+        itemModels: sizeModesAndHeights.map { sizeMode, height in
+          switch sizeMode.heightMode {
+          case .static:
+            return ItemModel(sizeMode: sizeMode, height: height)
+          case .dynamic, .dynamicAndStretchToTallestItemInRow:
+            return ItemModel(sizeMode: sizeMode, height: 150)
+          }
+        },
+        headerModel: headerModel,
+        footerModel: footerModel,
+        backgroundModel: BackgroundModel(),
+        metrics: metrics)
+    }
 
-    modelState = ModelState()
+    modelState = ModelState(currentVisibleBoundsProvider: {
+      return CGRect(x: 0, y: 100, width: 320, height: 480)
+    })
     modelState.setSections(sections)
   }
 
@@ -824,10 +826,10 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedBackgroundFrames1: expectedBackgroundFrames1)
 
     modelState.setHeader(
-      HeaderModel(heightMode: .static(height: 60), height: 60),
+      HeaderModel(heightMode: .static(height: 60), height: 60, pinToVisibleBounds: false),
       forSectionAtIndex: 0)
     modelState.setHeader(
-      HeaderModel(heightMode: .dynamic, height: 100),
+      HeaderModel(heightMode: .dynamic, height: 100, pinToVisibleBounds: false),
       forSectionAtIndex: 1)
 
     let expectedItemFrames2: [CGRect] = [
@@ -953,10 +955,10 @@ final class ModelStateLayoutTests: XCTestCase {
 
 
     modelState.setFooter(
-      FooterModel(heightMode: .static(height: 40), height: 40),
+      FooterModel(heightMode: .static(height: 40), height: 40, pinToVisibleBounds: false),
       forSectionAtIndex: 0)
     modelState.setFooter(
-      FooterModel(heightMode: .dynamic, height: 120),
+      FooterModel(heightMode: .dynamic, height: 120, pinToVisibleBounds: false),
       forSectionAtIndex: 1)
 
     let expectedItemFrames2: [CGRect] = [
@@ -1141,6 +1143,96 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedBackgroundFrames1: expectedBackgroundFrames3)
   }
 
+  func testPinnedHeadersAndFooters() {
+    modelState.setHeader(
+      HeaderModel(
+        heightMode: .dynamic,
+        height: 50,
+        pinToVisibleBounds: true),
+      forSectionAtIndex: 0)
+    modelState.setHeader(
+      HeaderModel(
+        heightMode: .static(height: 100),
+        height: 100,
+        pinToVisibleBounds: true),
+      forSectionAtIndex: 1)
+    modelState.setFooter(
+      FooterModel(
+        heightMode: .static(height: 150),
+        height: 150,
+        pinToVisibleBounds: true),
+      forSectionAtIndex: 0)
+    modelState.setFooter(
+      FooterModel(
+        heightMode: .dynamic,
+        height: 25,
+        pinToVisibleBounds: true),
+      forSectionAtIndex: 1)
+
+    modelState.updateHeaderHeight(toPreferredHeight: 75, forSectionAtIndex: 0)
+    modelState.updateFooterHeight(toPreferredHeight: 50, forSectionAtIndex: 1)
+
+    let expectedItemFrames0: [CGRect] = [
+      CGRect(x: 15.0, y: 165.0, width: 300.0, height: 150.0),
+      CGRect(x: 25.0, y: 115.0, width: 280.0, height: 20.0),
+      CGRect(x: 25.0, y: 345.0, width: 130.0, height: 10.0),
+      CGRect(x: 175.0, y: 345.0, width: 130.0, height: 30.0),
+      CGRect(x: 25.0, y: 405.0, width: 130.0, height: 150.0),
+    ]
+    let expectedItemFrames1: [CGRect] = [
+      CGRect(x: 250.0, y: 765.0, width: 55.0, height: 150.0),
+      CGRect(x: 175.0, y: 765.0, width: 55.0, height: 150.0),
+      CGRect(x: 100.0, y: 765.0, width: 55.0, height: 150.0),
+      CGRect(x: 25.0, y: 765.0, width: 55.0, height: 15.0),
+      CGRect(x: 125.0, y: 585.0, width: 80.0, height: 150.0),
+      CGRect(x: 25.0, y: 585.0, width: 80.0, height: 150.0),
+      CGRect(x: 25.0, y: 405.0, width: 130.0, height: 150.0),
+      CGRect(x: 25.0, y: 945.0, width: 40.0, height: 150.0),
+      CGRect(x: 25.0, y: 1415.0, width: 130.0, height: 10.0),
+      CGRect(x: 175.0, y: 1415.0, width: 130.0, height: 30.0),
+      CGRect(x: 25.0, y: 1475.0, width: 130.0, height: 25.0),
+      CGRect(x: 25.0, y: 1530.0, width: 80.0, height: 15.0),
+      CGRect(x: 25.0, y: 1575.0, width: 280.0, height: 20.0),
+      CGRect(x: 25.0, y: 1625.0, width: 80.0, height: 10.0),
+      CGRect(x: 25.0, y: 1665.0, width: 40.0, height: 15.0),
+      CGRect(x: 85.0, y: 1665.0, width: 40.0, height: 15.0),
+      CGRect(x: 145.0, y: 1665.0, width: 40.0, height: 25.0),
+      CGRect(x: 205.0, y: 1665.0, width: 40.0, height: 35.0),
+      CGRect(x: 265.0, y: 1665.0, width: 40.0, height: 30.0),
+      CGRect(x: 15.0, y: 1730.0, width: 300.0, height: 15.0),
+    ]
+    let expectedHeaderFrames0: [CGRect] = [
+      CGRect(x: 15.0, y: 100.0, width: 300.0, height: 75.0),
+    ]
+    let expectedHeaderFrames1: [CGRect] = [
+      CGRect(x: 15.0, y: 1305.0, width: 300.0, height: 100.0),
+    ]
+    let expectedFooterFrames0: [CGRect] = [
+      CGRect(x: 15.0, y: 430.0, width: 300.0, height: 150.0),
+    ]
+    let expectedFooterFrames1: [CGRect] = [
+      CGRect(x: 15.0, y: 430.0, width: 300.0, height: 150.0),
+      CGRect(x: 15.0, y: 1405.0, width: 300.0, height: 50.0),
+    ]
+    let expectedBackgroundFrames0: [CGRect] = [
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1225.0),
+    ]
+    let expectedBackgroundFrames1: [CGRect] = [
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1225.0),
+      CGRect(x: 15.0, y: 1305.0, width: 300.0, height: 500.0),
+    ]
+
+    checkExpectedFrames(
+      expectedItemFrames0: expectedItemFrames0,
+      expectedItemFrames1: expectedItemFrames1,
+      expectedHeaderFrames0: expectedHeaderFrames0,
+      expectedHeaderFrames1: expectedHeaderFrames1,
+      expectedFooterFrames0: expectedFooterFrames0,
+      expectedFooterFrames1: expectedFooterFrames1,
+      expectedBackgroundFrames0: expectedBackgroundFrames0,
+      expectedBackgroundFrames1: expectedBackgroundFrames1)
+  }
+
   // MARK: Private
 
   private var modelState: ModelState!
@@ -1150,7 +1242,8 @@ final class ModelStateLayoutTests: XCTestCase {
 
   private lazy var headerModel0 = HeaderModel(
     heightMode: .static(height: 50),
-    height: 50)
+    height: 50,
+    pinToVisibleBounds: false)
   private lazy var sizeModesAndHeights0: [(sizeMode: MagazineLayoutItemSizeMode, height: CGFloat)] = [
     (MagazineLayoutItemSizeMode(
       widthMode: .fullWidth(respectsHorizontalInsets: true),
@@ -1184,9 +1277,13 @@ final class ModelStateLayoutTests: XCTestCase {
   ]
   private lazy var footerModel0 = FooterModel(
     heightMode: .static(height: 50),
-    height: 50)
+    height: 50,
+    pinToVisibleBounds: false)
 
-  private lazy var headerModel1 = HeaderModel(heightMode: .dynamic, height: 70)
+  private lazy var headerModel1 = HeaderModel(
+    heightMode: .dynamic,
+    height: 70,
+    pinToVisibleBounds: false)
   private lazy var sizeModesAndHeights1: [(sizeMode: MagazineLayoutItemSizeMode, height: CGFloat)] = [
     (MagazineLayoutItemSizeMode(widthMode: .halfWidth, heightMode: .static(height: 10)), 10),
     (MagazineLayoutItemSizeMode(widthMode: .halfWidth, heightMode: .static(height: 30)), 30),
@@ -1212,7 +1309,10 @@ final class ModelStateLayoutTests: XCTestCase {
       heightMode: .static(height: 15)),
      15),
   ]
-  private lazy var footerModel1 = FooterModel(heightMode: .dynamic, height: 70)
+  private lazy var footerModel1 = FooterModel(
+    heightMode: .dynamic,
+    height: 70,
+    pinToVisibleBounds: false)
 
   private func checkExpectedFrames(
     expectedItemFrames0: [CGRect],
