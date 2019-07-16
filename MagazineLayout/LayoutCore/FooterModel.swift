@@ -20,8 +20,9 @@ struct FooterModel {
 
   // MARK: Lifecycle
 
-  init(heightMode: MagazineLayoutFooterHeightMode, height: CGFloat) {
+  init(heightMode: MagazineLayoutFooterHeightMode, height: CGFloat, pinToVisibleBounds: Bool) {
     self.heightMode = heightMode
+    self.pinToVisibleBounds = pinToVisibleBounds
     originInSection = .zero
     size = CGSize(width: 0, height: height)
   }
@@ -29,6 +30,7 @@ struct FooterModel {
   // MARK: Internal
 
   var heightMode: MagazineLayoutFooterHeightMode
+  var pinToVisibleBounds: Bool
   var originInSection: CGPoint
   var size: CGSize
   var preferredHeight: CGFloat?

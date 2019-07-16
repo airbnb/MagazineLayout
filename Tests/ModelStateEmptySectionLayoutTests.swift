@@ -22,7 +22,7 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
   // MARK: Internal
 
   override func setUp() {
-    modelState = ModelState()
+    modelState = ModelState(currentVisibleBoundsProvider: { return .zero })
   }
 
   override func tearDown() {
@@ -74,14 +74,26 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
     let initialSections = [
       SectionModel(
         itemModels: [],
-        headerModel: HeaderModel(heightMode: .static(height: 45), height: 45),
-        footerModel: FooterModel(heightMode: .static(height: 45), height: 45),
+        headerModel: HeaderModel(
+          heightMode: .static(height: 45),
+          height: 45,
+          pinToVisibleBounds: false),
+        footerModel: FooterModel(
+          heightMode: .static(height: 45),
+          height: 45,
+          pinToVisibleBounds: false),
         backgroundModel: BackgroundModel(),
         metrics: metrics0),
       SectionModel(
         itemModels: [],
-        headerModel: HeaderModel(heightMode: .static(height: 65), height: 65),
-        footerModel: FooterModel(heightMode: .static(height: 65), height: 65),
+        headerModel: HeaderModel(
+          heightMode: .static(height: 65),
+          height: 65,
+          pinToVisibleBounds: false),
+        footerModel: FooterModel(
+          heightMode: .static(height: 65),
+          height: 65,
+          pinToVisibleBounds: false),
         backgroundModel: BackgroundModel(),
         metrics: metrics1),
       ]

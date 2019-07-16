@@ -20,11 +20,21 @@ import CoreGraphics
 public enum MagazineLayoutFooterVisibilityMode {
 
   /// This visibility mode will cause the footer to be displayed using the specified height mode in
-  /// its respective section.
-  case visible(heightMode: MagazineLayoutFooterHeightMode)
+  /// its respective section. If `pinToVisibleBounds` is true, the footer will pin to the visible
+  /// bounds of the collection view while its containing section is visible.
+  case visible(heightMode: MagazineLayoutFooterHeightMode, pinToVisibleBounds: Bool)
 
   /// This visibility mode will cause the footer to not be visibile in its respective section.
   case hidden
+
+  /// This visibility mode will cause the footer to be displayed using the specified height mode in
+  /// its respective section.
+  public static func visible(
+    heightMode: MagazineLayoutFooterHeightMode)
+    -> MagazineLayoutFooterVisibilityMode
+  {
+    return .visible(heightMode: heightMode, pinToVisibleBounds: false)
+  }
 
 }
 

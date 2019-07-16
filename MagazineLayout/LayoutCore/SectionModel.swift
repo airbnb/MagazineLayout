@@ -49,6 +49,8 @@ struct SectionModel {
   private(set) var footerModel: FooterModel?
   private(set) var backgroundModel: BackgroundModel?
 
+  var visibleBounds: CGRect?
+
   var numberOfItems: Int {
     return itemModels.count
   }
@@ -88,7 +90,10 @@ struct SectionModel {
     return CGRect(origin: origin, size: itemModels[index].size)
   }
 
-  mutating func calculateFrameForHeader() -> CGRect? {
+  mutating func calculateFrameForHeader(
+    inSectionVisibleBounds sectionVisibleBounds: CGRect)
+    -> CGRect?
+  {
     guard headerModel != nil else { return nil }
 
     calculateElementFramesIfNecessary()
@@ -97,13 +102,32 @@ struct SectionModel {
     // so we can't use a copy made before that code executes (for example, in a
     // `guard let headerModel = headerModel else { ... }` at the top of this function).
     if let headerModel = headerModel {
-      return CGRect(origin: headerModel.originInSection, size: headerModel.size)
+      let originY: CGFloat
+      if headerModel.pinToVisibleBounds {
+        originY = max(
+          min(
+            sectionVisibleBounds.minY,
+            calculateHeight() -
+              metrics.sectionInsets.bottom -
+              (footerModel?.size.height ?? 0) -
+              headerModel.size.height),
+          headerModel.originInSection.y)
+      } else {
+        originY = headerModel.originInSection.y
+      }
+
+      return CGRect(
+        origin: CGPoint(x: headerModel.originInSection.x, y: originY),
+        size: headerModel.size)
     } else {
       return nil
     }
   }
 
-  mutating func calculateFrameForFooter() -> CGRect? {
+  mutating func calculateFrameForFooter(
+    inSectionVisibleBounds sectionVisibleBounds: CGRect)
+    -> CGRect?
+  {
     guard footerModel != nil else { return nil }
 
     calculateElementFramesIfNecessary()
@@ -118,8 +142,21 @@ struct SectionModel {
     // `footerModel` is a value type that might be mutated in `calculateElementFramesIfNecessary`,
     // so we can't use a copy made before that code executes (for example, in a
     // `guard let footerModel = footerModel else { ... }` at the top of this function).
-    if let footerModel = footerModel {
-      return CGRect(origin: origin ?? footerModel.originInSection, size: footerModel.size)
+    if let footerModel = footerModel, let origin = origin {
+      let originY: CGFloat
+      if footerModel.pinToVisibleBounds {
+        originY = min(
+          max(
+            sectionVisibleBounds.maxY - footerModel.size.height,
+             metrics.sectionInsets.top + (headerModel?.size.height ?? 0)),
+          origin.y)
+      } else {
+        originY = origin.y
+      }
+
+      return CGRect(
+        origin: CGPoint(x: footerModel.originInSection.x, y: originY),
+        size: footerModel.size)
     } else {
       return nil
     }
