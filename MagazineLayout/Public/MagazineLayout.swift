@@ -341,6 +341,9 @@ public final class MagazineLayout: UICollectionViewLayout {
   override public func finalizeCollectionViewUpdates() {
     modelState.clearInProgressBatchUpdateState()
 
+    itemLayoutAttributesForPendingAnimations.removeAll()
+    supplementaryViewLayoutAttributesForPendingAnimations.removeAll()
+
     super.finalizeCollectionViewUpdates()
   }
 
@@ -481,6 +484,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     {
       let attributes = layoutAttributesForItem(at: itemIndexPath)?.copy() as? UICollectionViewLayoutAttributes
       attributes?.alpha = 0
+      itemLayoutAttributesForPendingAnimations[itemIndexPath] = attributes
       return attributes
     } else if
       let movedItemID = modelState.idForItemModel(at: itemIndexPath, .afterUpdates),
@@ -511,7 +515,9 @@ public final class MagazineLayout: UICollectionViewLayout {
         withID: movedItemID,
         .afterUpdates)
     {
-      return layoutAttributesForItem(at: finalIndexPath)?.copy() as? UICollectionViewLayoutAttributes
+      let attributes = layoutAttributesForItem(at: finalIndexPath)?.copy() as? UICollectionViewLayoutAttributes
+      itemLayoutAttributesForPendingAnimations[finalIndexPath] = attributes
+      return attributes
     } else {
       return super.layoutAttributesForItem(at: itemIndexPath)
     }
@@ -527,6 +533,7 @@ public final class MagazineLayout: UICollectionViewLayout {
         ofKind: elementKind,
         at: elementIndexPath)?.copy() as? UICollectionViewLayoutAttributes
       attributes?.alpha = 0
+      supplementaryViewLayoutAttributesForPendingAnimations[elementIndexPath] = attributes
       return attributes
     } else if
       let movedSectionID = modelState.idForSectionModel(
@@ -537,7 +544,9 @@ public final class MagazineLayout: UICollectionViewLayout {
         .beforeUpdates)
     {
       let initialIndexPath = IndexPath(item: 0, section: initialSectionIndex)
-      return previousLayoutAttributesForSupplementaryView(ofKind: elementKind, at: initialIndexPath)
+      return previousLayoutAttributesForSupplementaryView(
+        ofKind: elementKind,
+        at: initialIndexPath)
     } else {
       return super.initialLayoutAttributesForAppearingSupplementaryElement(
         ofKind: elementKind,
@@ -565,9 +574,11 @@ public final class MagazineLayout: UICollectionViewLayout {
         .afterUpdates)
     {
       let finalIndexPath = IndexPath(item: 0, section: finalSectionIndex)
-      return layoutAttributesForSupplementaryView(
+      let attributes = layoutAttributesForSupplementaryView(
         ofKind: elementKind,
         at: finalIndexPath)?.copy() as? UICollectionViewLayoutAttributes
+      supplementaryViewLayoutAttributesForPendingAnimations[finalIndexPath] = attributes
+      return attributes
     }  else {
       return super.finalLayoutAttributesForDisappearingSupplementaryElement(
         ofKind: elementKind,
@@ -649,19 +660,38 @@ public final class MagazineLayout: UICollectionViewLayout {
       modelState.updateItemHeight(
         toPreferredHeight: preferredAttributes.size.height,
         forItemAt: preferredAttributes.indexPath)
+
+      let layoutAttributesForPendingAnimation = itemLayoutAttributesForPendingAnimations[preferredAttributes.indexPath]
+      layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForItem(
+        at: ElementLocation(indexPath: preferredAttributes.indexPath),
+        .afterUpdates).height
+
     case .supplementaryView:
+      let layoutAttributesForPendingAnimation = supplementaryViewLayoutAttributesForPendingAnimations[preferredAttributes.indexPath]
+
       switch preferredAttributes.representedElementKind {
       case MagazineLayout.SupplementaryViewKind.sectionHeader?:
         modelState.updateHeaderHeight(
           toPreferredHeight: preferredAttributes.size.height,
           forSectionAtIndex: preferredAttributes.indexPath.section)
+
+        layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForHeader(
+          inSectionAtIndex: preferredAttributes.indexPath.section,
+          .afterUpdates)?.height ?? preferredAttributes.size.height
+
       case MagazineLayout.SupplementaryViewKind.sectionFooter?:
         modelState.updateFooterHeight(
           toPreferredHeight: preferredAttributes.size.height,
           forSectionAtIndex: preferredAttributes.indexPath.section)
+
+        layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForFooter(
+          inSectionAtIndex: preferredAttributes.indexPath.section,
+          .afterUpdates)?.height ?? preferredAttributes.size.height
+
       default:
         break
       }
+
     case .decorationView:
       assertionFailure("`MagazineLayout` does not support decoration views")
     }
@@ -765,6 +795,12 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var headerLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var footerLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
   private var backgroundLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
+
+  // These properties are used to keep the layout attributes copies used for insert/delete
+  // animations up-to-date as items are self-sized. If we don't keep these copies up-to-date, then
+  // animations will start from the estimated height.
+  private var itemLayoutAttributesForPendingAnimations = [IndexPath: UICollectionViewLayoutAttributes]()
+  private var supplementaryViewLayoutAttributesForPendingAnimations = [IndexPath: UICollectionViewLayoutAttributes]()
 
   private struct PrepareActions: OptionSet {
     let rawValue: UInt
