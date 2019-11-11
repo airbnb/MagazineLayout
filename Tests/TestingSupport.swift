@@ -207,6 +207,10 @@ extension Array where Element == CGRect {
 
 extension CGRect: Hashable {
 
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(hashValue)
+  }
+
   public var hashValue: Int {
     return NSStringFromCGRect(self).hashValue
   }
