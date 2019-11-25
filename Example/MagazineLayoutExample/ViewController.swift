@@ -403,13 +403,8 @@ extension ViewController: UICollectionViewDelegate {
 
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     collectionView.performBatchUpdates({
-      if dataSource.numberOfItemsInSection(withIndex: indexPath.section) > 1 {
-        dataSource.removeItem(atItemIndex: indexPath.item, inSectionAtIndex: indexPath.section)
-        collectionView.deleteItems(at: [indexPath])
-      } else {
-        dataSource.removeSection(atSectionIndex: indexPath.section)
-        collectionView.deleteSections(IndexSet(integer: indexPath.section))
-      }
+      dataSource.removeItem(atItemIndex: indexPath.item, inSectionAtIndex: indexPath.section)
+      collectionView.deleteItems(at: [indexPath])
     }, completion: nil)
   }
 
@@ -443,6 +438,10 @@ extension ViewController: UICollectionViewDelegateMagazineLayout {
     visibilityModeForFooterInSectionAtIndex index: Int)
     -> MagazineLayoutFooterVisibilityMode
   {
+    if dataSource.numberOfItemsInSection(withIndex: index) == 0 {
+      return .hidden
+    }
+
     return dataSource.sectionInfos[index].footerInfo.visibilityMode
   }
 
