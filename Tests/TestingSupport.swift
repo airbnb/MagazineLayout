@@ -207,8 +207,27 @@ extension Array where Element == CGRect {
 
 extension CGRect: Hashable {
 
-  public var hashValue: Int {
-    return NSStringFromCGRect(self).hashValue
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(size)
+    hasher.combine(origin)
+  }
+
+}
+
+extension CGSize: Hashable {
+
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(height)
+    hasher.combine(width)
+  }
+
+}
+
+extension CGPoint: Hashable {
+
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(x)
+    hasher.combine(y)
   }
 
 }
