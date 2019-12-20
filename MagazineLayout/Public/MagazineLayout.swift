@@ -812,6 +812,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
   private var prepareActions: PrepareActions = []
 
+  // Used to provide the model state with the current visible bounds for the sole purpose of
+  // supporting pinned headers and footers.
   private var currentVisibleBounds: CGRect {
     let contentInset: UIEdgeInsets
     if #available(iOS 11.0, *) {
