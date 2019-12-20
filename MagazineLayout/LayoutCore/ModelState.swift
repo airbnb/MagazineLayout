@@ -239,7 +239,7 @@ final class ModelState {
       withElementLocationsForFlattenedIndices: headerLocationsForFlattenedIndices,
       andFramesProvidedBy: { headerLocation -> CGRect in
         guard
-          let footerFrame = frameForHeader(
+          let headerFrame = frameForHeader(
             inSectionAtIndex: headerLocation.sectionIndex,
             .afterUpdates) else
         {
@@ -247,7 +247,7 @@ final class ModelState {
           return .zero
         }
 
-        return footerFrame
+        return headerFrame
       })
   }
 

@@ -820,11 +820,21 @@ public final class MagazineLayout: UICollectionViewLayout {
       contentInset = currentCollectionView.contentInset
     }
 
+    let refreshControlHeight: CGFloat
+    if
+      let refreshControl = currentCollectionView.refreshControl,
+      refreshControl.isRefreshing
+    {
+      refreshControlHeight = refreshControl.bounds.height
+    } else {
+      refreshControlHeight = 0
+    }
+
     return CGRect(
       x: currentCollectionView.bounds.minX + contentInset.left,
-      y: currentCollectionView.bounds.minY + contentInset.top,
+      y: currentCollectionView.bounds.minY + contentInset.top - refreshControlHeight,
       width: currentCollectionView.bounds.width - contentInset.left - contentInset.right,
-      height: currentCollectionView.bounds.height - contentInset.top - contentInset.bottom)
+      height: currentCollectionView.bounds.height - contentInset.top - contentInset.bottom + refreshControlHeight)
   }
 
   private var delegateMagazineLayout: UICollectionViewDelegateMagazineLayout? {
