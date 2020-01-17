@@ -812,6 +812,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
   private var prepareActions: PrepareActions = []
 
+  // Used to provide the model state with the current visible bounds for the sole purpose of
+  // supporting pinned headers and footers.
   private var currentVisibleBounds: CGRect {
     let contentInset: UIEdgeInsets
     if #available(iOS 11.0, *) {
@@ -820,11 +822,21 @@ public final class MagazineLayout: UICollectionViewLayout {
       contentInset = currentCollectionView.contentInset
     }
 
+    let refreshControlHeight: CGFloat
+    if
+      let refreshControl = currentCollectionView.refreshControl,
+      refreshControl.isRefreshing
+    {
+      refreshControlHeight = refreshControl.bounds.height
+    } else {
+      refreshControlHeight = 0
+    }
+
     return CGRect(
       x: currentCollectionView.bounds.minX + contentInset.left,
-      y: currentCollectionView.bounds.minY + contentInset.top,
+      y: currentCollectionView.bounds.minY + contentInset.top - refreshControlHeight,
       width: currentCollectionView.bounds.width - contentInset.left - contentInset.right,
-      height: currentCollectionView.bounds.height - contentInset.top - contentInset.bottom)
+      height: currentCollectionView.bounds.height - contentInset.top - contentInset.bottom + refreshControlHeight)
   }
 
   private var delegateMagazineLayout: UICollectionViewDelegateMagazineLayout? {
