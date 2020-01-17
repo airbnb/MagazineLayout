@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'MagazineLayout'
-  s.version  = '1.5.2'
+  s.version  = '1.5.3'
   s.license  = 'Apache License, Version 2.0'
   s.summary  = 'A collection view layout that can display items in a grid and list arrangement.'
   s.homepage = 'https://github.com/airbnb/MagazineLayout'
@@ -9,4 +9,8 @@ Pod::Spec.new do |s|
   s.swift_version = '4.0'
   s.source_files = 'MagazineLayout/**/*.{swift,h}'
   s.ios.deployment_target = '10.0'
+
+  s.pod_target_xcconfig = {
+    'APPLICATION_EXTENSION_API_ONLY' => 'YES'
+  }
 end
