@@ -403,8 +403,13 @@ extension ViewController: UICollectionViewDelegate {
 
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     collectionView.performBatchUpdates({
-      dataSource.removeItem(atItemIndex: indexPath.item, inSectionAtIndex: indexPath.section)
-      collectionView.deleteItems(at: [indexPath])
+      if dataSource.numberOfItemsInSection(withIndex: indexPath.section) > 1 {
+        dataSource.removeItem(atItemIndex: indexPath.item, inSectionAtIndex: indexPath.section)
+        collectionView.deleteItems(at: [indexPath])
+      } else {
+        dataSource.removeSection(atSectionIndex: indexPath.section)
+        collectionView.deleteSections(IndexSet(integer: indexPath.section))
+      }
     }, completion: nil)
   }
 
