@@ -494,4 +494,15 @@ extension ViewController: UICollectionViewDelegateMagazineLayout {
     return UIEdgeInsets(top: 24, left: 4, bottom: 24, right: 4)
   }
 
+  func collectionView(
+    _ collectionView: UICollectionView,
+    layout collectionViewLayout: UICollectionViewLayout,
+    finalLayoutAttributesForRemovedItemAt indexPath: IndexPath,
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
+  {
+    // Fade and drop out
+    finalLayoutAttributes.alpha = 0
+    finalLayoutAttributes.transform = .init(scaleX: 0.2, y: 0.2)
+  }
+
 }
