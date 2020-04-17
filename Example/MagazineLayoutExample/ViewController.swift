@@ -438,10 +438,6 @@ extension ViewController: UICollectionViewDelegateMagazineLayout {
     visibilityModeForFooterInSectionAtIndex index: Int)
     -> MagazineLayoutFooterVisibilityMode
   {
-    if dataSource.numberOfItemsInSection(withIndex: index) == 0 {
-      return .hidden
-    }
-
     return dataSource.sectionInfos[index].footerInfo.visibilityMode
   }
 
