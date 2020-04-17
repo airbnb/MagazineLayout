@@ -558,7 +558,10 @@ public final class MagazineLayout: UICollectionViewLayout {
     at elementIndexPath: IndexPath)
     -> UICollectionViewLayoutAttributes?
   {
-    if elementIndexPath.isEmpty {
+   // If a supplementary view's visibility changes to `.hidden` due to a data source change, this
+    // function will get invoked with an `elementIndexPath` that crashes when its `section` is
+    // accessed.
+    guard !elementIndexPath.isEmpty else {
       return super.initialLayoutAttributesForAppearingSupplementaryElement(
         ofKind: elementKind,
         at: elementIndexPath)
