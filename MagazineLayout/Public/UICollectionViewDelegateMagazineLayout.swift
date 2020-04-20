@@ -300,8 +300,7 @@ public extension UICollectionViewDelegateMagazineLayout {
     initialLayoutAttributesForInsertedItemAt indexPath: IndexPath,
     byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
   {
-    // The default insert animation is a simple fade-in.
-    initialLayoutAttributes.alpha = 0
+    defaultInsertAnimation(byModifying: initialLayoutAttributes)
   }
 
   func collectionView(
@@ -310,8 +309,7 @@ public extension UICollectionViewDelegateMagazineLayout {
     initialLayoutAttributesForInsertedHeaderInSectionAtIndex index: Int,
     byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
   {
-    // The default insert animation is a simple fade-in.
-    initialLayoutAttributes.alpha = 0
+    defaultInsertAnimation(byModifying: initialLayoutAttributes)
   }
 
   func collectionView(
@@ -320,14 +318,19 @@ public extension UICollectionViewDelegateMagazineLayout {
     initialLayoutAttributesForInsertedFooterInSectionAtIndex index: Int,
     byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
   {
-    // The default insert animation is a simple fade-in.
-    initialLayoutAttributes.alpha = 0
+    defaultInsertAnimation(byModifying: initialLayoutAttributes)
   }
 
   func collectionView(
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     initialLayoutAttributesForInsertedBackgroundInSectionAtIndex index: Int,
+    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
+  {
+    defaultInsertAnimation(byModifying: initialLayoutAttributes)
+  }
+
+  private func defaultInsertAnimation(
     byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
   {
     // The default insert animation is a simple fade-in.
@@ -346,8 +349,7 @@ public extension UICollectionViewDelegateMagazineLayout {
     finalLayoutAttributesForRemovedItemAt indexPath: IndexPath,
     byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
   {
-    // The default insert animation is a simple fade-out.
-    finalLayoutAttributes.alpha = 0
+    defaultDeleteAnimation(byModifying: finalLayoutAttributes)
   }
 
   func collectionView(
@@ -356,8 +358,7 @@ public extension UICollectionViewDelegateMagazineLayout {
     finalLayoutAttributesForRemovedHeaderInSectionAtIndex index: Int,
     byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
   {
-    // The default insert animation is a simple fade-out.
-    finalLayoutAttributes.alpha = 0
+    defaultDeleteAnimation(byModifying: finalLayoutAttributes)
   }
 
   func collectionView(
@@ -366,8 +367,7 @@ public extension UICollectionViewDelegateMagazineLayout {
     finalLayoutAttributesForRemovedFooterInSectionAtIndex index: Int,
     byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
   {
-    // The default insert animation is a simple fade-out.
-    finalLayoutAttributes.alpha = 0
+    defaultDeleteAnimation(byModifying: finalLayoutAttributes)
   }
 
   func collectionView(
@@ -376,7 +376,13 @@ public extension UICollectionViewDelegateMagazineLayout {
     finalLayoutAttributesForRemovedBackgroundInSectionAtIndex index: Int,
     byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
   {
-    // The default insert animation is a simple fade-out.
+    defaultDeleteAnimation(byModifying: finalLayoutAttributes)
+  }
+
+  private func defaultDeleteAnimation(
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
+  {
+    // The default delete animation is a simple fade-out.
     finalLayoutAttributes.alpha = 0
   }
 
