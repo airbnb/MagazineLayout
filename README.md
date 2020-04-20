@@ -20,6 +20,7 @@ A collection view layout capable of laying out views in vertically scrolling gri
 - Hiding or showing headers and footers on a per-section basis
 - Pinned (sticky) headers and footers
 - Section backgrounds that can be hidden / visible on a per-section basis
+- Customizable insert and delete animations for items and supplementary views
 
 Other features:
 - Specifying horizontal item spacing on a per-section basis

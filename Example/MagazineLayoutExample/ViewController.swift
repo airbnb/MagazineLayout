@@ -81,11 +81,12 @@ final class ViewController: UIViewController {
   private var lastItemCreationPanelViewState: ItemCreationPanelViewState?
 
   private func removeAllData() {
-    for sectionIndex in (0..<dataSource.numberOfSections).reversed() {
-      dataSource.removeSection(atSectionIndex: sectionIndex)
-    }
-
-    collectionView.reloadData()
+    collectionView.performBatchUpdates({
+      for sectionIndex in (0..<dataSource.numberOfSections).reversed() {
+        dataSource.removeSection(atSectionIndex: sectionIndex)
+        collectionView.deleteSections(IndexSet(arrayLiteral: sectionIndex))
+      }
+    }, completion: nil)
   }
 
   private func loadDefaultData() {
@@ -307,11 +308,13 @@ final class ViewController: UIViewController {
       backgroundInfo: BackgroundInfo(visibilityMode: .hidden)
     )
 
-    dataSource.insert(section0, atSectionIndex: 0)
-    dataSource.insert(section1, atSectionIndex: 1)
-    dataSource.insert(section2, atSectionIndex: 2)
+    collectionView.performBatchUpdates({
+      dataSource.insert(section0, atSectionIndex: 0)
+      dataSource.insert(section1, atSectionIndex: 1)
+      dataSource.insert(section2, atSectionIndex: 2)
 
-    collectionView.reloadData()
+      collectionView.insertSections(IndexSet(arrayLiteral: 0, 1, 2))
+    }, completion: nil)
   }
 
   @objc
@@ -489,6 +492,17 @@ extension ViewController: UICollectionViewDelegateMagazineLayout {
     -> UIEdgeInsets
   {
     return UIEdgeInsets(top: 24, left: 4, bottom: 24, right: 4)
+  }
+
+  func collectionView(
+    _ collectionView: UICollectionView,
+    layout collectionViewLayout: UICollectionViewLayout,
+    finalLayoutAttributesForRemovedItemAt indexPath: IndexPath,
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
+  {
+    // Fade and drop out
+    finalLayoutAttributes.alpha = 0
+    finalLayoutAttributes.transform = .init(scaleX: 0.2, y: 0.2)
   }
 
 }
