@@ -445,13 +445,14 @@ public final class MagazineLayout: UICollectionViewLayout {
     let layoutAttributes = itemLayoutAttributes[itemLocation]
 
     guard
-      indexPath.section < modelState.numberOfSections(.afterUpdates),
-      indexPath.item < modelState.numberOfItems(inSectionAtIndex: indexPath.section, .afterUpdates) else
+      itemLocation.sectionIndex < modelState.numberOfSections(.afterUpdates),
+      itemLocation.elementIndex < modelState.numberOfItems(inSectionAtIndex: itemLocation.sectionIndex, .afterUpdates)
+    else
     {
       // On iOS 9, `layoutAttributesForItem(at:)` can be invoked for an index path of a new item
       // before the layout is notified of this new item (through either `prepare` or
       // `prepare(forCollectionViewUpdates:)`). This seems to be fixed in iOS 10 and higher.
-      assertionFailure("`{\(indexPath.section), \(indexPath.item)}` is out of bounds of the section models / item models array.")
+      assertionFailure("`{\(itemLocation.sectionIndex), \(itemLocation.elementIndex)}` is out of bounds of the section models / item models array.")
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
       // within `UICollecionView`, which is why we don't return `nil` here.

@@ -30,8 +30,16 @@ struct ElementLocation: Hashable {
   }
 
   init(indexPath: IndexPath) {
-    elementIndex = indexPath.item
-    sectionIndex = indexPath.section
+    if indexPath.count == 2 {
+      elementIndex = indexPath.item
+      sectionIndex = indexPath.section
+    } else {
+      // `UICollectionViewFlowLayout` is able to work with empty index paths (`IndexPath()`). Per
+      // the `IndexPath` documntation, an index path that uses `section` or `item` must have exactly
+      // 2 elements. If not, we default to {0, 0} to prevent crashes.
+      elementIndex = 0
+      sectionIndex = 0
+    }
   }
 
   // MARK: Internal
