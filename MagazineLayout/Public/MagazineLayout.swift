@@ -348,17 +348,6 @@ public final class MagazineLayout: UICollectionViewLayout {
     super.finalizeCollectionViewUpdates()
   }
 
-  override public func prepare(forAnimatedBoundsChange oldBounds: CGRect) {
-    saveCurrentLayoutAttributesAsPreviousLayoutAttributes()
-super.prepare(forAnimatedBoundsChange: oldBounds)
-  }
-
-override public func finalizeAnimatedBoundsChange() {
-    clearPreviousLayoutAttributes()
-
-    super.finalizeAnimatedBoundsChange()
-  }
-
   override public func layoutAttributesForElements(
     in rect: CGRect)
     -> [UICollectionViewLayoutAttributes]?
