@@ -39,6 +39,22 @@ import UIKit
 /// Apple's own layout.
 open class MagazineLayoutCollectionViewCell: UICollectionViewCell {
 
+  public override init(frame: CGRect) {
+    super.init(frame: frame)
+
+    contentView.translatesAutoresizingMaskIntoConstraints = false
+    NSLayoutConstraint.activate([
+      contentView.topAnchor.constraint(equalTo: topAnchor),
+      contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
+      bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+      rightAnchor.constraint(equalTo: contentView.rightAnchor),
+    ])
+  }
+
+  public required init?(coder: NSCoder) {
+    super.init(coder: coder)
+  }
+
   override open func preferredLayoutAttributesFitting(
     _ layoutAttributes: UICollectionViewLayoutAttributes)
     -> UICollectionViewLayoutAttributes
