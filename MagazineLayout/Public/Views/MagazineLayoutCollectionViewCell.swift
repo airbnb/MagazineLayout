@@ -60,7 +60,6 @@ open class MagazineLayoutCollectionViewCell: UICollectionViewCell {
     -> UICollectionViewLayoutAttributes
   {
     guard let attributes = layoutAttributes as? MagazineLayoutCollectionViewLayoutAttributes else {
-      assertionFailure("`layoutAttributes` must be an instance of `MagazineLayoutCollectionViewLayoutAttributes`")
       return super.preferredLayoutAttributesFitting(layoutAttributes)
     }
 
