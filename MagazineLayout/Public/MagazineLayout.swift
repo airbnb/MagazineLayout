@@ -893,6 +893,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     let refreshControlHeight: CGFloat
+    #if os(iOS)
     if
       let refreshControl = currentCollectionView.refreshControl,
       refreshControl.isRefreshing
@@ -901,6 +902,9 @@ public final class MagazineLayout: UICollectionViewLayout {
     } else {
       refreshControlHeight = 0
     }
+    #else
+    refreshControlHeight = 0
+    #endif
 
     return CGRect(
       x: currentCollectionView.bounds.minX + contentInset.left,
