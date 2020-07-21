@@ -8,6 +8,22 @@
 
 /* Begin PBXBuildFile section */
 		8F78E959225BD81000CAE309 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F78E958225BD81000CAE309 /* Background.swift */; };
+		DB68BA8324C7754400365AD4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD23F60021AF519700AA78D4 /* AppDelegate.swift */; };
+		DB68BA8424C7754700365AD4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD23F60221AF519700AA78D4 /* ViewController.swift */; };
+		DB68BA8524C7754B00365AD4 /* CreationPanelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CE021B23D64006BFABC /* CreationPanelViewController.swift */; };
+		DB68BA8624C7754E00365AD4 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD23F62921AF599000AA78D4 /* DataSource.swift */; };
+		DB68BA8724C7755000365AD4 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CD321B201D0006BFABC /* Data.swift */; };
+		DB68BA8824C7755300365AD4 /* DataSourceCountsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CDE21B2310A006BFABC /* DataSourceCountsProvider.swift */; };
+		DB68BA8924C7755500365AD4 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD89ED1821BFAD7D00607E70 /* Colors.swift */; };
+		DB68BA8A24C7755800365AD4 /* Header.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CD721B226A7006BFABC /* Header.swift */; };
+		DB68BA8B24C7755B00365AD4 /* Footer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAC64292208870300973F4C /* Footer.swift */; };
+		DB68BA8C24C7755E00365AD4 /* Cell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CD521B20875006BFABC /* Cell.swift */; };
+		DB68BA8D24C7756100365AD4 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F78E958225BD81000CAE309 /* Background.swift */; };
+		DB68BA8E24C7756300365AD4 /* ItemCreationPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CDC21B22BBE006BFABC /* ItemCreationPanelView.swift */; };
+		DB68BA8F24C7756600365AD4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FD23F60721AF519900AA78D4 /* Assets.xcassets */; };
+		DB68BA9224C775B200365AD4 /* MagazineLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB68BA9124C775B200365AD4 /* MagazineLayout.framework */; };
+		DB68BA9324C775B200365AD4 /* MagazineLayout.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DB68BA9124C775B200365AD4 /* MagazineLayout.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DB68BA9624C7775F00365AD4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DB68BA9524C7775F00365AD4 /* LaunchScreen.storyboard */; };
 		FCAC642A2208870300973F4C /* Footer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAC64292208870300973F4C /* Footer.swift */; };
 		FD138CD421B201D0006BFABC /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CD321B201D0006BFABC /* Data.swift */; };
 		FD138CD621B20875006BFABC /* Cell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD138CD521B20875006BFABC /* Cell.swift */; };
@@ -26,6 +42,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		DB68BA9424C775B200365AD4 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				DB68BA9324C775B200365AD4 /* MagazineLayout.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FD69EAB221BA2B17001E0650 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -41,6 +68,10 @@
 
 /* Begin PBXFileReference section */
 		8F78E958225BD81000CAE309 /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
+		DB68BA7124C7751100365AD4 /* MagazineLayoutExampleAppleTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MagazineLayoutExampleAppleTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB68BA7F24C7751400365AD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DB68BA9124C775B200365AD4 /* MagazineLayout.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MagazineLayout.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB68BA9524C7775F00365AD4 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FCAC64292208870300973F4C /* Footer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Footer.swift; sourceTree = "<group>"; };
 		FD138CD321B201D0006BFABC /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
 		FD138CD521B20875006BFABC /* Cell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cell.swift; sourceTree = "<group>"; };
@@ -60,6 +91,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		DB68BA6E24C7751100365AD4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB68BA9224C775B200365AD4 /* MagazineLayout.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FD23F5FA21AF519700AA78D4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -71,6 +110,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DB68BA7224C7751100365AD4 /* MagazineLayoutExampleAppleTV */ = {
+			isa = PBXGroup;
+			children = (
+				DB68BA7F24C7751400365AD4 /* Info.plist */,
+				DB68BA9524C7775F00365AD4 /* LaunchScreen.storyboard */,
+			);
+			path = MagazineLayoutExampleAppleTV;
+			sourceTree = "<group>";
+		};
 		FD138CD921B22AE9006BFABC /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -97,6 +145,7 @@
 			isa = PBXGroup;
 			children = (
 				FD23F5FF21AF519700AA78D4 /* MagazineLayoutExample */,
+				DB68BA7224C7751100365AD4 /* MagazineLayoutExampleAppleTV */,
 				FD23F5FE21AF519700AA78D4 /* Products */,
 				FD23F62421AF548C00AA78D4 /* Frameworks */,
 			);
@@ -106,6 +155,7 @@
 			isa = PBXGroup;
 			children = (
 				FD23F5FD21AF519700AA78D4 /* MagazineLayoutExample.app */,
+				DB68BA7124C7751100365AD4 /* MagazineLayoutExampleAppleTV.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -129,6 +179,7 @@
 		FD23F62421AF548C00AA78D4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DB68BA9124C775B200365AD4 /* MagazineLayout.framework */,
 				FD23F62721AF578300AA78D4 /* MagazineLayout.framework */,
 			);
 			name = Frameworks;
@@ -137,6 +188,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		DB68BA7024C7751100365AD4 /* MagazineLayoutExampleAppleTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DB68BA8224C7751400365AD4 /* Build configuration list for PBXNativeTarget "MagazineLayoutExampleAppleTV" */;
+			buildPhases = (
+				DB68BA6D24C7751100365AD4 /* Sources */,
+				DB68BA6E24C7751100365AD4 /* Frameworks */,
+				DB68BA6F24C7751100365AD4 /* Resources */,
+				DB68BA9424C775B200365AD4 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MagazineLayoutExampleAppleTV;
+			productName = MagazineLayoutExampleAppleTV;
+			productReference = DB68BA7124C7751100365AD4 /* MagazineLayoutExampleAppleTV.app */;
+			productType = "com.apple.product-type.application";
+		};
 		FD23F5FC21AF519700AA78D4 /* MagazineLayoutExample */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = FD23F60F21AF519900AA78D4 /* Build configuration list for PBXNativeTarget "MagazineLayoutExample" */;
@@ -161,10 +230,13 @@
 		FD23F5F521AF519700AA78D4 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1010;
+				LastSwiftUpdateCheck = 1160;
 				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = Airbnb;
 				TargetAttributes = {
+					DB68BA7024C7751100365AD4 = {
+						CreatedOnToolsVersion = 11.6;
+					};
 					FD23F5FC21AF519700AA78D4 = {
 						CreatedOnToolsVersion = 10.1;
 					};
@@ -184,11 +256,21 @@
 			projectRoot = "";
 			targets = (
 				FD23F5FC21AF519700AA78D4 /* MagazineLayoutExample */,
+				DB68BA7024C7751100365AD4 /* MagazineLayoutExampleAppleTV */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		DB68BA6F24C7751100365AD4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB68BA9624C7775F00365AD4 /* LaunchScreen.storyboard in Resources */,
+				DB68BA8F24C7756600365AD4 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FD23F5FB21AF519700AA78D4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -201,6 +283,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		DB68BA6D24C7751100365AD4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB68BA8D24C7756100365AD4 /* Background.swift in Sources */,
+				DB68BA8B24C7755B00365AD4 /* Footer.swift in Sources */,
+				DB68BA8A24C7755800365AD4 /* Header.swift in Sources */,
+				DB68BA8424C7754700365AD4 /* ViewController.swift in Sources */,
+				DB68BA8724C7755000365AD4 /* Data.swift in Sources */,
+				DB68BA8E24C7756300365AD4 /* ItemCreationPanelView.swift in Sources */,
+				DB68BA8524C7754B00365AD4 /* CreationPanelViewController.swift in Sources */,
+				DB68BA8924C7755500365AD4 /* Colors.swift in Sources */,
+				DB68BA8624C7754E00365AD4 /* DataSource.swift in Sources */,
+				DB68BA8C24C7755E00365AD4 /* Cell.swift in Sources */,
+				DB68BA8324C7754400365AD4 /* AppDelegate.swift in Sources */,
+				DB68BA8824C7755300365AD4 /* DataSourceCountsProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FD23F5F921AF519700AA78D4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -234,6 +335,44 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		DB68BA8024C7751400365AD4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = MagazineLayoutExampleAppleTV/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.airbnb.MagazineLayoutExampleAppleTV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
+			};
+			name = Debug;
+		};
+		DB68BA8124C7751400365AD4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = MagazineLayoutExampleAppleTV/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.airbnb.MagazineLayoutExampleAppleTV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13.4;
+			};
+			name = Release;
+		};
 		FD23F60D21AF519900AA78D4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -395,6 +534,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		DB68BA8224C7751400365AD4 /* Build configuration list for PBXNativeTarget "MagazineLayoutExampleAppleTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DB68BA8024C7751400365AD4 /* Debug */,
+				DB68BA8124C7751400365AD4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		FD23F5F821AF519700AA78D4 /* Build configuration list for PBXProject "MagazineLayoutExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
