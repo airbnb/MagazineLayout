@@ -1,5 +1,5 @@
 language: objective-c
-osx_image: xcode11.6
+osx_image: xcode10
 env:
   - SWIFT_VERSION=4.0
 install:
@@ -9,5 +9,5 @@ before_script:
   - bundle exec pod lib lint --allow-warnings
   - carthage build --verbose --no-skip-current
 script:
-  - xcodebuild -project MagazineLayout.xcodeproj -scheme MagazineLayout -sdk iphonesimulator -destination "platform=iOS Simulator,OS=13.6,name=iPhone 11" -configuration Debug -PBXBuildsContinueAfterErrors=0 SWIFT_VERSION=$SWIFT_VERSION build test
+  - xcodebuild -project MagazineLayout.xcodeproj -scheme MagazineLayout -sdk iphonesimulator -destination "platform=iOS Simulator,OS=12.0,name=iPhone XS" -configuration Debug -PBXBuildsContinueAfterErrors=0 SWIFT_VERSION=$SWIFT_VERSION build test
 
