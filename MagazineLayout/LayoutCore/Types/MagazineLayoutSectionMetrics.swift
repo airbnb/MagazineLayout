@@ -28,7 +28,7 @@ struct MagazineLayoutSectionMetrics: Equatable {
   {
     collectionViewWidth = collectionView.bounds.width
 
-    if #available(iOS 11.0, *) {
+    if #available(iOS 11.0, tvOS 11.0, *) {
       collectionViewContentInset = collectionView.adjustedContentInset
     } else {
       collectionViewContentInset = collectionView.contentInset
