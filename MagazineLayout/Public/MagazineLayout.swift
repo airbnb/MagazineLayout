@@ -60,7 +60,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     let width: CGFloat
     if let collectionView = collectionView {
       let contentInset: UIEdgeInsets
-      if #available(iOS 11.0, *) {
+      if #available(iOS 11.0, tvOS 11.0, *) {
         contentInset = collectionView.adjustedContentInset
       } else {
         contentInset = collectionView.contentInset
@@ -886,7 +886,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   // supporting pinned headers and footers.
   private var currentVisibleBounds: CGRect {
     let contentInset: UIEdgeInsets
-    if #available(iOS 11.0, *) {
+    if #available(iOS 11.0, tvOS 11.0, *) {
       contentInset = currentCollectionView.adjustedContentInset
     } else {
       contentInset = currentCollectionView.contentInset
