@@ -5,7 +5,8 @@ import PackageDescription
 let package = Package(
     name: "MagazineLayout",
     platforms: [
-        .iOS(.v10)
+        .iOS(.v10),
+        .tvOS(.v10)
     ],
     products: [
         .library(name: "MagazineLayout", targets: ["MagazineLayout"])
