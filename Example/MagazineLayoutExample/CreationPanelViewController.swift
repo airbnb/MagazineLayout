@@ -15,6 +15,7 @@
 
 import UIKit
 
+#if os(iOS)
 final class CreationPanelViewController: UIViewController {
 
   // MARK: Lifecycle
@@ -89,3 +90,4 @@ final class CreationPanelViewController: UIViewController {
   }
 
 }
+#endif

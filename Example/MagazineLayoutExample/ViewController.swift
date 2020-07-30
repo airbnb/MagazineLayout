@@ -78,7 +78,9 @@ final class ViewController: UIViewController {
 
   private lazy var dataSource = DataSource()
 
+  #if os(iOS)
   private var lastItemCreationPanelViewState: ItemCreationPanelViewState?
+  #endif
 
   private func removeAllData() {
     collectionView.performBatchUpdates({
@@ -355,6 +357,7 @@ final class ViewController: UIViewController {
 
   @objc
   private func addButtonTapped() {
+    #if os(iOS)
     let creationPanelViewController = CreationPanelViewController(
       dataSourceCountsProvider: dataSource,
       initialState: lastItemCreationPanelViewState)
@@ -396,6 +399,19 @@ final class ViewController: UIViewController {
     let navigationController = UINavigationController(
       rootViewController: creationPanelViewController)
     present(navigationController, animated: true, completion: nil)
+    #else
+    let alertController = UIAlertController(
+      title: "Error",
+      message: "Not implemented for tvOS",
+      preferredStyle: .alert)
+    alertController.addAction(
+      UIAlertAction(
+        title: "OK",
+        style: .default,
+        handler: nil))
+
+    present(alertController, animated: true, completion: nil)
+    #endif
   }
 
 }

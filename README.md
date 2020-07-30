@@ -104,7 +104,7 @@ To delete an item, simple tap on the item in the collection view. The item will 
 ## Getting Started
 
 ### Requirements
-- Deployment target iOS 10.0+
+- Deployment target iOS 10.0+, tvOS 10.0+
 - Swift 4+
 - Xcode 10+
 
