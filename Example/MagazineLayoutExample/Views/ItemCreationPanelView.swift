@@ -18,6 +18,7 @@ import UIKit
 
 // MARK: - ItemCreationPanelView
 
+#if os(iOS)
 final class ItemCreationPanelView: UIView {
 
   // MARK: Lifecycle
@@ -395,3 +396,4 @@ struct ItemCreationPanelViewState {
   let color: UIColor
 
 }
+#endif

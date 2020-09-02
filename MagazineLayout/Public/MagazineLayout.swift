@@ -60,7 +60,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     let width: CGFloat
     if let collectionView = collectionView {
       let contentInset: UIEdgeInsets
-      if #available(iOS 11.0, *) {
+      if #available(iOS 11.0, tvOS 11.0, *) {
         contentInset = collectionView.adjustedContentInset
       } else {
         contentInset = collectionView.contentInset
@@ -571,7 +571,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     at elementIndexPath: IndexPath)
     -> UICollectionViewLayoutAttributes?
   {
-   // If a supplementary view's visibility changes to `.hidden` due to a data source change, this
+    // If a supplementary view's visibility changes to `.hidden` due to a data source change, this
     // function will get invoked with an `elementIndexPath` that crashes when its `section` is
     // accessed.
     guard !elementIndexPath.isEmpty else {
@@ -616,6 +616,15 @@ public final class MagazineLayout: UICollectionViewLayout {
     at elementIndexPath: IndexPath)
     -> UICollectionViewLayoutAttributes?
   {
+    // If a supplementary view's visibility changes to `.hidden` due to a data source change, this
+    // function will get invoked with an `elementIndexPath` that crashes when its `section` is
+    // accessed.
+    guard !elementIndexPath.isEmpty else {
+      return super.finalLayoutAttributesForDisappearingSupplementaryElement(
+        ofKind: elementKind,
+        at: elementIndexPath)
+    }
+
     if modelState.sectionIndicesToDelete.contains(elementIndexPath.section) {
       let attributes = previousLayoutAttributesForSupplementaryView(
         ofKind: elementKind,
@@ -886,13 +895,14 @@ public final class MagazineLayout: UICollectionViewLayout {
   // supporting pinned headers and footers.
   private var currentVisibleBounds: CGRect {
     let contentInset: UIEdgeInsets
-    if #available(iOS 11.0, *) {
+    if #available(iOS 11.0, tvOS 11.0, *) {
       contentInset = currentCollectionView.adjustedContentInset
     } else {
       contentInset = currentCollectionView.contentInset
     }
 
     let refreshControlHeight: CGFloat
+    #if os(iOS)
     if
       let refreshControl = currentCollectionView.refreshControl,
       refreshControl.isRefreshing
@@ -901,6 +911,9 @@ public final class MagazineLayout: UICollectionViewLayout {
     } else {
       refreshControlHeight = 0
     }
+    #else
+    refreshControlHeight = 0
+    #endif
 
     return CGRect(
       x: currentCollectionView.bounds.minX + contentInset.left,
