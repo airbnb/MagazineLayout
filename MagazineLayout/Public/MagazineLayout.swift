@@ -161,7 +161,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
       // Create header layout attributes if necessary
       if
-        case let .visible(heightMode, pinToVisibleBounds) = visibilityModeForHeader(
+        case let .visible(heightMode, pinToVisibleBounds, _) = visibilityModeForHeader(
           inSectionAtIndex: sectionIndex)
       {
         hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || pinToVisibleBounds
@@ -182,7 +182,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
       // Create footer layout attributes if necessary
       if
-        case let .visible(heightMode, pinToVisibleBounds) = visibilityModeForFooter(
+        case let .visible(heightMode, pinToVisibleBounds, _) = visibilityModeForFooter(
           inSectionAtIndex: sectionIndex)
       {
         hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || pinToVisibleBounds
@@ -1053,10 +1053,12 @@ public final class MagazineLayout: UICollectionViewLayout {
   {
     let headerVisibilityMode = visibilityModeForHeader(inSectionAtIndex: sectionIndex)
     switch headerVisibilityMode {
-    case let .visible(heightMode, pinToVisibleBounds):
+    case let .visible(heightMode, pinToVisibleBounds, pinOffsetY):
       return HeaderModel(
         heightMode: heightMode,
-        height: headerHeight(from: heightMode), pinToVisibleBounds: pinToVisibleBounds)
+        height: headerHeight(from: heightMode),
+        pinToVisibleBounds: pinToVisibleBounds,
+        pinOffsetY: pinOffsetY)
     case .hidden:
       return nil
     }
@@ -1068,10 +1070,12 @@ public final class MagazineLayout: UICollectionViewLayout {
   {
     let footerVisibilityMode = visibilityModeForFooter(inSectionAtIndex: sectionIndex)
     switch footerVisibilityMode {
-    case let .visible(heightMode, pinToVisibleBounds):
+    case let .visible(heightMode, pinToVisibleBounds, pinOffsetY):
       return FooterModel(
         heightMode: heightMode,
-        height: footerHeight(from: heightMode), pinToVisibleBounds: pinToVisibleBounds)
+        height: footerHeight(from: heightMode),
+        pinToVisibleBounds: pinToVisibleBounds,
+        pinOffsetY: pinOffsetY)
     case .hidden:
       return nil
     }

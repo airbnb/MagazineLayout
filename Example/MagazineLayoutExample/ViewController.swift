@@ -96,7 +96,7 @@ final class ViewController: UIViewController {
 
     let section0 = SectionInfo(
       headerInfo: HeaderInfo(
-        visibilityMode: .visible(heightMode: .dynamic, pinToVisibleBounds: true),
+        visibilityMode: .visible(heightMode: .dynamic, pinToVisibleBounds: true, pinOffsetY: 0),
         title: "Welcome!"),
       itemInfos: [
         ItemInfo(

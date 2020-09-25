@@ -21,11 +21,12 @@ struct HeaderModel {
 
   // MARK: Lifecycle
 
-  init(heightMode: MagazineLayoutHeaderHeightMode, height: CGFloat, pinToVisibleBounds: Bool) {
+    init(heightMode: MagazineLayoutHeaderHeightMode, height: CGFloat, pinToVisibleBounds: Bool, pinOffsetY: CGFloat = 0) {
     self.heightMode = heightMode
     self.pinToVisibleBounds = pinToVisibleBounds
     originInSection = .zero
     size = CGSize(width: 0, height: height)
+    self.pinOffsetY = pinOffsetY
   }
 
   // MARK: Internal
@@ -35,5 +36,6 @@ struct HeaderModel {
   var originInSection: CGPoint
   var size: CGSize
   var preferredHeight: CGFloat?
+  var pinOffsetY: CGFloat
 
 }

@@ -110,7 +110,7 @@ struct SectionModel {
             calculateHeight() -
               metrics.sectionInsets.bottom -
               (footerModel?.size.height ?? 0) -
-              headerModel.size.height),
+                headerModel.size.height) + headerModel.pinOffsetY,
           headerModel.originInSection.y)
       } else {
         originY = headerModel.originInSection.y
@@ -148,7 +148,7 @@ struct SectionModel {
         originY = min(
           max(
             sectionVisibleBounds.maxY - footerModel.size.height,
-             metrics.sectionInsets.top + (headerModel?.size.height ?? 0)),
+            metrics.sectionInsets.top + (headerModel?.size.height ?? 0)) + footerModel.pinOffsetY,
           origin.y)
       } else {
         originY = origin.y
