@@ -17,9 +17,9 @@ extension MagazineLayout {
 
   /// Constants for supported supplementary view element kinds.
   public enum SupplementaryViewKind {
-
-    public static let sectionHeader = "MagazineLayoutSupplementaryViewKindSectionHeader"
-    public static let sectionFooter = "MagazineLayoutSupplementaryViewKindSectionFooter"
+    
+    public static let sectionHeader = UICollectionElementKindSectionHeader //"MagazineLayoutSupplementaryViewKindSectionHeader"
+    public static let sectionFooter = UICollectionElementKindSectionFooter // "MagazineLayoutSupplementaryViewKindSectionFooter"
     public static let sectionBackground = "MagazineLayoutSupplementaryViewKindSectionBackground"
 
   }
