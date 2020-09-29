@@ -682,6 +682,12 @@ public final class MagazineLayout: UICollectionViewLayout {
     withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
     -> Bool
   {
+    guard !preferredAttributes.indexPath.isEmpty else {
+      return super.shouldInvalidateLayout(
+        forPreferredLayoutAttributes: preferredAttributes,
+        withOriginalAttributes: originalAttributes)
+    }
+
     let hasNewPreferredHeight = preferredAttributes.size.height.rounded() != originalAttributes.size.height.rounded()
 
     switch (preferredAttributes.representedElementCategory, preferredAttributes.representedElementKind) {
