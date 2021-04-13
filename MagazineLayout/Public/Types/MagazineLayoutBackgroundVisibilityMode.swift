@@ -14,7 +14,7 @@
 // limitations under the License.
 
 /// Represents the visibility mode for a background.
-public enum MagazineLayoutBackgroundVisibilityMode {
+public enum MagazineLayoutBackgroundVisibilityMode: Hashable {
 
   /// This visiblity mode will cause the background to be displayed behind the items and headers in
   /// its respective section.
