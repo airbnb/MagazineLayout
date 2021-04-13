@@ -18,7 +18,7 @@ import CoreGraphics
 // MARK: - MagazineLayoutHeaderVisibilityMode
 
 /// Represents the visibility mode for a header.
-public enum MagazineLayoutHeaderVisibilityMode {
+public enum MagazineLayoutHeaderVisibilityMode: Hashable {
 
   /// This visibility mode will cause the header to be displayed using the specified height mode in
   /// its respective section. If `pinToVisibleBounds` is true, the header will pin to the visible
@@ -42,7 +42,7 @@ public enum MagazineLayoutHeaderVisibilityMode {
 // MARK: - MagazineLayoutHeaderHeightMode
 
 /// Represents the vertical sizing mode for a header.
-public enum MagazineLayoutHeaderHeightMode {
+public enum MagazineLayoutHeaderHeightMode: Hashable {
 
   /// This height mode will force the header to be displayed with a height equal to `height`.
   ///
@@ -57,23 +57,5 @@ public enum MagazineLayoutHeaderHeightMode {
   /// upfront. For example, if you support multiline labels or dynamic type, your height is likely
   /// not known until the Auto Layout engine resolves the layout at runtime.
   case dynamic
-
-}
-
-// MARK: Equatable
-
-extension MagazineLayoutHeaderHeightMode: Equatable {
-
-  public static func == (
-    lhs: MagazineLayoutHeaderHeightMode,
-    rhs: MagazineLayoutHeaderHeightMode)
-    -> Bool
-  {
-    switch (lhs, rhs) {
-    case (.static(let l), .static(let r)): return l == r
-    case (.dynamic, .dynamic): return true
-    default: return false
-    }
-  }
 
 }

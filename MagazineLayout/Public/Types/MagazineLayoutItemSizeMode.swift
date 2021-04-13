@@ -18,7 +18,7 @@ import CoreGraphics
 // MARK: - MagazineLayoutItemSizeMode
 
 /// Represents the horizontal and vertical sizing mode for an item.
-public struct MagazineLayoutItemSizeMode {
+public struct MagazineLayoutItemSizeMode: Hashable {
 
   // MARK: Lifecycle
 
@@ -43,7 +43,7 @@ public struct MagazineLayoutItemSizeMode {
 ///
 /// Consecutive items with the same width mode will display on the same row until there is no more
 /// room.
-public enum MagazineLayoutItemWidthMode {
+public enum MagazineLayoutItemWidthMode: Hashable {
 
   /// Full width items will fill the available width in a section.
   ///
@@ -91,24 +91,6 @@ public enum MagazineLayoutItemWidthMode {
 
 }
 
-// MARK: Equatable
-
-extension MagazineLayoutItemWidthMode: Equatable {
-
-  public static func == (
-    lhs: MagazineLayoutItemWidthMode,
-    rhs: MagazineLayoutItemWidthMode)
-    -> Bool
-  {
-    switch (lhs, rhs) {
-    case (.fullWidth(let l), .fullWidth(let r)): return l == r
-    case (.fractionalWidth(let l), .fractionalWidth(let r)): return l == r
-    default: return false
-    }
-  }
-
-}
-
 // MARK: - MagazineLayoutItemHeightMode
 
 /// Represents the vertical sizing mode for an item.
@@ -116,7 +98,7 @@ extension MagazineLayoutItemWidthMode: Equatable {
 /// `MagazineLayout` supports vertically self-sizing and statically sized items. Since height modes
 /// are specified for each item, you can mix vertically self-sizing and statically sized items in
 /// the same sections, and even in the same rows.
-public enum MagazineLayoutItemHeightMode {
+public enum MagazineLayoutItemHeightMode: Hashable {
 
   /// This height mode mode will cause the item to be displayed with a height equal to `height`.
   ///
@@ -141,24 +123,5 @@ public enum MagazineLayoutItemHeightMode {
   /// Note that items with this height mode will resize to match the height of the tallest item in
   /// the same row of items, even if the tallest item has a `static` height mode.
   case dynamicAndStretchToTallestItemInRow
-
-}
-
-// MARK: Equatable
-
-extension MagazineLayoutItemHeightMode: Equatable {
-
-  public static func == (
-    lhs: MagazineLayoutItemHeightMode,
-    rhs: MagazineLayoutItemHeightMode)
-    -> Bool
-  {
-    switch (lhs, rhs) {
-    case (.static(let l), .static(let r)): return l == r
-    case (.dynamic, .dynamic): return true
-    case (.dynamicAndStretchToTallestItemInRow, .dynamicAndStretchToTallestItemInRow): return true
-    default: return false
-    }
-  }
 
 }
