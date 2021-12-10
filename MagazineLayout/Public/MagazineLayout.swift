@@ -348,6 +348,44 @@ public final class MagazineLayout: UICollectionViewLayout {
     super.finalizeCollectionViewUpdates()
   }
 
+  override public func prepare(forAnimatedBoundsChange oldBounds: CGRect) {
+    super.prepare(forAnimatedBoundsChange: oldBounds)
+
+    // This function (and the corresponding finalize function) are called multiple times, each time
+    // triggering `targetContentOffset(forProposedContentOffset:)` to be called. That will cause our
+    // content offset to change, which means subsequent calls to this function will find a different
+    // first visible item index path. Ultimately, this will lead to an incorrect visible item once
+    // all of these function calls have been completed.
+    //
+    // To ensure that we end up at the correct item, despite these functions being called multiple
+    // times, we store `indexPathOfFirstVisibleItemToMaintainAfterWidthChange` only once. To
+    // facilitate this behavior, we compare `currentCollectionView.bounds.width` with
+    // `cachedCollectionViewWidth`, rather than with `oldBounds.width`.
+    isPerformingAnimatedBoundsChange = true
+    guard currentCollectionView.bounds.width != cachedCollectionViewWidth else { return }
+
+    let topInset: CGFloat
+    if #available(iOS 11.0, tvOS 11.0, *) {
+      topInset = currentCollectionView.adjustedContentInset.top
+    } else {
+      topInset = currentCollectionView.contentInset.top
+    }
+
+    indexPathOfFirstVisibleItemToMaintainAfterWidthChange = currentCollectionView
+      .indexPathsForVisibleItems
+      .sorted()
+      .first {
+        guard let midY = layoutAttributesForItem(at: $0)?.frame.midY else { return false }
+        // Make the first "mostly visible" item the target
+        return midY >= currentCollectionView.contentOffset.y + topInset
+      }
+  }
+
+  override public func finalizeAnimatedBoundsChange() {
+    super.finalizeAnimatedBoundsChange()
+    isPerformingAnimatedBoundsChange = false
+  }
+
   override public func layoutAttributesForElements(
     in rect: CGRect)
     -> [UICollectionViewLayoutAttributes]?
@@ -658,7 +696,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-    return  collectionView?.bounds.size.width != .some(newBounds.size.width) ||
+    return collectionView?.bounds.size.width != .some(newBounds.size.width) ||
       hasPinnedHeaderOrFooter
   }
 
@@ -842,6 +880,33 @@ public final class MagazineLayout: UICollectionViewLayout {
     super.invalidateLayout(with: context)
   }
 
+  override public func targetContentOffset(
+    forProposedContentOffset proposedContentOffset: CGPoint)
+    -> CGPoint
+  {
+    guard
+      isPerformingAnimatedBoundsChange,
+      let targetItemIndexPath = indexPathOfFirstVisibleItemToMaintainAfterWidthChange,
+      let targetItemFrame = layoutAttributesForItem(at: targetItemIndexPath)?.frame,
+      // Since we're invalidating item sizes during animated bounds changes, this method gets
+      // called twice: on the second call these attributes have a zero frame, so we don't do
+      // anything in that scenario since we'd otherwise errantly scroll to the first item.
+      targetItemFrame != .zero
+    else
+    {
+      return super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
+    }
+
+    let topInset: CGFloat
+    if #available(iOS 11.0, tvOS 11.0, *) {
+      topInset = currentCollectionView.adjustedContentInset.top
+    } else {
+      topInset = currentCollectionView.contentInset.top
+    }
+
+    return CGPoint(x: proposedContentOffset.x, y: targetItemFrame.minY - topInset)
+  }
+
   // MARK: Private
 
   private var currentCollectionView: UICollectionView {
@@ -896,6 +961,9 @@ public final class MagazineLayout: UICollectionViewLayout {
   // updates cause changes to the elements in the visible region. See comment in
   // `layoutAttributesForElementsInRect:` for more details.
   private var hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
+
+  private var isPerformingAnimatedBoundsChange = false
+  private var indexPathOfFirstVisibleItemToMaintainAfterWidthChange: IndexPath?
 
   // Used to provide the model state with the current visible bounds for the sole purpose of
   // supporting pinned headers and footers.
