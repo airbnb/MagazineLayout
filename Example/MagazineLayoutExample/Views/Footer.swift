@@ -37,7 +37,7 @@ final class Footer: MagazineLayoutCollectionReusableView {
       label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -4),
       label.topAnchor.constraint(equalTo: topAnchor),
       label.bottomAnchor.constraint(equalTo: bottomAnchor),
-      ])
+    ])
   }
 
   required init?(coder aDecoder: NSCoder) {
