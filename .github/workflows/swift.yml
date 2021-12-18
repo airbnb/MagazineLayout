@@ -1,0 +1,24 @@
+name: Swift
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    strategy:
+      matrix:
+        destination: ['platform=iOS Simulator,OS=10.0,name=iPhone 7', 'platform=iOS Simulator,OS=15.0,name=iPhone 13']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: xcodebuild clean build -scheme MagazineLayout
+    - name: Run tests
+      run: xcodebuild clean test -project MagazineLayout.xcodeproj -scheme MagazineLayout -destination "name=iPhone 8,OS=15.0"
+
