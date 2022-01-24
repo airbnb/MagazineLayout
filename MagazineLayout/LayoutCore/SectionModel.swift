@@ -60,7 +60,7 @@ struct SectionModel {
   }
 
   func indexForItemModel(withID id: String) -> Int? {
-    return itemModels.index { $0.id == id }
+    return itemModels.firstIndex { $0.id == id }
   }
 
   func itemModel(atIndex index: Int) -> ItemModel {
