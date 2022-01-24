@@ -33,16 +33,20 @@ struct RowOffsetTracker {
 
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
     // and Swift retain / release calls.
-    let rowOffsetsPointer = UnsafeMutableRawPointer(mutating: &rowOffsets)
-    let directlyMutableRowOffsets = rowOffsetsPointer.assumingMemoryBound(to: CGFloat.self)
-    directlyMutableRowOffsets[rowIndex] = rowOffsets[rowIndex] + offset
+    var rowOffsets = rowOffsets
+    withUnsafeMutableBytes(of: &rowOffsets) { [rowOffsets] rowOffsetsPointer in
+      guard let address = rowOffsetsPointer.baseAddress else { return }
 
-    while rowIndex > 1 {
-      rowIndex /= 2
+      let directlyMutableRowOffsets = address.assumingMemoryBound(to: CGFloat.self)
+      directlyMutableRowOffsets[rowIndex] = rowOffsets[rowIndex] + offset
 
-      let leftChild = rowOffsets[2 * rowIndex]
-      let rightChild = rowOffsets[(2 * rowIndex) + 1]
-      directlyMutableRowOffsets[rowIndex] = leftChild + rightChild
+      while rowIndex > 1 {
+        rowIndex /= 2
+
+        let leftChild = rowOffsets[2 * rowIndex]
+        let rightChild = rowOffsets[(2 * rowIndex) + 1]
+        directlyMutableRowOffsets[rowIndex] = leftChild + rightChild
+      }
     }
   }
 

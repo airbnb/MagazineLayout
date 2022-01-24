@@ -746,8 +746,8 @@ final class ModelState {
     // Accessing these arrays using unsafe, untyped (raw) pointers
     // avoids expensive copy-on-writes and Swift retain / release calls.
     switch batchUpdateStage {
-    case .beforeUpdates: return UnsafeMutableRawPointer(mutating: &sectionModelsBeforeBatchUpdates)
-    case .afterUpdates: return UnsafeMutableRawPointer(mutating: &currentSectionModels)
+    case .beforeUpdates: return withUnsafeMutableBytes(of: &sectionModelsBeforeBatchUpdates, \.baseAddress)!
+    case .afterUpdates: return withUnsafeMutableBytes(of: &currentSectionModels, \.baseAddress)!
     }
   }
 

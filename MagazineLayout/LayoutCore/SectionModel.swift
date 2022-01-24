@@ -206,16 +206,19 @@ struct SectionModel {
   mutating func updateItemSizeMode(to sizeMode: MagazineLayoutItemSizeMode, atIndex index: Int) {
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
     // and Swift retain / release calls.
-    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
+    var itemModels = itemModels
+    withUnsafeMutableBytes(of: &itemModels) { itemModelsPointer in
+      guard let address = itemModelsPointer.baseAddress else { return }
 
-    directlyMutableItemModels[index].sizeMode = sizeMode
+      let directlyMutableItemModels = address.assumingMemoryBound(to: ItemModel.self)
+      directlyMutableItemModels[index].sizeMode = sizeMode
 
-    if case let .static(staticHeight) = sizeMode.heightMode {
-      directlyMutableItemModels[index].size.height = staticHeight
+      if case let .static(staticHeight) = sizeMode.heightMode {
+        directlyMutableItemModels[index].size.height = staticHeight
+      }
+
+      updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: index)
     }
-
-    updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: index)
   }
 
   mutating func setHeader(_ headerModel: HeaderModel) {
@@ -267,27 +270,30 @@ struct SectionModel {
   mutating func updateItemHeight(toPreferredHeight preferredHeight: CGFloat, atIndex index: Int) {
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
     // and Swift retain / release calls.
-    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
+    var itemModels = itemModels
+    withUnsafeMutableBytes(of: &itemModels) { itemModelsPointer in
+      guard let address = itemModelsPointer.baseAddress else { return }
 
-    directlyMutableItemModels[index].preferredHeight = preferredHeight
+      let directlyMutableItemModels = address.assumingMemoryBound(to: ItemModel.self)
+      directlyMutableItemModels[index].preferredHeight = preferredHeight
 
-    if
-      let rowIndex = rowIndicesForItemIndices[index],
-      let rowHeight = itemRowHeightsForRowIndices[rowIndex]
-    {
-      let newRowHeight = updateHeightsForItemsInRow(at: rowIndex)
-      let heightDelta = newRowHeight - rowHeight
+      if
+        let rowIndex = rowIndicesForItemIndices[index],
+        let rowHeight = itemRowHeightsForRowIndices[rowIndex]
+      {
+        let newRowHeight = updateHeightsForItemsInRow(at: rowIndex)
+        let heightDelta = newRowHeight - rowHeight
 
-      calculatedHeight += heightDelta
+        calculatedHeight += heightDelta
 
-      let firstAffectedRowIndex = rowIndex + 1
-      if firstAffectedRowIndex < numberOfRows {
-        rowOffsetTracker?.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
+        let firstAffectedRowIndex = rowIndex + 1
+        if firstAffectedRowIndex < numberOfRows {
+          rowOffsetTracker?.addOffset(heightDelta, forRowsStartingAt: firstAffectedRowIndex)
+        }
+      } else {
+        assertionFailure("Expected a row and a row height for item at \(index).")
+        return
       }
-    } else {
-      assertionFailure("Expected a row and a row height for item at \(index).")
-      return
     }
   }
 
@@ -498,93 +504,97 @@ struct SectionModel {
 
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
     // and Swift retain / release calls.
-    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
+    var itemModels = itemModels
+    withUnsafeMutableBytes(of: &itemModels) { [itemModels] itemModelsPointer in
+      guard let address = itemModelsPointer.baseAddress else { return }
 
-    var indexInCurrentRow = 0
-    for itemIndex in startingItemIndex..<numberOfItems {
-      // Create item / row index mappings
-      itemIndicesForRowIndices[rowIndex] = itemIndicesForRowIndices[rowIndex] ?? []
-      itemIndicesForRowIndices[rowIndex]?.append(itemIndex)
-      rowIndicesForItemIndices[itemIndex] = rowIndex
-      
-      let itemModel = itemModels[itemIndex]
+      let directlyMutableItemModels = address.assumingMemoryBound(to: ItemModel.self)
 
-      if itemIndex == 0 {
-        // Apply top item inset now that we're laying out items
-        currentY += metrics.itemInsets.top
-      }
+      var indexInCurrentRow = 0
+      for itemIndex in startingItemIndex..<numberOfItems {
+        // Create item / row index mappings
+        itemIndicesForRowIndices[rowIndex] = itemIndicesForRowIndices[rowIndex] ?? []
+        itemIndicesForRowIndices[rowIndex]?.append(itemIndex)
+        rowIndicesForItemIndices[itemIndex] = rowIndex
 
-      let currentLeadingMargin: CGFloat
-      let availableWidthForItems: CGFloat
-      if itemModel.sizeMode.widthMode == .fullWidth(respectsHorizontalInsets: false) {
-        currentLeadingMargin = metrics.sectionInsets.left
-        availableWidthForItems = metrics.width
-      } else {
-        currentLeadingMargin = metrics.sectionInsets.left + metrics.itemInsets.left
-        availableWidthForItems = metrics.width - metrics.itemInsets.left - metrics.itemInsets.right
-      }
+        let itemModel = itemModels[itemIndex]
 
-      let totalSpacing = metrics.horizontalSpacing * (itemModel.sizeMode.widthMode.widthDivisor - 1)
-      let itemWidth = round(
-        (availableWidthForItems - totalSpacing) / itemModel.sizeMode.widthMode.widthDivisor)
-      let itemX = CGFloat(indexInCurrentRow) *
-        itemWidth + CGFloat(indexInCurrentRow) *
-        metrics.horizontalSpacing + currentLeadingMargin
-      let itemY = currentY
-
-      directlyMutableItemModels[itemIndex].originInSection = CGPoint(x: itemX, y: itemY)
-      directlyMutableItemModels[itemIndex].size.width = itemWidth
-
-      if
-        (indexInCurrentRow == Int(itemModel.sizeMode.widthMode.widthDivisor) - 1) ||
-          (itemIndex == numberOfItems - 1) ||
-          (itemIndex < numberOfItems - 1 && itemModels[itemIndex + 1].sizeMode.widthMode != itemModel.sizeMode.widthMode)
-      {
-        // We've reached the end of the current row, or there are no more items to lay out, or we're
-        // about to lay out an item with a different width mode. In all cases, we're done laying out
-        // the current row of items.
-        let heightOfTallestItemInCurrentRow = updateHeightsForItemsInRow(at: rowIndex)
-        currentY += heightOfTallestItemInCurrentRow
-        indexInCurrentRow = 0
-
-        // If there are more items to layout, add vertical spacing and increment the row index
-        if itemIndex < numberOfItems - 1 {
-          currentY += metrics.verticalSpacing
-          rowIndex += 1
+        if itemIndex == 0 {
+          // Apply top item inset now that we're laying out items
+          currentY += metrics.itemInsets.top
         }
-      } else {
-        // We're still adding to the current row
-        indexInCurrentRow += 1
+
+        let currentLeadingMargin: CGFloat
+        let availableWidthForItems: CGFloat
+        if itemModel.sizeMode.widthMode == .fullWidth(respectsHorizontalInsets: false) {
+          currentLeadingMargin = metrics.sectionInsets.left
+          availableWidthForItems = metrics.width
+        } else {
+          currentLeadingMargin = metrics.sectionInsets.left + metrics.itemInsets.left
+          availableWidthForItems = metrics.width - metrics.itemInsets.left - metrics.itemInsets.right
+        }
+
+        let totalSpacing = metrics.horizontalSpacing * (itemModel.sizeMode.widthMode.widthDivisor - 1)
+        let itemWidth = round(
+          (availableWidthForItems - totalSpacing) / itemModel.sizeMode.widthMode.widthDivisor)
+        let itemX = CGFloat(indexInCurrentRow) *
+          itemWidth + CGFloat(indexInCurrentRow) *
+          metrics.horizontalSpacing + currentLeadingMargin
+        let itemY = currentY
+
+        directlyMutableItemModels[itemIndex].originInSection = CGPoint(x: itemX, y: itemY)
+        directlyMutableItemModels[itemIndex].size.width = itemWidth
+
+        if
+          (indexInCurrentRow == Int(itemModel.sizeMode.widthMode.widthDivisor) - 1) ||
+            (itemIndex == numberOfItems - 1) ||
+            (itemIndex < numberOfItems - 1 && itemModels[itemIndex + 1].sizeMode.widthMode != itemModel.sizeMode.widthMode)
+        {
+          // We've reached the end of the current row, or there are no more items to lay out, or we're
+          // about to lay out an item with a different width mode. In all cases, we're done laying out
+          // the current row of items.
+          let heightOfTallestItemInCurrentRow = updateHeightsForItemsInRow(at: rowIndex)
+          currentY += heightOfTallestItemInCurrentRow
+          indexInCurrentRow = 0
+
+          // If there are more items to layout, add vertical spacing and increment the row index
+          if itemIndex < numberOfItems - 1 {
+            currentY += metrics.verticalSpacing
+            rowIndex += 1
+          }
+        } else {
+          // We're still adding to the current row
+          indexInCurrentRow += 1
+        }
       }
+
+      if numberOfItems > 0 {
+        // Apply bottom item inset now that we're done laying out items
+        currentY += metrics.itemInsets.bottom
+      }
+
+      // Footer frame calculations
+      if let existingFooterModel = footerModel {
+        rowIndex += 1
+
+        footerModel?.originInSection = CGPoint(x: metrics.sectionInsets.left, y: currentY)
+        footerModel?.size.width = metrics.width
+        updateFooterHeight(withMetricsFrom: existingFooterModel)
+      }
+
+      numberOfRows = rowIndex + 1
+
+      // Final height calculation
+      calculatedHeight = currentY + (footerModel?.size.height ?? 0) + metrics.sectionInsets.bottom
+
+      // The background frame is calculated just-in-time, since its value doesn't affect the layout.
+
+      // Create a row offset tracker now that we know how many rows we have
+      rowOffsetTracker = RowOffsetTracker(numberOfRows: numberOfRows)
+
+      // Mark the layout as clean / no longer invalid
+      indexOfFirstInvalidatedRow = nil
     }
-
-    if numberOfItems > 0 {
-      // Apply bottom item inset now that we're done laying out items
-      currentY += metrics.itemInsets.bottom
-    }
-
-    // Footer frame calculations
-    if let existingFooterModel = footerModel {
-      rowIndex += 1
-
-      footerModel?.originInSection = CGPoint(x: metrics.sectionInsets.left, y: currentY)
-      footerModel?.size.width = metrics.width
-      updateFooterHeight(withMetricsFrom: existingFooterModel)
-    }
-
-    numberOfRows = rowIndex + 1
-
-    // Final height calculation
-    calculatedHeight = currentY + (footerModel?.size.height ?? 0) + metrics.sectionInsets.bottom
-
-    // The background frame is calculated just-in-time, since its value doesn't affect the layout.
-
-    // Create a row offset tracker now that we know how many rows we have
-    rowOffsetTracker = RowOffsetTracker(numberOfRows: numberOfRows)
-
-    // Mark the layout as clean / no longer invalid
-    indexOfFirstInvalidatedRow = nil
   }
 
   private mutating func updateHeightsForItemsInRow(at rowIndex: Int) -> CGFloat {
@@ -595,32 +605,36 @@ struct SectionModel {
 
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
     // and Swift retain / release calls.
-    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
+    var itemModels = itemModels
+    return withUnsafeMutableBytes(of: &itemModels) { [itemModels] itemModelsPointer in
+      guard let address = itemModelsPointer.baseAddress else { return 0 }
 
-    var heightOfTallestItem = CGFloat(0)
-    var stretchToTallestItemInRowItemIndices = Set<Int>()
+      let directlyMutableItemModels = address.assumingMemoryBound(to: ItemModel.self)
 
-    for itemIndex in indicesForItemsInRow {
-      let preferredHeight = itemModels[itemIndex].preferredHeight
-      let height = itemModels[itemIndex].size.height
-      directlyMutableItemModels[itemIndex].size.height = preferredHeight ?? height
+      var heightOfTallestItem = CGFloat(0)
+      var stretchToTallestItemInRowItemIndices = Set<Int>()
 
-      // Handle stretch to tallest item in row height mode for current row
+      for itemIndex in indicesForItemsInRow {
+        let preferredHeight = itemModels[itemIndex].preferredHeight
+        let height = itemModels[itemIndex].size.height
+        directlyMutableItemModels[itemIndex].size.height = preferredHeight ?? height
 
-      if itemModels[itemIndex].sizeMode.heightMode == .dynamicAndStretchToTallestItemInRow {
-        stretchToTallestItemInRowItemIndices.insert(itemIndex)
+        // Handle stretch to tallest item in row height mode for current row
+
+        if itemModels[itemIndex].sizeMode.heightMode == .dynamicAndStretchToTallestItemInRow {
+          stretchToTallestItemInRowItemIndices.insert(itemIndex)
+        }
+
+        heightOfTallestItem = max(heightOfTallestItem, itemModels[itemIndex].size.height)
       }
 
-      heightOfTallestItem = max(heightOfTallestItem, itemModels[itemIndex].size.height)
-    }
+      for stretchToTallestItemInRowItemIndex in stretchToTallestItemInRowItemIndices{
+        directlyMutableItemModels[stretchToTallestItemInRowItemIndex].size.height = heightOfTallestItem
+      }
 
-    for stretchToTallestItemInRowItemIndex in stretchToTallestItemInRowItemIndices{
-      directlyMutableItemModels[stretchToTallestItemInRowItemIndex].size.height = heightOfTallestItem
+      itemRowHeightsForRowIndices[rowIndex] = heightOfTallestItem
+      return heightOfTallestItem
     }
-
-    itemRowHeightsForRowIndices[rowIndex] = heightOfTallestItem
-    return heightOfTallestItem
   }
   
   @discardableResult
