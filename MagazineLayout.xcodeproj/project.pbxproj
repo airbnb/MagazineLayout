@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		9332FB0822969B5600483D99 /* RowOffsetTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9332FB0622969AB200483D99 /* RowOffsetTrackerTests.swift */; };
 		93424B012256878B003D00C0 /* MagazineLayoutFooterVisibilityMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93424B002256878B003D00C0 /* MagazineLayoutFooterVisibilityMode.swift */; };
+		93540AB0282E25D90008BD6F /* CGFloatApproximateEquality.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93540AAF282E25D90008BD6F /* CGFloatApproximateEquality.swift */; };
+		93540AB2282E26340008BD6F /* CGFloatApproximateEquality.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93540AB1282E26340008BD6F /* CGFloatApproximateEquality.swift */; };
 		9398462A2296864200E442DA /* RowOffsetTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 939846292296864200E442DA /* RowOffsetTracker.swift */; };
 		93A1BFF921ACE9A000DED67D /* MagazineLayout.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93A1BFEF21ACE9A000DED67D /* MagazineLayout.framework */; };
 		93A1C03521ACED0100DED67D /* MagazineLayoutBackgroundVisibilityMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A1C01621ACED0100DED67D /* MagazineLayoutBackgroundVisibilityMode.swift */; };
@@ -54,6 +56,8 @@
 /* Begin PBXFileReference section */
 		9332FB0622969AB200483D99 /* RowOffsetTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowOffsetTrackerTests.swift; sourceTree = "<group>"; };
 		93424B002256878B003D00C0 /* MagazineLayoutFooterVisibilityMode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MagazineLayoutFooterVisibilityMode.swift; sourceTree = "<group>"; };
+		93540AAF282E25D90008BD6F /* CGFloatApproximateEquality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGFloatApproximateEquality.swift; sourceTree = "<group>"; };
+		93540AB1282E26340008BD6F /* CGFloatApproximateEquality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGFloatApproximateEquality.swift; sourceTree = "<group>"; };
 		939846292296864200E442DA /* RowOffsetTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowOffsetTracker.swift; sourceTree = "<group>"; };
 		93A1BFEF21ACE9A000DED67D /* MagazineLayout.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MagazineLayout.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93A1BFF821ACE9A000DED67D /* MagazineLayoutTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MagazineLayoutTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -142,6 +146,7 @@
 				93A1C00F21ACED0100DED67D /* ElementLocationFramePairsTests.swift */,
 				9332FB0622969AB200483D99 /* RowOffsetTrackerTests.swift */,
 				93A1C00E21ACED0100DED67D /* TestingSupport.swift */,
+				93540AB1282E26340008BD6F /* CGFloatApproximateEquality.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -204,6 +209,7 @@
 				93A1C02121ACED0100DED67D /* ElementLocation.swift */,
 				93A1C02521ACED0100DED67D /* ElementLocationFramePairs.swift */,
 				939846292296864200E442DA /* RowOffsetTracker.swift */,
+				93540AAF282E25D90008BD6F /* CGFloatApproximateEquality.swift */,
 			);
 			path = Types;
 			sourceTree = "<group>";
@@ -346,6 +352,7 @@
 				93A1C03A21ACED0100DED67D /* MagazineLayout.swift in Sources */,
 				93A1C04021ACED0100DED67D /* CollectionViewUpdateItem.swift in Sources */,
 				FCAC642622085AF100973F4C /* MagazineLayoutHeaderVisibilityMode.swift in Sources */,
+				93540AB0282E25D90008BD6F /* CGFloatApproximateEquality.swift in Sources */,
 				93A1C03B21ACED0100DED67D /* MagazineLayoutInvalidationContext.swift in Sources */,
 				93A1C04621ACED0100DED67D /* HeaderModel.swift in Sources */,
 			);
@@ -361,6 +368,7 @@
 				93A1C04921ACED1100DED67D /* ModelStateEmptySectionLayoutTests.swift in Sources */,
 				93A1C04F21ACED1100DED67D /* ModelStateUpdateTests.swift in Sources */,
 				93A1C04D21ACED1100DED67D /* TestingSupport.swift in Sources */,
+				93540AB2282E26340008BD6F /* CGFloatApproximateEquality.swift in Sources */,
 				93A1C04E21ACED1100DED67D /* ElementLocationFramePairsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -523,7 +531,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6.5;
+				MARKETING_VERSION = 1.6.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.airbnb.MagazineLayout;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -551,7 +559,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6.5;
+				MARKETING_VERSION = 1.6.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.airbnb.MagazineLayout;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

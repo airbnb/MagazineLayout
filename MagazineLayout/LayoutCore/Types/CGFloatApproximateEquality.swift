@@ -1,5 +1,5 @@
-// Created by bryankeller on 10/15/18.
-// Copyright © 2018 Airbnb, Inc.
+// Created by Bryan Keller on 5/12/22.
+// Copyright © 2022 Airbnb Inc. All rights reserved.
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,15 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Represents the visibility mode for a background.
-public enum MagazineLayoutBackgroundVisibilityMode: Hashable {
+import CoreGraphics
 
-  /// This visibility mode will cause the background to be displayed behind the items and headers in
-  /// its respective section.
-  case visible
+extension CGFloat {
 
-  /// This visibility mode will cause the background to not be visible behind the items and headers
-  /// in its respective section.
-  case hidden
+  /// Tests `self` for approximate equality using the threshold value. For example, 1.48 equals 1.52 if the threshold is 0.05.
+  /// `threshold` will be treated as a positive value by taking its absolute value.
+  func isEqual(to rhs: CGFloat, threshold: CGFloat) -> Bool {
+    abs(self - rhs) <= abs(threshold)
+  }
 
 }
