@@ -25,7 +25,7 @@ public enum MagazineLayoutHeaderVisibilityMode: Hashable {
   /// bounds of the collection view while its containing section is visible.
   case visible(heightMode: MagazineLayoutHeaderHeightMode, pinToVisibleBounds: Bool)
 
-  /// This visibility mode will cause the header to not be visibile in its respective section.
+  /// This visibility mode will cause the header to not be visible in its respective section.
   case hidden
 
   /// This visibility mode will cause the header to be displayed using the specified height mode in

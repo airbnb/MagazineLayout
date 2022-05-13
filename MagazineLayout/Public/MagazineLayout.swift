@@ -362,7 +362,10 @@ public final class MagazineLayout: UICollectionViewLayout {
     // facilitate this behavior, we compare `currentCollectionView.bounds.width` with
     // `cachedCollectionViewWidth`, rather than with `oldBounds.width`.
     isPerformingAnimatedBoundsChange = true
-    guard currentCollectionView.bounds.width != cachedCollectionViewWidth else { return }
+    let isSameWidth = currentCollectionView.bounds.width.isEqual(
+      to: cachedCollectionViewWidth ?? -.greatestFiniteMagnitude,
+      threshold: 1 / scale)
+    guard !isSameWidth else { return }
 
     let topInset: CGFloat
     if #available(iOS 11.0, tvOS 11.0, *) {
@@ -696,8 +699,11 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-    return collectionView?.bounds.size.width != .some(newBounds.size.width) ||
-      hasPinnedHeaderOrFooter
+    let isSameWidth = collectionView?.bounds.size.width.isEqual(
+      to: newBounds.size.width,
+      threshold: 1 / scale)
+      ?? false
+    return !isSameWidth || hasPinnedHeaderOrFooter
   }
 
   override public func invalidationContext(
@@ -726,7 +732,10 @@ public final class MagazineLayout: UICollectionViewLayout {
         withOriginalAttributes: originalAttributes)
     }
 
-    let hasNewPreferredHeight = preferredAttributes.size.height.rounded() != originalAttributes.size.height.rounded()
+    let isSameHeight = preferredAttributes.size.height.isEqual(
+      to: originalAttributes.size.height,
+      threshold: 1 / scale)
+    let hasNewPreferredHeight = !isSameHeight
 
     switch (preferredAttributes.representedElementCategory, preferredAttributes.representedElementKind) {
     case (.cell, nil):
@@ -740,8 +749,10 @@ public final class MagazineLayout: UICollectionViewLayout {
       case .some(.dynamicAndStretchToTallestItemInRow):
         let currentPreferredHeight = modelState.itemModelPreferredHeightDuringPreferredAttributesCheck(
           at: preferredAttributes.indexPath)
-        let hasPreferredHeightChanged = preferredAttributes.size.height.rounded() != currentPreferredHeight?.rounded()
-        return hasNewPreferredHeight && hasPreferredHeightChanged
+        let isSameHeight = preferredAttributes.size.height.isEqual(
+          to: currentPreferredHeight ?? -.greatestFiniteMagnitude,
+          threshold: 1 / scale)
+        return hasNewPreferredHeight && !isSameHeight
       case nil:
         return false
       }
@@ -828,7 +839,10 @@ public final class MagazineLayout: UICollectionViewLayout {
     let isSizingElementAboveTopEdge = originalAttributes.frame.minY < currentCollectionView.contentOffset.y
 
     if isScrolling && isSizingElementAboveTopEdge {
-      let isSameRowAsLastSizedElement = lastSizedElementMinY == currentElementY
+      let isSameRowAsLastSizedElement = lastSizedElementMinY?.isEqual(
+        to: currentElementY,
+        threshold: 1 / scale)
+        ?? false
       if isSameRowAsLastSizedElement {
         let lastSizedElementPreferredHeight = self.lastSizedElementPreferredHeight ?? 0
         if preferredAttributes.size.height > lastSizedElementPreferredHeight {
@@ -865,11 +879,15 @@ public final class MagazineLayout: UICollectionViewLayout {
       !context.invalidateEverything
 
     // Checking `cachedCollectionViewWidth != collectionView?.bounds.size.width` is necessary
-    // because the collection view's width can change without a `contentSizeAdjustment` occuring.
-    if
-      context.contentSizeAdjustment.width != 0 ||
-      cachedCollectionViewWidth != collectionView?.bounds.size.width
-    {
+    // because the collection view's width can change without a `contentSizeAdjustment` occurring.
+    let isContentWidthAdjustmentZero = context.contentSizeAdjustment.width.isEqual(
+      to: 0,
+      threshold: 1 / scale)
+    let isSameWidth = collectionView?.bounds.size.width.isEqual(
+      to: cachedCollectionViewWidth ?? -.greatestFiniteMagnitude,
+      threshold: 1 / scale)
+      ?? false
+    if !isContentWidthAdjustmentZero || !isSameWidth {
       prepareActions.formUnion([.updateLayoutMetrics, .cachePreviousWidth])
     }
 
@@ -998,6 +1016,10 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private var delegateMagazineLayout: UICollectionViewDelegateMagazineLayout? {
     return currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
+  }
+
+  private var scale: CGFloat {
+    collectionView?.window?.screen.scale ?? UIScreen.main.scale
   }
 
   private func metricsForSection(atIndex sectionIndex: Int) -> MagazineLayoutSectionMetrics {

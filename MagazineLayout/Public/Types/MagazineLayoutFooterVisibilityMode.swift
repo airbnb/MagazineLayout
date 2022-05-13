@@ -24,7 +24,7 @@ public enum MagazineLayoutFooterVisibilityMode: Hashable {
   /// bounds of the collection view while its containing section is visible.
   case visible(heightMode: MagazineLayoutFooterHeightMode, pinToVisibleBounds: Bool)
 
-  /// This visibility mode will cause the footer to not be visibile in its respective section.
+  /// This visibility mode will cause the footer to not be visible in its respective section.
   case hidden
 
   /// This visibility mode will cause the footer to be displayed using the specified height mode in
