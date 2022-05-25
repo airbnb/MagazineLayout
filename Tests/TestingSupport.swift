@@ -39,7 +39,9 @@ final class ModelHelpers {
         headerModel: nil,
         footerModel: nil,
         backgroundModel: nil,
-        metrics: MagazineLayoutSectionMetrics.defaultSectionMetrics(forCollectionViewWidth: 320))
+        metrics: MagazineLayoutSectionMetrics.defaultSectionMetrics(
+          forCollectionViewWidth: 320,
+          scale: 1))
       sectionModels.append(sectionModel)
     }
 

@@ -22,11 +22,13 @@ final class ModelStateLayoutTests: XCTestCase {
   // MARK: Internal
 
   override func setUp() {
-    var metrics = MagazineLayoutSectionMetrics.defaultSectionMetrics(forCollectionViewWidth: 320)
-    metrics.sectionInsets = UIEdgeInsets(top: 30, left: 15, bottom: 20, right: 5)
-    metrics.itemInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-    metrics.horizontalSpacing = 20
-    metrics.verticalSpacing = 30
+    let metrics = MagazineLayoutSectionMetrics.defaultSectionMetrics(
+      forCollectionViewWidth: 320,
+      verticalSpacing: 30,
+      horizontalSpacing: 20,
+      sectionInsets: UIEdgeInsets(top: 30, left: 15, bottom: 20, right: 5),
+      itemInsets: UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10),
+      scale: 1)
 
     let sections = [
       (headerModel0, sizeModesAndHeights0, footerModel0),
@@ -198,11 +200,14 @@ final class ModelStateLayoutTests: XCTestCase {
   }
 
   func testUpdatingSectionMetrics() {
-    var metrics = MagazineLayoutSectionMetrics.defaultSectionMetrics(forCollectionViewWidth: 100)
-    metrics.sectionInsets = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
-    metrics.itemInsets = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
-    metrics.horizontalSpacing = 5
-    metrics.verticalSpacing = 100
+    let metrics = MagazineLayoutSectionMetrics.defaultSectionMetrics(
+      forCollectionViewWidth: 100,
+      verticalSpacing: 100,
+      horizontalSpacing: 5,
+      sectionInsets: UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4),
+      itemInsets: UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2),
+      scale: 1)
+
     modelState.updateMetrics(to: metrics, forSectionAtIndex: 0)
 
     let expectedItemFrames0: [CGRect] = [
