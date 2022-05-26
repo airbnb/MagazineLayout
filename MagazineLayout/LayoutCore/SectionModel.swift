@@ -526,8 +526,8 @@ struct SectionModel {
       }
 
       let totalSpacing = metrics.horizontalSpacing * (itemModel.sizeMode.widthMode.widthDivisor - 1)
-      let itemWidth = round(
-        (availableWidthForItems - totalSpacing) / itemModel.sizeMode.widthMode.widthDivisor)
+      let itemWidth = ((availableWidthForItems - totalSpacing) / itemModel.sizeMode.widthMode.widthDivisor)
+        .alignedToPixel(forScreenWithScale: metrics.scale)
       let itemX = CGFloat(indexInCurrentRow) *
         itemWidth + CGFloat(indexInCurrentRow) *
         metrics.horizontalSpacing + currentLeadingMargin

@@ -53,6 +53,8 @@ struct MagazineLayoutSectionMetrics: Equatable {
       collectionView,
       layout: layout,
       insetsForItemsInSectionAtIndex: sectionIndex)
+
+    scale = collectionView.window?.screen.scale ?? UIScreen.main.scale
   }
 
   private init(
@@ -61,7 +63,8 @@ struct MagazineLayoutSectionMetrics: Equatable {
     verticalSpacing: CGFloat,
     horizontalSpacing: CGFloat,
     sectionInsets: UIEdgeInsets,
-    itemInsets: UIEdgeInsets)
+    itemInsets: UIEdgeInsets,
+    scale: CGFloat)
   {
     self.collectionViewWidth = collectionViewWidth
     self.collectionViewContentInset = collectionViewContentInset
@@ -69,6 +72,7 @@ struct MagazineLayoutSectionMetrics: Equatable {
     self.horizontalSpacing = horizontalSpacing
     self.sectionInsets = sectionInsets
     self.itemInsets = itemInsets
+    self.scale = scale
   }
 
   // MARK: Internal
@@ -81,22 +85,29 @@ struct MagazineLayoutSectionMetrics: Equatable {
       sectionInsets.right
   }
 
-  var verticalSpacing: CGFloat
-  var horizontalSpacing: CGFloat
-  var sectionInsets: UIEdgeInsets
-  var itemInsets: UIEdgeInsets
+  let verticalSpacing: CGFloat
+  let horizontalSpacing: CGFloat
+  let sectionInsets: UIEdgeInsets
+  let itemInsets: UIEdgeInsets
+  let scale: CGFloat
 
   static func defaultSectionMetrics(
-    forCollectionViewWidth width: CGFloat)
+    forCollectionViewWidth width: CGFloat,
+    verticalSpacing: CGFloat = MagazineLayout.Default.VerticalSpacing,
+    horizontalSpacing: CGFloat = MagazineLayout.Default.HorizontalSpacing,
+    sectionInsets: UIEdgeInsets = MagazineLayout.Default.SectionInsets,
+    itemInsets: UIEdgeInsets = MagazineLayout.Default.ItemInsets,
+    scale: CGFloat)
     -> MagazineLayoutSectionMetrics
   {
     return MagazineLayoutSectionMetrics(
       collectionViewWidth: width,
       collectionViewContentInset: .zero,
-      verticalSpacing: MagazineLayout.Default.VerticalSpacing,
-      horizontalSpacing: MagazineLayout.Default.HorizontalSpacing,
-      sectionInsets: MagazineLayout.Default.SectionInsets,
-      itemInsets: MagazineLayout.Default.ItemInsets)
+      verticalSpacing: verticalSpacing,
+      horizontalSpacing: horizontalSpacing,
+      sectionInsets: sectionInsets,
+      itemInsets: itemInsets,
+      scale: scale)
   }
 
   // MARK: Private

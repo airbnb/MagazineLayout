@@ -30,13 +30,17 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
   }
 
   func testEmptySectionsLayout() {
-    var metrics0 = MagazineLayoutSectionMetrics.defaultSectionMetrics(forCollectionViewWidth: 320)
-    metrics0.sectionInsets = .zero
-    metrics0.itemInsets = UIEdgeInsets(top: 10, left: 0, bottom: 20, right: 0)
+    let metrics0 = MagazineLayoutSectionMetrics.defaultSectionMetrics(
+      forCollectionViewWidth: 320,
+      sectionInsets: .zero,
+      itemInsets: UIEdgeInsets(top: 10, left: 0, bottom: 20, right: 0),
+      scale: 1)
 
-    var metrics1 = MagazineLayoutSectionMetrics.defaultSectionMetrics(forCollectionViewWidth: 320)
-    metrics1.sectionInsets = UIEdgeInsets(top: -25, left: 0, bottom: 20, right: 10)
-    metrics1.itemInsets = UIEdgeInsets(top: 50, left: 0, bottom: 100, right: 0)
+    let metrics1 = MagazineLayoutSectionMetrics.defaultSectionMetrics(
+      forCollectionViewWidth: 320,
+      sectionInsets: UIEdgeInsets(top: -25, left: 0, bottom: 20, right: 10),
+      itemInsets: UIEdgeInsets(top: 50, left: 0, bottom: 100, right: 0),
+      scale: 1)
 
     let initialSections = [
       SectionModel(
@@ -63,13 +67,17 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
   }
 
   func testEmptySectionsWithHeadersFootersAndBackgroundsLayout() {
-    var metrics0 = MagazineLayoutSectionMetrics.defaultSectionMetrics(forCollectionViewWidth: 320)
-    metrics0.sectionInsets = UIEdgeInsets(top: 10, left: 5, bottom: 20, right: 5)
-    metrics0.itemInsets = UIEdgeInsets(top: 10, left: 10, bottom: 20, right: 10)
+    let metrics0 = MagazineLayoutSectionMetrics.defaultSectionMetrics(
+      forCollectionViewWidth: 320,
+      sectionInsets: UIEdgeInsets(top: 10, left: 5, bottom: 20, right: 5),
+      itemInsets: UIEdgeInsets(top: 10, left: 10, bottom: 20, right: 10),
+      scale: 1)
 
-    var metrics1 = MagazineLayoutSectionMetrics.defaultSectionMetrics(forCollectionViewWidth: 320)
-    metrics1.sectionInsets = .zero
-    metrics1.itemInsets = UIEdgeInsets(top: 50, left: 10, bottom: 100, right: 10)
+    let metrics1 = MagazineLayoutSectionMetrics.defaultSectionMetrics(
+      forCollectionViewWidth: 320,
+      sectionInsets: .zero,
+      itemInsets: UIEdgeInsets(top: 50, left: 10, bottom: 100, right: 10),
+      scale: 1)
 
     let initialSections = [
       SectionModel(

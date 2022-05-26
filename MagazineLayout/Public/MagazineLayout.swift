@@ -1025,7 +1025,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   private func metricsForSection(atIndex sectionIndex: Int) -> MagazineLayoutSectionMetrics {
     guard let delegateMagazineLayout = delegateMagazineLayout else {
       return MagazineLayoutSectionMetrics.defaultSectionMetrics(
-        forCollectionViewWidth: currentCollectionView.bounds.width)
+        forCollectionViewWidth: currentCollectionView.bounds.width,
+        scale: scale)
     }
 
     return MagazineLayoutSectionMetrics(
