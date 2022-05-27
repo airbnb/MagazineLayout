@@ -206,13 +206,12 @@ struct SectionModel {
   mutating func updateItemSizeMode(to sizeMode: MagazineLayoutItemSizeMode, atIndex index: Int) {
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
     // and Swift retain / release calls.
-    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
+    itemModels.withUnsafeMutableBufferPointer { directlyMutableItemModels in
+      directlyMutableItemModels[index].sizeMode = sizeMode
 
-    directlyMutableItemModels[index].sizeMode = sizeMode
-
-    if case let .static(staticHeight) = sizeMode.heightMode {
-      directlyMutableItemModels[index].size.height = staticHeight
+      if case let .static(staticHeight) = sizeMode.heightMode {
+        directlyMutableItemModels[index].size.height = staticHeight
+      }
     }
 
     updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: index)
@@ -267,10 +266,9 @@ struct SectionModel {
   mutating func updateItemHeight(toPreferredHeight preferredHeight: CGFloat, atIndex index: Int) {
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
     // and Swift retain / release calls.
-    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
-
-    directlyMutableItemModels[index].preferredHeight = preferredHeight
+    itemModels.withUnsafeMutableBufferPointer { directlyMutableItemModels in
+      directlyMutableItemModels[index].preferredHeight = preferredHeight
+    }
 
     if
       let rowIndex = rowIndicesForItemIndices[index],
@@ -496,11 +494,6 @@ struct SectionModel {
       }
     }
 
-    // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
-    // and Swift retain / release calls.
-    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
-
     var indexInCurrentRow = 0
     for itemIndex in startingItemIndex..<numberOfItems {
       // Create item / row index mappings
@@ -533,8 +526,12 @@ struct SectionModel {
         metrics.horizontalSpacing + currentLeadingMargin
       let itemY = currentY
 
-      directlyMutableItemModels[itemIndex].originInSection = CGPoint(x: itemX, y: itemY)
-      directlyMutableItemModels[itemIndex].size.width = itemWidth
+      // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
+      // and Swift retain / release calls.
+      itemModels.withUnsafeMutableBufferPointer { directlyMutableItemModels in
+        directlyMutableItemModels[itemIndex].originInSection = CGPoint(x: itemX, y: itemY)
+        directlyMutableItemModels[itemIndex].size.width = itemWidth
+      }
 
       if
         (indexInCurrentRow == Int(itemModel.sizeMode.widthMode.widthDivisor) - 1) ||
@@ -593,18 +590,18 @@ struct SectionModel {
       return 0
     }
 
-    // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
-    // and Swift retain / release calls.
-    let itemModelsPointer = UnsafeMutableRawPointer(mutating: &itemModels)
-    let directlyMutableItemModels = itemModelsPointer.assumingMemoryBound(to: ItemModel.self)
-
     var heightOfTallestItem = CGFloat(0)
     var stretchToTallestItemInRowItemIndices = Set<Int>()
 
     for itemIndex in indicesForItemsInRow {
       let preferredHeight = itemModels[itemIndex].preferredHeight
       let height = itemModels[itemIndex].size.height
-      directlyMutableItemModels[itemIndex].size.height = preferredHeight ?? height
+
+      // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
+      // and Swift retain / release calls.
+      itemModels.withUnsafeMutableBufferPointer { directlyMutableItemModels in
+        directlyMutableItemModels[itemIndex].size.height = preferredHeight ?? height
+      }
 
       // Handle stretch to tallest item in row height mode for current row
 
@@ -616,7 +613,11 @@ struct SectionModel {
     }
 
     for stretchToTallestItemInRowItemIndex in stretchToTallestItemInRowItemIndices{
-      directlyMutableItemModels[stretchToTallestItemInRowItemIndex].size.height = heightOfTallestItem
+      // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
+      // and Swift retain / release calls.
+      itemModels.withUnsafeMutableBufferPointer { directlyMutableItemModels in
+        directlyMutableItemModels[stretchToTallestItemInRowItemIndex].size.height = heightOfTallestItem
+      }
     }
 
     itemRowHeightsForRowIndices[rowIndex] = heightOfTallestItem
