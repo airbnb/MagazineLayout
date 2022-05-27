@@ -809,6 +809,9 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     case .decorationView:
       assertionFailure("`MagazineLayout` does not support decoration views")
+
+    @unknown default:
+      assertionFailure("`MagazineLayout` does not support this kind of element category")
     }
 
     let currentElementY = originalAttributes.frame.minY
