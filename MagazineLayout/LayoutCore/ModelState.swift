@@ -40,7 +40,7 @@ final class ModelState {
   private(set) var itemIndexPathsToDelete = Set<IndexPath>()
 
   func numberOfSections(_ batchUpdateStage: BatchUpdateStage) -> Int {
-    return sectionModels(batchUpdateStage).count
+    return sectionModels(for: batchUpdateStage).count
   }
 
   func numberOfItems(
@@ -48,12 +48,12 @@ final class ModelState {
     _ batchUpdateStage: BatchUpdateStage)
     -> Int
   {
-    let sectionModels = self.sectionModels(batchUpdateStage)
+    let sectionModels = self.sectionModels(for: batchUpdateStage)
     return sectionModels[sectionIndex].numberOfItems
   }
 
   func idForItemModel(at indexPath: IndexPath, _ batchUpdateStage: BatchUpdateStage) -> String? {
-    let sectionModels = self.sectionModels(batchUpdateStage)
+    let sectionModels = self.sectionModels(for: batchUpdateStage)
 
     guard
       indexPath.section < sectionModels.count,
@@ -71,7 +71,7 @@ final class ModelState {
     _ batchUpdateStage: BatchUpdateStage)
     -> IndexPath?
   {
-    let sectionModels = self.sectionModels(batchUpdateStage)
+    let sectionModels = self.sectionModels(for: batchUpdateStage)
 
     for sectionIndex in 0..<sectionModels.count {
       guard let index = sectionModels[sectionIndex].indexForItemModel(withID: id) else {
@@ -84,7 +84,7 @@ final class ModelState {
   }
 
   func idForSectionModel(atIndex index: Int, _ batchUpdateStage: BatchUpdateStage) -> String? {
-    let sectionModels = self.sectionModels(batchUpdateStage)
+    let sectionModels = self.sectionModels(for: batchUpdateStage)
 
     guard index < sectionModels.count else {
       // This occurs when getting layout attributes for initial / final animations
@@ -95,7 +95,7 @@ final class ModelState {
   }
 
   func indexForSectionModel(withID id: String, _ batchUpdateStage: BatchUpdateStage) -> Int? {
-    let sectionModels = self.sectionModels(batchUpdateStage)
+    let sectionModels = self.sectionModels(for: batchUpdateStage)
 
     for sectionIndex in 0..<sectionModels.count {
       guard sectionModels[sectionIndex].id == id else { continue }
@@ -343,14 +343,16 @@ final class ModelState {
         batchUpdateStage)
     }
 
-    let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
-    let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
+    var itemFrame: CGRect!
+    mutateSectionModels(
+      for: batchUpdateStage,
+      withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
+        itemFrame = directlyMutableSectionModels[itemLocation.sectionIndex].calculateFrameForItem(
+          atIndex: itemLocation.elementIndex)
+      })
 
-    var itemFrame = sectionModels[itemLocation.sectionIndex].calculateFrameForItem(
-      atIndex: itemLocation.elementIndex)
     itemFrame.origin.y += sectionMinY
     return itemFrame
-
   }
 
   func frameForHeader(
@@ -365,16 +367,19 @@ final class ModelState {
       sectionMinY = sectionMaxY(forSectionAtIndex: sectionIndex - 1, batchUpdateStage)
     }
 
-    let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
-    let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
-
     let currentVisibleBounds = currentVisibleBoundsProvider()
-    var headerFrame = sectionModels[sectionIndex].calculateFrameForHeader(
-      inSectionVisibleBounds: CGRect(
-        x: currentVisibleBounds.minX,
-        y: currentVisibleBounds.minY - sectionMinY,
-        width: currentVisibleBounds.width,
-        height: currentVisibleBounds.height))
+    var headerFrame: CGRect?
+    mutateSectionModels(
+      for: batchUpdateStage,
+      withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
+        headerFrame = directlyMutableSectionModels[sectionIndex].calculateFrameForHeader(
+          inSectionVisibleBounds: CGRect(
+            x: currentVisibleBounds.minX,
+            y: currentVisibleBounds.minY - sectionMinY,
+            width: currentVisibleBounds.width,
+            height: currentVisibleBounds.height))
+      })
+
     headerFrame?.origin.y += sectionMinY
     return headerFrame
   }
@@ -391,16 +396,19 @@ final class ModelState {
       sectionMinY = sectionMaxY(forSectionAtIndex: sectionIndex - 1, batchUpdateStage)
     }
 
-    let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
-    let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
-
     let currentVisibleBounds = currentVisibleBoundsProvider()
-    var footerFrame = sectionModels[sectionIndex].calculateFrameForFooter(
-      inSectionVisibleBounds: CGRect(
-        x: currentVisibleBounds.minX,
-        y: currentVisibleBounds.minY - sectionMinY,
-        width: currentVisibleBounds.width,
-        height: currentVisibleBounds.height))
+    var footerFrame: CGRect?
+    mutateSectionModels(
+      for: batchUpdateStage,
+      withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
+        footerFrame = directlyMutableSectionModels[sectionIndex].calculateFrameForFooter(
+          inSectionVisibleBounds: CGRect(
+            x: currentVisibleBounds.minX,
+            y: currentVisibleBounds.minY - sectionMinY,
+            width: currentVisibleBounds.width,
+            height: currentVisibleBounds.height))
+      })
+
     footerFrame?.origin.y += sectionMinY
     return footerFrame
   }
@@ -417,10 +425,13 @@ final class ModelState {
       sectionMinY = sectionMaxY(forSectionAtIndex: sectionIndex - 1, batchUpdateStage)
     }
 
-    let sectionModelsPointer = self.sectionModelsPointer(batchUpdateStage)
-    let sectionModels = sectionModelsPointer.assumingMemoryBound(to: SectionModel.self)
+    var backgroundFrame: CGRect?
+    mutateSectionModels(
+      for: batchUpdateStage,
+      withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
+        backgroundFrame = directlyMutableSectionModels[sectionIndex].calculateFrameForBackground()
+      })
 
-    var backgroundFrame = sectionModels[sectionIndex].calculateFrameForBackground()
     backgroundFrame?.origin.y += sectionMinY
     return backgroundFrame
   }
@@ -732,22 +743,22 @@ final class ModelState {
   private var backgroundLocationsForFlattenedIndices = [Int: ElementLocation]()
   private var itemLocationsForFlattenedIndices = [Int: ElementLocation]()
 
-  private func sectionModels(_ batchUpdateStage: BatchUpdateStage) -> [SectionModel] {
+  private func sectionModels(for batchUpdateStage: BatchUpdateStage) -> [SectionModel] {
     switch batchUpdateStage {
     case .beforeUpdates: return sectionModelsBeforeBatchUpdates
     case .afterUpdates: return currentSectionModels
     }
   }
 
-  private func sectionModelsPointer(
-    _ batchUpdateStage: BatchUpdateStage)
-    -> UnsafeMutableRawPointer
+  private func mutateSectionModels(
+    for batchUpdateStage: BatchUpdateStage,
+    withUnsafeMutableBufferPointer body: (inout UnsafeMutableBufferPointer<SectionModel>) -> Void)
   {
     // Accessing these arrays using unsafe, untyped (raw) pointers
     // avoids expensive copy-on-writes and Swift retain / release calls.
     switch batchUpdateStage {
-    case .beforeUpdates: return UnsafeMutableRawPointer(mutating: &sectionModelsBeforeBatchUpdates)
-    case .afterUpdates: return UnsafeMutableRawPointer(mutating: &currentSectionModels)
+    case .beforeUpdates: sectionModelsBeforeBatchUpdates.withUnsafeMutableBufferPointer(body)
+    case .afterUpdates: currentSectionModels.withUnsafeMutableBufferPointer(body)
     }
   }
 
