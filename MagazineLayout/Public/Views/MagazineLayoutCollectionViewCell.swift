@@ -48,24 +48,26 @@ open class MagazineLayoutCollectionViewCell: UICollectionViewCell {
       return super.preferredLayoutAttributesFitting(layoutAttributes)
     }
 
-    // In some cases, `contentView`'s required width and height constraints
-    // (created from its auto-resizing mask) will not have the correct constants before invoking
-    // `systemLayoutSizeFitting(...)`, causing the cell to size incorrectly. This seems to be a
-    // UIKit bug.
-    // https://openradar.appspot.com/radar?id=5025850143539200
-    // The issue seems most common when the collection view's bounds change (on rotation).
-    // We correct for this by updating `contentView.bounds`, which updates the constants used by the
-    // width and height constraints created by the `contentView`'s auto-resizing mask.
+    if #unavailable(iOS 14.0) {
+      // In some cases, `contentView`'s required width and height constraints
+      // (created from its auto-resizing mask) will not have the correct constants before invoking
+      // `systemLayoutSizeFitting(...)`, causing the cell to size incorrectly. This seems to be a
+      // UIKit bug.
+      // https://openradar.appspot.com/radar?id=5025850143539200
+      // The issue seems most common when the collection view's bounds change (on rotation).
+      // We correct for this by updating `contentView.bounds`, which updates the constants used by
+      // the width and height constraints created by the `contentView`'s auto-resizing mask.
+      // Issue is fixed in iOS 14+.
+      if contentView.bounds.width != layoutAttributes.size.width {
+        contentView.bounds.size.width = layoutAttributes.size.width
+      }
 
-    if contentView.bounds.width != layoutAttributes.size.width {
-      contentView.bounds.size.width = layoutAttributes.size.width
-    }
-
-    if
-      !attributes.shouldVerticallySelfSize &&
-      contentView.bounds.height != layoutAttributes.size.height
-    {
-      contentView.bounds.size.height = layoutAttributes.size.height
+      if
+        !attributes.shouldVerticallySelfSize &&
+        contentView.bounds.height != layoutAttributes.size.height
+      {
+        contentView.bounds.size.height = layoutAttributes.size.height
+      }
     }
 
     let size: CGSize

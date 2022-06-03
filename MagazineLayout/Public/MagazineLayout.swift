@@ -73,7 +73,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       // this small decrease in `collectionViewContentSize.width` is enough to work around the
       // incorrect, internal collection view `CGRect` checks, without introducing any visual
       // differences for elements in the collection view.
-      // See https://openradar.appspot.com/radar?id=5025850143539200 for more details.
+      // This is still an issue as of iOS 15.
       width = collectionView.bounds.width - contentInset.left - contentInset.right - 0.0001
     } else {
       width = 0
