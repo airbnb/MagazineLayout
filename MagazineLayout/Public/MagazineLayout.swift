@@ -107,24 +107,18 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     // Update layout metrics if necessary
-    if
-      prepareActions.contains(.updateLayoutMetrics) &&
-      !prepareActions.contains(.recreateSectionModels) &&
-      !prepareActions.contains(.lazilyCreateLayoutAttributes)
-    {
+    if prepareActions.contains(.updateLayoutMetrics) {
       for sectionIndex in 0..<modelState.numberOfSections(.afterUpdates) {
         let sectionMetrics = metricsForSection(atIndex: sectionIndex)
         modelState.updateMetrics(to: sectionMetrics, forSectionAtIndex: sectionIndex)
 
         if let headerModel = headerModelForHeader(inSectionAtIndex: sectionIndex) {
-          hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || headerModel.pinToVisibleBounds
           modelState.setHeader(headerModel, forSectionAtIndex: sectionIndex)
         } else {
           modelState.removeHeader(forSectionAtIndex: sectionIndex)
         }
 
         if let footerModel = footerModelForFooter(inSectionAtIndex: sectionIndex) {
-          hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || footerModel.pinToVisibleBounds
           modelState.setFooter(footerModel, forSectionAtIndex: sectionIndex)
         } else {
           modelState.removeFooter(forSectionAtIndex: sectionIndex)
@@ -144,110 +138,15 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
     }
 
-    var newItemLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
-    var newHeaderLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
-    var newFooterLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
-    var newBackgroundLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
-
-    var sections = [SectionModel]()
-    for sectionIndex in 0..<currentCollectionView.numberOfSections {
-      // Recreate section models from scratch if necessary
-      if prepareActions.contains(.recreateSectionModels) {
+    // Recreate section models from scratch if necessary
+    if prepareActions.contains(.recreateSectionModels) {
+      var sections = [SectionModel]()
+      for sectionIndex in 0..<currentCollectionView.numberOfSections {
         let sectionModel = sectionModelForSection(atIndex: sectionIndex)
         sections.append(sectionModel)
       }
 
-      let numberOfItems = currentCollectionView.numberOfItems(inSection: sectionIndex)
-
-      // Create header layout attributes if necessary
-      if
-        case let .visible(heightMode, pinToVisibleBounds) = visibilityModeForHeader(
-          inSectionAtIndex: sectionIndex)
-      {
-        hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || pinToVisibleBounds
-
-        let headerLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
-
-        if let headerLayoutAttributes = headerLayoutAttributes[headerLocation] {
-          newHeaderLayoutAttributes[headerLocation] = headerLayoutAttributes
-        } else {
-          newHeaderLayoutAttributes[headerLocation] = MagazineLayoutCollectionViewLayoutAttributes(
-            forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionHeader,
-            with: headerLocation.indexPath)
-        }
-
-        newHeaderLayoutAttributes[headerLocation]?.shouldVerticallySelfSize = heightMode == .dynamic
-        newHeaderLayoutAttributes[headerLocation]?.zIndex = numberOfItems + 1
-      }
-
-      // Create footer layout attributes if necessary
-      if
-        case let .visible(heightMode, pinToVisibleBounds) = visibilityModeForFooter(
-          inSectionAtIndex: sectionIndex)
-      {
-        hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || pinToVisibleBounds
-
-        let footerLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
-
-        if let footerLayoutAttributes = footerLayoutAttributes[footerLocation] {
-          newFooterLayoutAttributes[footerLocation] = footerLayoutAttributes
-        } else {
-          newFooterLayoutAttributes[footerLocation] = MagazineLayoutCollectionViewLayoutAttributes(
-            forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionFooter,
-            with: footerLocation.indexPath)
-        }
-
-        newFooterLayoutAttributes[footerLocation]?.shouldVerticallySelfSize = heightMode == .dynamic
-        newFooterLayoutAttributes[footerLocation]?.zIndex = numberOfItems + 1
-      }
-
-      // Create background layout attributes if necessary
-      if case .visible = visibilityModeForBackground(inSectionAtIndex: sectionIndex) {
-        let backgroundLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
-
-        if let attribute = backgroundLayoutAttributes[backgroundLocation] {
-          newBackgroundLayoutAttributes[backgroundLocation] = attribute
-        } else {
-          newBackgroundLayoutAttributes[backgroundLocation] = MagazineLayoutCollectionViewLayoutAttributes(
-            forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionBackground,
-            with: backgroundLocation.indexPath)
-        }
-
-        newBackgroundLayoutAttributes[backgroundLocation]?.shouldVerticallySelfSize = false
-        newBackgroundLayoutAttributes[backgroundLocation]?.zIndex = 0
-      }
-
-      // Create item layout attributes if necessary
-      for itemIndex in 0..<numberOfItems {
-        let itemLocation = ElementLocation(elementIndex: itemIndex, sectionIndex: sectionIndex)
-
-        if let itemLayoutAttributes = itemLayoutAttributes[itemLocation] {
-          newItemLayoutAttributes[itemLocation] = itemLayoutAttributes
-        } else {
-          newItemLayoutAttributes[itemLocation] = MagazineLayoutCollectionViewLayoutAttributes(
-            forCellWith: itemLocation.indexPath)
-        }
-
-        let itemHeightMode = sizeModeForItem(at: itemLocation.indexPath).heightMode
-        if case .static = itemHeightMode {
-          newItemLayoutAttributes[itemLocation]?.shouldVerticallySelfSize = false
-        } else {
-          newItemLayoutAttributes[itemLocation]?.shouldVerticallySelfSize = true
-        }
-
-        newItemLayoutAttributes[itemLocation]?.zIndex = numberOfItems - itemIndex
-      }
-    }
-
-    if prepareActions.contains(.recreateSectionModels) {
       modelState.setSections(sections)
-    }
-
-    if prepareActions.contains(.lazilyCreateLayoutAttributes) {
-      itemLayoutAttributes = newItemLayoutAttributes
-      headerLayoutAttributes = newHeaderLayoutAttributes
-      footerLayoutAttributes = newFooterLayoutAttributes
-      backgroundLayoutAttributes = newBackgroundLayoutAttributes
     }
 
     if
@@ -424,11 +323,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       let headerLocation = headerLocationFramePair.elementLocation
       let headerFrame = headerLocationFramePair.frame
 
-      guard let layoutAttributes = headerLayoutAttributes[headerLocation] else {
-        continue
-      }
-
-      layoutAttributes.frame = headerFrame
+      let layoutAttributes = headerLayoutAttributes(for: headerLocation, frame: headerFrame)
       layoutAttributesInRect.append(layoutAttributes)
     }
 
@@ -437,11 +332,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       let footerLocation = footerLocationFramePair.elementLocation
       let footerFrame = footerLocationFramePair.frame
 
-      guard let layoutAttributes = footerLayoutAttributes[footerLocation] else {
-        continue
-      }
-
-      layoutAttributes.frame = footerFrame
+      let layoutAttributes = footerLayoutAttributes(for: footerLocation, frame: footerFrame)
       layoutAttributesInRect.append(layoutAttributes)
     }
 
@@ -451,11 +342,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       let backgroundLocation = backgroundLocationFramePair.elementLocation
       let backgroundFrame = backgroundLocationFramePair.frame
 
-      guard let layoutAttributes = backgroundLayoutAttributes[backgroundLocation] else {
-        continue
-      }
-
-      layoutAttributes.frame = backgroundFrame
+      let layoutAttributes = backgroundLayoutAttributes(
+        for: backgroundLocation,
+        frame: backgroundFrame)
       layoutAttributesInRect.append(layoutAttributes)
     }
 
@@ -464,11 +353,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       let itemLocation = itemLocationFramePair.elementLocation
       let itemFrame = itemLocationFramePair.frame
 
-      guard let layoutAttributes = itemLayoutAttributes[itemLocation] else {
-        continue
-      }
-
-      layoutAttributes.frame = itemFrame
+      let layoutAttributes = itemLayoutAttributes(for: itemLocation, frame: itemFrame)
       layoutAttributesInRect.append(layoutAttributes)
     }
 
@@ -483,7 +368,6 @@ public final class MagazineLayout: UICollectionViewLayout {
     guard !hasDataSourceCountInvalidationBeforeReceivingUpdateItems else { return nil }
 
     let itemLocation = ElementLocation(indexPath: indexPath)
-    let layoutAttributes = itemLayoutAttributes[itemLocation]
 
     guard
       itemLocation.sectionIndex < modelState.numberOfSections(.afterUpdates),
@@ -496,13 +380,12 @@ public final class MagazineLayout: UICollectionViewLayout {
       assertionFailure("`{\(itemLocation.sectionIndex), \(itemLocation.elementIndex)}` is out of bounds of the section models / item models array.")
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
-      // within `UICollecionView`, which is why we don't return `nil` here.
-      return layoutAttributes
+      // within `UICollectionView`, which is why we don't return `nil` here.
+      return itemLayoutAttributes(for: itemLocation, frame: .zero)
     }
 
-    layoutAttributes?.frame = modelState.frameForItem(at: itemLocation, .afterUpdates)
-
-    return layoutAttributes
+    let itemFrame = modelState.frameForItem(at: itemLocation, .afterUpdates)
+    return itemLayoutAttributes(for: itemLocation, frame: itemFrame)
   }
 
   override public func layoutAttributesForSupplementaryView(
@@ -516,31 +399,25 @@ public final class MagazineLayout: UICollectionViewLayout {
     let elementLocation = ElementLocation(indexPath: indexPath)
     if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionHeader,
-      let headerLayoutAttributes = headerLayoutAttributes[elementLocation],
       let headerFrame = modelState.frameForHeader(
         inSectionAtIndex: elementLocation.sectionIndex,
         .afterUpdates)
     {
-      headerLayoutAttributes.frame = headerFrame
-      return headerLayoutAttributes
+      return headerLayoutAttributes(for: elementLocation, frame: headerFrame)
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionFooter,
-      let footerLayoutAttributes = footerLayoutAttributes[elementLocation],
       let footerFrame = modelState.frameForFooter(
         inSectionAtIndex: elementLocation.sectionIndex,
         .afterUpdates)
     {
-      footerLayoutAttributes.frame = footerFrame
-      return footerLayoutAttributes
+      return footerLayoutAttributes(for: elementLocation, frame: footerFrame)
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionBackground,
-      let backgroundLayoutAttributes = backgroundLayoutAttributes[elementLocation],
       let backgroundFrame = modelState.frameForBackground(
         inSectionAtIndex: elementLocation.sectionIndex,
         .afterUpdates)
     {
-      backgroundLayoutAttributes.frame = backgroundFrame
-      return backgroundLayoutAttributes
+      return backgroundLayoutAttributes(for: elementLocation, frame: backgroundFrame)
     } else {
       return nil
     }
@@ -870,16 +747,12 @@ public final class MagazineLayout: UICollectionViewLayout {
       return
     }
 
+    let shouldInvalidateLayoutMetrics = !context.invalidateEverything &&
+      !context.invalidateDataSourceCounts
+
     if context.invalidateEverything {
-      prepareActions.formUnion([.recreateSectionModels, .lazilyCreateLayoutAttributes])
+      prepareActions.formUnion([.recreateSectionModels])
     }
-
-    if context.invalidateDataSourceCounts {
-      prepareActions.formUnion(.lazilyCreateLayoutAttributes)
-    }
-
-    hasDataSourceCountInvalidationBeforeReceivingUpdateItems = context.invalidateDataSourceCounts &&
-      !context.invalidateEverything
 
     // Checking `cachedCollectionViewWidth != collectionView?.bounds.size.width` is necessary
     // because the collection view's width can change without a `contentSizeAdjustment` occurring.
@@ -894,9 +767,12 @@ public final class MagazineLayout: UICollectionViewLayout {
       prepareActions.formUnion([.updateLayoutMetrics, .cachePreviousWidth])
     }
 
-    if context.invalidateLayoutMetrics {
+    if context.invalidateLayoutMetrics && shouldInvalidateLayoutMetrics {
       prepareActions.formUnion([.updateLayoutMetrics])
     }
+
+    hasDataSourceCountInvalidationBeforeReceivingUpdateItems = context.invalidateDataSourceCounts &&
+      !context.invalidateEverything
 
     super.invalidateLayout(with: context)
   }
@@ -972,9 +848,8 @@ public final class MagazineLayout: UICollectionViewLayout {
     let rawValue: UInt
 
     static let recreateSectionModels = PrepareActions(rawValue: 1 << 0)
-    static let lazilyCreateLayoutAttributes = PrepareActions(rawValue: 1 << 1)
-    static let updateLayoutMetrics = PrepareActions(rawValue: 1 << 2)
-    static let cachePreviousWidth = PrepareActions(rawValue: 1 << 3)
+    static let updateLayoutMetrics = PrepareActions(rawValue: 1 << 1)
+    static let cachePreviousWidth = PrepareActions(rawValue: 1 << 2)
   }
   private var prepareActions: PrepareActions = []
 
@@ -1200,7 +1075,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       // TODO(bryankeller): Look into whether this happens on iOS 10. It definitely does on iOS 9.
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
-      // within `UICollecionView`, which is why we don't return `nil` here.
+      // within `UICollectionView`, which is why we don't return `nil` here.
       return layoutAttributes
     }
 
@@ -1214,7 +1089,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       assertionFailure("`{\(indexPath.section), \(indexPath.item)}` is out of bounds of the section models / item models array.")
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
-      // within `UICollecionView`, which is why we don't return `nil` here.
+      // within `UICollectionView`, which is why we don't return `nil` here.
       return layoutAttributes
     }
 
@@ -1238,7 +1113,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       // TODO(bryankeller): Look into whether this happens on iOS 10. It definitely does on iOS 9.
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
-      // within `UICollecionView`, which is why we don't return `nil` here.
+      // within `UICollectionView`, which is why we don't return `nil` here.
       return layoutAttributes
     }
 
@@ -1249,7 +1124,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       assertionFailure("`\(indexPath.section)` is out of bounds of the section models array.")
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
-      // within `UICollecionView`, which is why we don't return `nil` here.
+      // within `UICollectionView`, which is why we don't return `nil` here.
       return layoutAttributes
     }
 
@@ -1337,6 +1212,144 @@ public final class MagazineLayout: UICollectionViewLayout {
     default:
       assertionFailure("\(elementKind) is not a valid supplementary view element kind.")
     }
+  }
+
+}
+
+// MARK: Layout Attributes Creation and Caching
+
+private extension MagazineLayout {
+
+  func headerLayoutAttributes(
+    for headerLocation: ElementLocation,
+    frame: CGRect)
+    -> UICollectionViewLayoutAttributes
+  {
+    let layoutAttributes: MagazineLayoutCollectionViewLayoutAttributes
+    if
+      let cachedLayoutAttributes = headerLayoutAttributes[headerLocation],
+      ElementLocation(indexPath: cachedLayoutAttributes.indexPath) == headerLocation
+    {
+      layoutAttributes = cachedLayoutAttributes
+    } else {
+      layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(
+        forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionHeader,
+        with: headerLocation.indexPath)
+    }
+
+    layoutAttributes.frame = frame
+
+    let sectionIndex = headerLocation.sectionIndex
+    if
+      case let .visible(heightMode, pinToVisibleBounds) = visibilityModeForHeader(
+        inSectionAtIndex: sectionIndex)
+    {
+      layoutAttributes.shouldVerticallySelfSize = heightMode == .dynamic
+      hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || pinToVisibleBounds
+    }
+
+    let numberOfItems = currentCollectionView.numberOfItems(inSection: headerLocation.sectionIndex)
+    layoutAttributes.zIndex = numberOfItems + 1
+
+    headerLayoutAttributes[headerLocation] = layoutAttributes
+
+    return layoutAttributes
+  }
+
+  func footerLayoutAttributes(
+    for footerLocation: ElementLocation,
+    frame: CGRect)
+    -> UICollectionViewLayoutAttributes
+  {
+    let layoutAttributes: MagazineLayoutCollectionViewLayoutAttributes
+    if
+      let cachedLayoutAttributes = footerLayoutAttributes[footerLocation],
+      ElementLocation(indexPath: cachedLayoutAttributes.indexPath) == footerLocation
+    {
+      layoutAttributes = cachedLayoutAttributes
+    } else {
+      layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(
+        forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionFooter,
+        with: footerLocation.indexPath)
+    }
+
+    layoutAttributes.frame = frame
+
+    let sectionIndex = footerLocation.sectionIndex
+    if
+      case let .visible(heightMode, pinToVisibleBounds) = visibilityModeForFooter(
+        inSectionAtIndex: sectionIndex)
+    {
+      layoutAttributes.shouldVerticallySelfSize = heightMode == .dynamic
+      hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || pinToVisibleBounds
+    }
+
+    let numberOfItems = currentCollectionView.numberOfItems(inSection: sectionIndex)
+    layoutAttributes.zIndex = numberOfItems + 1
+
+    footerLayoutAttributes[footerLocation] = layoutAttributes
+
+    return layoutAttributes
+  }
+
+  func backgroundLayoutAttributes(
+    for backgroundLocation: ElementLocation,
+    frame: CGRect)
+    -> UICollectionViewLayoutAttributes
+  {
+    let layoutAttributes: MagazineLayoutCollectionViewLayoutAttributes
+    if
+      let cachedLayoutAttributes = backgroundLayoutAttributes[backgroundLocation],
+      ElementLocation(indexPath: cachedLayoutAttributes.indexPath) == backgroundLocation
+    {
+      layoutAttributes = cachedLayoutAttributes
+    } else {
+      layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(
+        forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionBackground,
+        with: backgroundLocation.indexPath)
+    }
+
+    layoutAttributes.frame = frame
+
+    layoutAttributes.shouldVerticallySelfSize = false
+    layoutAttributes.zIndex = 0
+
+    backgroundLayoutAttributes[backgroundLocation] = layoutAttributes
+
+    return layoutAttributes
+  }
+
+  func itemLayoutAttributes(
+    for itemLocation: ElementLocation,
+    frame: CGRect)
+    -> UICollectionViewLayoutAttributes
+  {
+    let layoutAttributes: MagazineLayoutCollectionViewLayoutAttributes
+    if
+      let cachedLayoutAttributes = itemLayoutAttributes[itemLocation],
+      ElementLocation(indexPath: cachedLayoutAttributes.indexPath) == itemLocation
+    {
+      layoutAttributes = cachedLayoutAttributes
+    } else {
+      layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(
+        forCellWith: itemLocation.indexPath)
+    }
+
+    layoutAttributes.frame = frame
+
+    let itemHeightMode = sizeModeForItem(at: itemLocation.indexPath).heightMode
+    if case .static = itemHeightMode {
+      layoutAttributes.shouldVerticallySelfSize = false
+    } else {
+      layoutAttributes.shouldVerticallySelfSize = true
+    }
+
+    let numberOfItems = currentCollectionView.numberOfItems(inSection: itemLocation.sectionIndex)
+    layoutAttributes.zIndex = numberOfItems - itemLocation.elementIndex
+
+    itemLayoutAttributes[itemLocation] = layoutAttributes
+
+    return layoutAttributes
   }
 
 }
