@@ -25,3 +25,19 @@ public final class MagazineLayoutInvalidationContext: UICollectionViewLayoutInva
   public var invalidateLayoutMetrics = true
 
 }
+
+// MARK: CustomDebugStringConvertible
+
+extension MagazineLayoutInvalidationContext {
+
+  public override var debugDescription: String {
+    "Invalidate: everything - \(invalidateEverything), " +
+    "data source counts - \(invalidateDataSourceCounts), " +
+    "offset adjustment - \(contentOffsetAdjustment), " +
+    "size adjustment - \(contentSizeAdjustment), " +
+    "item index paths - \(String(describing: invalidatedItemIndexPaths)), " +
+    "supplementary index paths - \(String(describing: invalidatedSupplementaryIndexPaths)), " +
+    "decoration index paths - \(String(describing: invalidatedDecorationIndexPaths))"
+  }
+
+}
