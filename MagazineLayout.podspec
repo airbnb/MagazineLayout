@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'MagazineLayout'
-  s.version  = '1.6.10'
+  s.version  = '1.6.11'
   s.license  = 'Apache License, Version 2.0'
   s.summary  = 'A collection view layout that can display items in a grid and list arrangement.'
   s.homepage = 'https://github.com/airbnb/MagazineLayout'
