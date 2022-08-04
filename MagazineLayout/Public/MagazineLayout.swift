@@ -323,8 +323,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       let headerLocation = headerLocationFramePair.elementLocation
       let headerFrame = headerLocationFramePair.frame
 
-      let layoutAttributes = headerLayoutAttributes(for: headerLocation, frame: headerFrame)
-      layoutAttributesInRect.append(layoutAttributes)
+      if let layoutAttributes = headerLayoutAttributes(for: headerLocation, frame: headerFrame) {
+        layoutAttributesInRect.append(layoutAttributes)
+      }
     }
 
     let footerLocationFramePairs = modelState.footerLocationFramePairs(forFootersIn: rect)
@@ -332,8 +333,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       let footerLocation = footerLocationFramePair.elementLocation
       let footerFrame = footerLocationFramePair.frame
 
-      let layoutAttributes = footerLayoutAttributes(for: footerLocation, frame: footerFrame)
-      layoutAttributesInRect.append(layoutAttributes)
+      if let layoutAttributes = footerLayoutAttributes(for: footerLocation, frame: footerFrame) {
+        layoutAttributesInRect.append(layoutAttributes)
+      }
     }
 
     let backgroundLocationFramePairs = modelState.backgroundLocationFramePairs(
@@ -342,10 +344,13 @@ public final class MagazineLayout: UICollectionViewLayout {
       let backgroundLocation = backgroundLocationFramePair.elementLocation
       let backgroundFrame = backgroundLocationFramePair.frame
 
-      let layoutAttributes = backgroundLayoutAttributes(
-        for: backgroundLocation,
-        frame: backgroundFrame)
-      layoutAttributesInRect.append(layoutAttributes)
+      if
+        let layoutAttributes = backgroundLayoutAttributes(
+          for: backgroundLocation,
+          frame: backgroundFrame)
+      {
+        layoutAttributesInRect.append(layoutAttributes)
+      }
     }
 
     let itemLocationFramePairs = modelState.itemLocationFramePairs(forItemsIn: rect)
@@ -353,8 +358,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       let itemLocation = itemLocationFramePair.elementLocation
       let itemFrame = itemLocationFramePair.frame
 
-      let layoutAttributes = itemLayoutAttributes(for: itemLocation, frame: itemFrame)
-      layoutAttributesInRect.append(layoutAttributes)
+      if let layoutAttributes = itemLayoutAttributes(for: itemLocation, frame: itemFrame) {
+        layoutAttributesInRect.append(layoutAttributes)
+      }
     }
 
     return layoutAttributesInRect
@@ -1223,8 +1229,10 @@ private extension MagazineLayout {
   func headerLayoutAttributes(
     for headerLocation: ElementLocation,
     frame: CGRect)
-    -> UICollectionViewLayoutAttributes
+    -> UICollectionViewLayoutAttributes?
   {
+    guard headerLocation.sectionIndex < currentCollectionView.numberOfSections else { return nil }
+
     let layoutAttributes: MagazineLayoutCollectionViewLayoutAttributes
     if
       let cachedLayoutAttributes = headerLayoutAttributes[headerLocation],
@@ -1259,8 +1267,10 @@ private extension MagazineLayout {
   func footerLayoutAttributes(
     for footerLocation: ElementLocation,
     frame: CGRect)
-    -> UICollectionViewLayoutAttributes
+    -> UICollectionViewLayoutAttributes?
   {
+    guard footerLocation.sectionIndex < currentCollectionView.numberOfSections else { return nil }
+
     let layoutAttributes: MagazineLayoutCollectionViewLayoutAttributes
     if
       let cachedLayoutAttributes = footerLayoutAttributes[footerLocation],
@@ -1295,8 +1305,12 @@ private extension MagazineLayout {
   func backgroundLayoutAttributes(
     for backgroundLocation: ElementLocation,
     frame: CGRect)
-    -> UICollectionViewLayoutAttributes
+    -> UICollectionViewLayoutAttributes?
   {
+    guard backgroundLocation.sectionIndex < currentCollectionView.numberOfSections else {
+      return nil
+    }
+
     let layoutAttributes: MagazineLayoutCollectionViewLayoutAttributes
     if
       let cachedLayoutAttributes = backgroundLayoutAttributes[backgroundLocation],
@@ -1322,8 +1336,12 @@ private extension MagazineLayout {
   func itemLayoutAttributes(
     for itemLocation: ElementLocation,
     frame: CGRect)
-    -> UICollectionViewLayoutAttributes
+    -> UICollectionViewLayoutAttributes?
   {
+    guard itemLocation.sectionIndex < currentCollectionView.numberOfSections else { return nil }
+    let numberOfItems = currentCollectionView.numberOfItems(inSection: itemLocation.sectionIndex)
+    guard itemLocation.elementIndex < numberOfItems else { return nil }
+
     let layoutAttributes: MagazineLayoutCollectionViewLayoutAttributes
     if
       let cachedLayoutAttributes = itemLayoutAttributes[itemLocation],
@@ -1344,7 +1362,6 @@ private extension MagazineLayout {
       layoutAttributes.shouldVerticallySelfSize = true
     }
 
-    let numberOfItems = currentCollectionView.numberOfItems(inSection: itemLocation.sectionIndex)
     layoutAttributes.zIndex = numberOfItems - itemLocation.elementIndex
 
     itemLayoutAttributes[itemLocation] = layoutAttributes
