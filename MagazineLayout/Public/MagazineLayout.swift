@@ -367,22 +367,23 @@ public final class MagazineLayout: UICollectionViewLayout {
     // See comment in `layoutAttributesForElementsInRect:` for more details.
     guard !hasDataSourceCountInvalidationBeforeReceivingUpdateItems else { return nil }
 
-
-    // For reasons that are not clear, this function can be invoked with with an out-of-bounds
-    // index path. To guard against downstream index-out-of-bounds crashes, we return nil here if we
-    // detect this scenario.
-
-    let numberOfSections = min(
-      currentCollectionView.numberOfSections,
-      modelState.numberOfSections(.afterUpdates))
-    guard indexPath.section < numberOfSections else { return nil }
-
-    let numberOfItems = min(
-      currentCollectionView.numberOfItems(inSection: indexPath.section),
-      modelState.numberOfItems(inSectionAtIndex: indexPath.section, .afterUpdates))
-    guard indexPath.item < numberOfItems else { return nil }
-
     let itemLocation = ElementLocation(indexPath: indexPath)
+
+    guard
+      itemLocation.sectionIndex < modelState.numberOfSections(.afterUpdates),
+      itemLocation.elementIndex < modelState.numberOfItems(inSectionAtIndex: itemLocation.sectionIndex, .afterUpdates)
+    else
+    {
+      // On iOS 9, `layoutAttributesForItem(at:)` can be invoked for an index path of a new item
+      // before the layout is notified of this new item (through either `prepare` or
+      // `prepare(forCollectionViewUpdates:)`). This seems to be fixed in iOS 10 and higher.
+      assertionFailure("`{\(itemLocation.sectionIndex), \(itemLocation.elementIndex)}` is out of bounds of the section models / item models array.")
+
+      // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
+      // within `UICollectionView`, which is why we don't return `nil` here.
+      return itemLayoutAttributes(for: itemLocation, frame: .zero)
+    }
+
     let itemFrame = modelState.frameForItem(at: itemLocation, .afterUpdates)
     return itemLayoutAttributes(for: itemLocation, frame: itemFrame)
   }
@@ -770,17 +771,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       prepareActions.formUnion([.updateLayoutMetrics])
     }
 
-    // The layout can be invalidated with `invalidateDataSourceCounts == false` even though the
-    // number of sections has changed. An invalidation in the near future will have
-    // `invalidateDataSourceCounts == true`, but at that point, other layout functions like
-    // `prepare` have already been called.
-    // To prevent section-out-of-bounds calls to `numberOfItems(inSection:)`, we need to track this
-    // scenario using `hasDataSourceCountInvalidationBeforeReceivingUpdateItems`.
-    let numberOfDataSourceSections = currentCollectionView.numberOfSections
-    let numberOfModelStateSections = modelState.numberOfSections(.afterUpdates)
-    let numberOfSectionsChanged = numberOfDataSourceSections != numberOfModelStateSections
-    let dataSourceCountsChanged = numberOfSectionsChanged || context.invalidateDataSourceCounts
-    hasDataSourceCountInvalidationBeforeReceivingUpdateItems = dataSourceCountsChanged &&
+    hasDataSourceCountInvalidationBeforeReceivingUpdateItems = context.invalidateDataSourceCounts &&
       !context.invalidateEverything
 
     super.invalidateLayout(with: context)
