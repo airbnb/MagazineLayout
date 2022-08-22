@@ -903,7 +903,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   private var scale: CGFloat {
-    collectionView?.window?.screen.scale ?? UIScreen.main.scale
+    collectionView?.traitCollection.nonZeroDisplayScale ?? 1
   }
 
   private func metricsForSection(atIndex sectionIndex: Int) -> MagazineLayoutSectionMetrics {
