@@ -54,7 +54,7 @@ struct MagazineLayoutSectionMetrics: Equatable {
       layout: layout,
       insetsForItemsInSectionAtIndex: sectionIndex)
 
-    scale = collectionView.window?.screen.scale ?? UIScreen.main.scale
+    scale = collectionView.traitCollection.nonZeroDisplayScale
   }
 
   private init(
