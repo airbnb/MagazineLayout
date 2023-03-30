@@ -33,6 +33,20 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     sizeModeForItemAt indexPath: IndexPath)
     -> MagazineLayoutItemSizeMode
 
+  ///   Asks the delegate for the estimate height of the specified item.
+  ///
+  ///   - Parameters:
+  ///      - collectionView: The collection view using the layout.
+  ///      - collectionViewLayout: The layout requesting the information.
+  ///      - indexPath: The index path of the item.
+  ///
+  ///   - Returns: The estimate height of the specified item.
+  func collectionView(
+    _ collectionView: UICollectionView,
+    layout collectionViewLayout: UICollectionViewLayout,
+    estimateHeightFor indexPath: IndexPath)
+    -> CGFloat
+
   ///   Asks the delegate for the visibility mode of the header in the specified section.
   ///
   ///   - Parameters:
@@ -288,6 +302,17 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     finalLayoutAttributesForRemovedBackgroundInSectionAtIndex index: Int,
     byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
 
+}
+
+// MARK: - Default estimate height
+public extension UICollectionViewDelegateMagazineLayout {
+  func collectionView(
+    _ collectionView: UICollectionView,
+    layout collectionViewLayout: UICollectionViewLayout,
+    estimateHeightFor indexPath: IndexPath)
+    -> CGFloat {
+      return MagazineLayout.Default.ItemHeight
+  }
 }
 
 // MARK: Default Insert Animations
