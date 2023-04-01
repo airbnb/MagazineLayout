@@ -937,7 +937,9 @@ public final class MagazineLayout: UICollectionViewLayout {
     switch itemSizeMode.heightMode {
     case let .static(staticHeight):
       return staticHeight
-    case .dynamic, .dynamicAndStretchToTallestItemInRow:
+    case let .dynamic(estimatedHeight):
+      return estimatedHeight
+    case .dynamicAndStretchToTallestItemInRow:
       return MagazineLayout.Default.ItemHeight
     }
   }
