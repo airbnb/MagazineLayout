@@ -933,20 +933,13 @@ public final class MagazineLayout: UICollectionViewLayout {
       sizeModeForItemAt: indexPath)
   }
 
-  private func initialItemHeight(
-    from itemSizeMode: MagazineLayoutItemSizeMode,
-    indexPath: IndexPath)
-    -> CGFloat {
+  private func initialItemHeight(from itemSizeMode: MagazineLayoutItemSizeMode) -> CGFloat {
     switch itemSizeMode.heightMode {
     case let .static(staticHeight):
       return staticHeight
-    case .dynamic, .dynamicAndStretchToTallestItemInRow:
-      if let delegateMagazineLayout, let collectionView {
-        return delegateMagazineLayout.collectionView(collectionView,
-                                                     layout: self,
-                                                     estimateHeightFor: indexPath)
-      }
-
+    case let .dynamic(estimatedHeight):
+      return estimatedHeight
+    case .dynamicAndStretchToTallestItemInRow:
       return MagazineLayout.Default.ItemHeight
     }
   }
@@ -1034,7 +1027,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     let itemSizeMode = sizeModeForItem(at: indexPath)
     return ItemModel(
       sizeMode: itemSizeMode,
-      height: initialItemHeight(from: itemSizeMode, indexPath: indexPath))
+      height: initialItemHeight(from: itemSizeMode))
   }
 
   private func headerModelForHeader(

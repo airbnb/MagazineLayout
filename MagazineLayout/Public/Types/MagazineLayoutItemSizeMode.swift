@@ -106,13 +106,14 @@ public enum MagazineLayoutItemHeightMode: Hashable {
   /// the height of your items dynamically, consider using one of the dynamic height modes.
   case `static`(height: CGFloat)
 
-  /// This height mode will cause the item to self-size in the vertical direction.
+  /// This height mode will cause the item to self-size in the vertical direction, using the `estimatedHeight` as an initial
+  /// placeholder.
   ///
   /// In practice, self-sizing in the vertical direction means that the item will get its height
   /// from the Auto Layout engine. Use this height mode for items whose height is not known upfront.
   /// For example, if you support multiline labels or dynamic type, your height is likely not known
   /// until the Auto Layout engine resolves the layout at runtime.
-  case dynamic
+  case dynamic(estimatedHeight: CGFloat)
 
   /// This height mode will cause the item to self-size in the vertical direction, then resize to
   /// match the height of the tallest item in the same row of items.
@@ -123,5 +124,15 @@ public enum MagazineLayoutItemHeightMode: Hashable {
   /// Note that items with this height mode will resize to match the height of the tallest item in
   /// the same row of items, even if the tallest item has a `static` height mode.
   case dynamicAndStretchToTallestItemInRow
+
+  /// This height mode will cause the item to self-size in the vertical direction
+  ///
+  /// In practice, self-sizing in the vertical direction means that the item will get its height
+  /// from the Auto Layout engine. Use this height mode for items whose height is not known upfront.
+  /// For example, if you support multiline labels or dynamic type, your height is likely not known
+  /// until the Auto Layout engine resolves the layout at runtime.
+  public static var dynamic: MagazineLayoutItemHeightMode {
+    .dynamic(estimatedHeight: MagazineLayout.Default.ItemHeight)
+  }
 
 }
