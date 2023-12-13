@@ -52,7 +52,7 @@ final class ModelState {
     return sectionModels[sectionIndex].numberOfItems
   }
 
-  func idForItemModel(at indexPath: IndexPath, _ batchUpdateStage: BatchUpdateStage) -> String? {
+  func idForItemModel(at indexPath: IndexPath, _ batchUpdateStage: BatchUpdateStage) -> UUID? {
     let sectionModels = self.sectionModels(for: batchUpdateStage)
 
     guard
@@ -67,7 +67,7 @@ final class ModelState {
   }
 
   func indexPathForItemModel(
-    withID id: String,
+    withID id: UUID,
     _ batchUpdateStage: BatchUpdateStage)
     -> IndexPath?
   {
@@ -83,7 +83,7 @@ final class ModelState {
     return nil
   }
 
-  func idForSectionModel(atIndex index: Int, _ batchUpdateStage: BatchUpdateStage) -> String? {
+  func idForSectionModel(atIndex index: Int, _ batchUpdateStage: BatchUpdateStage) -> UUID? {
     let sectionModels = self.sectionModels(for: batchUpdateStage)
 
     guard index < sectionModels.count else {
@@ -94,7 +94,7 @@ final class ModelState {
     return sectionModels[index].id
   }
 
-  func indexForSectionModel(withID id: String, _ batchUpdateStage: BatchUpdateStage) -> Int? {
+  func indexForSectionModel(withID id: UUID, _ batchUpdateStage: BatchUpdateStage) -> Int? {
     let sectionModels = self.sectionModels(for: batchUpdateStage)
 
     for sectionIndex in 0..<sectionModels.count {

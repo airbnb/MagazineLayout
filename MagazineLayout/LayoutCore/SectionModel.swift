@@ -28,7 +28,7 @@ struct SectionModel {
     backgroundModel: BackgroundModel?,
     metrics: MagazineLayoutSectionMetrics)
   {
-    id = NSUUID().uuidString
+    id = UUID()
     self.itemModels = itemModels
     self.headerModel = headerModel
     self.footerModel = footerModel
@@ -43,7 +43,7 @@ struct SectionModel {
 
   // MARK: Internal
 
-  let id: String
+  let id: UUID
 
   private(set) var headerModel: HeaderModel?
   private(set) var footerModel: FooterModel?
@@ -55,11 +55,11 @@ struct SectionModel {
     return itemModels.count
   }
 
-  func idForItemModel(atIndex index: Int) -> String {
+  func idForItemModel(atIndex index: Int) -> UUID {
     return itemModels[index].id
   }
 
-  func indexForItemModel(withID id: String) -> Int? {
+  func indexForItemModel(withID id: UUID) -> Int? {
     return itemModels.firstIndex { $0.id == id }
   }
 

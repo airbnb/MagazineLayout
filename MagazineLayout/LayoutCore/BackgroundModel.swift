@@ -22,14 +22,14 @@ struct BackgroundModel {
   // MARK: Lifecycle
 
   init() {
-    id = NSUUID().uuidString
+    id = UUID()
     originInSection = .zero
     size = .zero
   }
 
   // MARK: Internal
 
-  let id: String
+  let id: UUID
 
   var originInSection: CGPoint
   var size: CGSize

@@ -22,7 +22,7 @@ struct ItemModel {
   // MARK: Lifecycle
 
   init(sizeMode: MagazineLayoutItemSizeMode, height: CGFloat) {
-    id = NSUUID().uuidString
+    id = UUID()
     self.sizeMode = sizeMode
     originInSection = .zero
     size = CGSize(width: 0, height: height)
@@ -30,7 +30,7 @@ struct ItemModel {
 
   // MARK: Internal
 
-  let id: String
+  let id: UUID
 
   var sizeMode: MagazineLayoutItemSizeMode
   var originInSection: CGPoint
