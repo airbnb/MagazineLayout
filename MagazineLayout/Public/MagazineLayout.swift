@@ -30,13 +30,20 @@ public final class MagazineLayout: UICollectionViewLayout {
   ///   - flipsHorizontallyInOppositeLayoutDirection: Indicates whether the horizontal coordinate
   ///     system is automatically flipped at appropriate times. In practice, this is used to support
   ///     right-to-left layout.
-  public init(flipsHorizontallyInOppositeLayoutDirection: Bool = true) {
+  ///   - verticalLayoutDirection: The vertical layout direction of items in the collection view. This property changes the
+  ///   behavior of scroll-position-preservation when performing batch updates or when the collection view's bounds changes.
+  public init(
+    flipsHorizontallyInOppositeLayoutDirection: Bool = true,
+    verticalLayoutDirection: MagazineLayoutVerticalLayoutDirection = .topToBottom)
+  {
     _flipsHorizontallyInOppositeLayoutDirection = flipsHorizontallyInOppositeLayoutDirection
+    self.verticalLayoutDirection = verticalLayoutDirection
     super.init()
   }
 
   required init?(coder aDecoder: NSCoder) {
     _flipsHorizontallyInOppositeLayoutDirection = true
+    verticalLayoutDirection = .topToBottom
     super.init(coder: aDecoder)
   }
 
@@ -91,6 +98,11 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   override public func prepare() {
     super.prepare()
+
+    // Save the most recent content inset. We read this later in `invalidateLayout:`. Unlike the
+    // bounds and content size, the content insets are updated _before_ `invalidateLayout` is
+    // called, leaving us no choice other than tracking it separately here.
+    lastContentInset = contentInset
 
     guard !prepareActions.isEmpty else { return }
 
@@ -232,6 +244,14 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
     }
 
+    // Calculate the target offset before applying updates, since the target offset should be based
+    // on the pre-update state.
+    targetContentOffsetAnchor = targetContentOffsetAnchor(
+      bounds: currentCollectionView.bounds,
+      contentHeight: collectionViewContentSize.height,
+      topInset: contentInset.top,
+      bottomInset: contentInset.bottom)
+
     modelState.applyUpdates(updates)
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
 
@@ -244,48 +264,29 @@ public final class MagazineLayout: UICollectionViewLayout {
     itemLayoutAttributesForPendingAnimations.removeAll()
     supplementaryViewLayoutAttributesForPendingAnimations.removeAll()
 
+    targetContentOffsetAnchor = nil
+    preInvalidationContentSize = nil
+    preInvalidationContentInset = nil
+
     super.finalizeCollectionViewUpdates()
   }
 
   override public func prepare(forAnimatedBoundsChange oldBounds: CGRect) {
     super.prepare(forAnimatedBoundsChange: oldBounds)
 
-    // This function (and the corresponding finalize function) are called multiple times, each time
-    // triggering `targetContentOffset(forProposedContentOffset:)` to be called. That will cause our
-    // content offset to change, which means subsequent calls to this function will find a different
-    // first visible item index path. Ultimately, this will lead to an incorrect visible item once
-    // all of these function calls have been completed.
-    //
-    // To ensure that we end up at the correct item, despite these functions being called multiple
-    // times, we store `indexPathOfFirstVisibleItemToMaintainAfterWidthChange` only once. To
-    // facilitate this behavior, we compare `currentCollectionView.bounds.width` with
-    // `cachedCollectionViewWidth`, rather than with `oldBounds.width`.
-    isPerformingAnimatedBoundsChange = true
-    let isSameWidth = currentCollectionView.bounds.width.isEqual(
-      to: cachedCollectionViewWidth ?? -.greatestFiniteMagnitude,
-      threshold: 1 / scale)
-    guard !isSameWidth else { return }
-
-    let topInset: CGFloat
-    if #available(iOS 11.0, tvOS 11.0, *) {
-      topInset = currentCollectionView.adjustedContentInset.top
-    } else {
-      topInset = currentCollectionView.contentInset.top
-    }
-
-    indexPathOfFirstVisibleItemToMaintainAfterWidthChange = currentCollectionView
-      .indexPathsForVisibleItems
-      .sorted()
-      .first {
-        guard let midY = layoutAttributesForItem(at: $0)?.frame.midY else { return false }
-        // Make the first "mostly visible" item the target
-        return midY >= currentCollectionView.contentOffset.y + topInset
-      }
+    targetContentOffsetAnchor = targetContentOffsetAnchor(
+      bounds: oldBounds,
+      contentHeight: preInvalidationContentSize?.height ?? collectionViewContentSize.height,
+      topInset: preInvalidationContentInset?.top ?? contentInset.top,
+      bottomInset: preInvalidationContentInset?.bottom ?? contentInset.bottom)
   }
 
   override public func finalizeAnimatedBoundsChange() {
+    targetContentOffsetAnchor = nil
+    preInvalidationContentSize = nil
+    preInvalidationContentInset = nil
+
     super.finalizeAnimatedBoundsChange()
-    isPerformingAnimatedBoundsChange = false
   }
 
   override public func layoutAttributesForElements(
@@ -753,6 +754,11 @@ public final class MagazineLayout: UICollectionViewLayout {
       return
     }
 
+    if collectionViewContentSize.width > 0, collectionViewContentSize.height > 0 {
+      preInvalidationContentSize = preInvalidationContentSize ?? collectionViewContentSize
+    }
+    preInvalidationContentInset = preInvalidationContentInset ?? lastContentInset ?? contentInset
+
     let shouldInvalidateLayoutMetrics = !context.invalidateEverything &&
       !context.invalidateDataSourceCounts
 
@@ -787,27 +793,21 @@ public final class MagazineLayout: UICollectionViewLayout {
     forProposedContentOffset proposedContentOffset: CGPoint)
     -> CGPoint
   {
-    guard
-      isPerformingAnimatedBoundsChange,
-      let targetItemIndexPath = indexPathOfFirstVisibleItemToMaintainAfterWidthChange,
-      let targetItemFrame = layoutAttributesForItem(at: targetItemIndexPath)?.frame,
-      // Since we're invalidating item sizes during animated bounds changes, this method gets
-      // called twice: on the second call these attributes have a zero frame, so we don't do
-      // anything in that scenario since we'd otherwise errantly scroll to the first item.
-      targetItemFrame != .zero
-    else
-    {
+    guard let targetContentOffsetAnchor else {
       return super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
     }
 
-    let topInset: CGFloat
-    if #available(iOS 11.0, tvOS 11.0, *) {
-      topInset = currentCollectionView.adjustedContentInset.top
-    } else {
-      topInset = currentCollectionView.contentInset.top
-    }
+    let yOffset = targetContentOffsetAnchor.yOffset(
+      topInset: contentInset.top,
+      bottomInset: contentInset.bottom,
+      bounds: currentCollectionView.bounds,
+      contentHeight: collectionViewContentSize.height,
+      indexPathForItemID: { modelState.indexPathForItemModel(withID: $0, .afterUpdates) },
+      frameForItemAtIndexPath: {
+        modelState.frameForItem(at: ElementLocation(indexPath: $0), .afterUpdates)
+      })
 
-    return CGPoint(x: proposedContentOffset.x, y: targetItemFrame.minY - topInset)
+    return CGPoint(x: proposedContentOffset.x, y: yOffset)
   }
 
   // MARK: Private
@@ -827,8 +827,12 @@ public final class MagazineLayout: UICollectionViewLayout {
   }()
 
   private let _flipsHorizontallyInOppositeLayoutDirection: Bool
-  
+  private let verticalLayoutDirection: MagazineLayoutVerticalLayoutDirection
+
+  private var lastContentInset: UIEdgeInsets?
   private var cachedCollectionViewWidth: CGFloat?
+  private var preInvalidationContentSize: CGSize?
+  private var preInvalidationContentInset: UIEdgeInsets?
 
   // These properties are used to prevent scroll jumpiness due to self-sizing after rotation; see
   // comment in `invalidationContext(forPreferredLayoutAttributes:withOriginalAttributes:)` for more
@@ -865,7 +869,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
 
   private var isPerformingAnimatedBoundsChange = false
-  private var indexPathOfFirstVisibleItemToMaintainAfterWidthChange: IndexPath?
+  private var targetContentOffsetAnchor: TargetContentOffsetAnchor?
 
   // Used to provide the model state with the current visible bounds for the sole purpose of
   // supporting pinned headers and footers.
@@ -904,6 +908,14 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private var scale: CGFloat {
     collectionView?.traitCollection.nonZeroDisplayScale ?? 1
+  }
+
+  private var contentInset: UIEdgeInsets {
+    if #available(iOS 11.0, tvOS 11.0, *) {
+      return currentCollectionView.adjustedContentInset
+    } else {
+      return currentCollectionView.contentInset
+    }
   }
 
   private func metricsForSection(atIndex sectionIndex: Int) -> MagazineLayoutSectionMetrics {
@@ -1220,6 +1232,50 @@ public final class MagazineLayout: UICollectionViewLayout {
     default:
       assertionFailure("\(elementKind) is not a valid supplementary view element kind.")
     }
+  }
+
+  private func targetContentOffsetAnchor(
+    bounds: CGRect,
+    contentHeight: CGFloat,
+    topInset: CGFloat,
+    bottomInset: CGFloat)
+    -> TargetContentOffsetAnchor?
+  {
+    var visibleItemLocationFramePairs = [ElementLocationFramePair]()
+    for itemLocationFramePair in modelState.itemLocationFramePairs(forItemsIn: bounds) {
+      visibleItemLocationFramePairs.append(itemLocationFramePair)
+    }
+
+    let firstVisibleItemLocationFramePair = visibleItemLocationFramePairs.first {
+      $0.frame.minY >= bounds.minY + topInset
+    }
+    let lastVisibleItemLocationFramePair = visibleItemLocationFramePairs.last {
+      $0.frame.maxY <= bounds.minY + bounds.height - bottomInset
+    }
+
+    guard
+      let firstVisibleItemLocationFramePair,
+      let lastVisibleItemLocationFramePair,
+      let firstVisibleItemID = modelState.idForItemModel(
+        at: firstVisibleItemLocationFramePair.elementLocation.indexPath,
+        .afterUpdates),
+      let lastVisibleItemID = modelState.idForItemModel(
+        at: lastVisibleItemLocationFramePair.elementLocation.indexPath,
+        .afterUpdates)
+    else {
+      return nil
+    }
+
+    return TargetContentOffsetAnchor.targetContentOffsetAnchor(
+      verticalLayoutDirection: verticalLayoutDirection,
+      topInset: topInset,
+      bottomInset: bottomInset,
+      bounds: bounds,
+      contentHeight: contentHeight,
+      firstVisibleItemID: firstVisibleItemID,
+      lastVisibleItemID: lastVisibleItemID,
+      firstVisibleItemFrame: firstVisibleItemLocationFramePair.frame,
+      lastVisibleItemFrame: lastVisibleItemLocationFramePair.frame)
   }
 
 }
