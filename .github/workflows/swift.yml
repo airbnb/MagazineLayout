@@ -13,12 +13,12 @@ jobs:
 
     strategy:
       matrix:
-        destination: ['platform=iOS Simulator,OS=11.0,name=iPhone 8', 'platform=iOS Simulator,OS=15.2,name=iPhone 12']
+        destination: ['platform=iOS Simulator,OS=11.0,name=iPhone 8', 'platform=iOS Simulator,OS=16.2,name=iPhone 14']
 
     steps:
     - uses: actions/checkout@v2
     - name: Build
       run: xcodebuild clean build -scheme MagazineLayout
     - name: Run tests
-      run: xcodebuild clean test -project MagazineLayout.xcodeproj -scheme MagazineLayout -destination "name=iPhone 8,OS=15.2"
+      run: xcodebuild clean test -project MagazineLayout.xcodeproj -scheme MagazineLayout -destination "name=iPhone 14,OS=16.2"
 
