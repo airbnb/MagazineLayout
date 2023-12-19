@@ -17,6 +17,8 @@ import UIKit
 
 // MARK: - TargetContentOffsetAnchor
 
+/// An internal type for calculating the target content offset for various state of the collection view. Various anchors are possible, each
+/// changing how the collection view prioritizes keeping certain items visible in target content offset calculations.
 enum TargetContentOffsetAnchor: Equatable {
   case top
   case bottom
