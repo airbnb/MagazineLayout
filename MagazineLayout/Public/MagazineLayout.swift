@@ -265,8 +265,6 @@ public final class MagazineLayout: UICollectionViewLayout {
     supplementaryViewLayoutAttributesForPendingAnimations.removeAll()
 
     targetContentOffsetAnchor = nil
-    preInvalidationContentSize = nil
-    preInvalidationContentInset = nil
 
     super.finalizeCollectionViewUpdates()
   }
@@ -274,17 +272,25 @@ public final class MagazineLayout: UICollectionViewLayout {
   override public func prepare(forAnimatedBoundsChange oldBounds: CGRect) {
     super.prepare(forAnimatedBoundsChange: oldBounds)
 
+    let contentSize: CGSize
+    let contentInset: UIEdgeInsets
+    if let metricsSnapshot = metricsSnapshots.first(where: { $0.bounds == oldBounds }) {
+      contentSize = metricsSnapshot.contentSize
+      contentInset = metricsSnapshot.contentInset
+    } else {
+      contentSize = collectionViewContentSize
+      contentInset = self.contentInset
+    }
+
     targetContentOffsetAnchor = targetContentOffsetAnchor(
       bounds: oldBounds,
-      contentHeight: preInvalidationContentSize?.height ?? collectionViewContentSize.height,
-      topInset: preInvalidationContentInset?.top ?? contentInset.top,
-      bottomInset: preInvalidationContentInset?.bottom ?? contentInset.bottom)
+      contentHeight: contentSize.height,
+      topInset: contentInset.top,
+      bottomInset: contentInset.bottom)
   }
 
   override public func finalizeAnimatedBoundsChange() {
     targetContentOffsetAnchor = nil
-    preInvalidationContentSize = nil
-    preInvalidationContentInset = nil
 
     super.finalizeAnimatedBoundsChange()
   }
@@ -754,10 +760,29 @@ public final class MagazineLayout: UICollectionViewLayout {
       return
     }
 
-    if collectionViewContentSize.width > 0, collectionViewContentSize.height > 0 {
-      preInvalidationContentSize = preInvalidationContentSize ?? collectionViewContentSize
+    // We need to save a few content size and content inset values for different bounds. This
+    // allows us to compute the correct target content offset in `prepareForAnimatedBoundsChange`.
+    // The root issue is that in the aforementioned function, we need a way to know what the content
+    // size and content inset _were_ for a given bounds value.
+    let metricsSnapshot = MetricsSnapshot(
+      bounds: currentCollectionView.bounds,
+      contentSize: collectionViewContentSize,
+      contentInset: lastContentInset ?? contentInset)
+
+    // Replace existing snapshot if the bounds is the same
+    let indexOfExistingMetricsSnapshot = metricsSnapshots.firstIndex {
+      $0.bounds == metricsSnapshot.bounds
     }
-    preInvalidationContentInset = preInvalidationContentInset ?? lastContentInset ?? contentInset
+    if let indexOfExistingMetricsSnapshot {
+      metricsSnapshots[indexOfExistingMetricsSnapshot] = metricsSnapshot
+    } else {
+      metricsSnapshots.append(metricsSnapshot)
+    }
+
+    // Limit to 3 snapshots
+    if metricsSnapshots.count > 3 {
+      metricsSnapshots.removeFirst()
+    }
 
     let shouldInvalidateLayoutMetrics = !context.invalidateEverything &&
       !context.invalidateDataSourceCounts
@@ -831,8 +856,13 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private var lastContentInset: UIEdgeInsets?
   private var cachedCollectionViewWidth: CGFloat?
-  private var preInvalidationContentSize: CGSize?
-  private var preInvalidationContentInset: UIEdgeInsets?
+
+  private struct MetricsSnapshot {
+    let bounds: CGRect
+    let contentSize: CGSize
+    let contentInset: UIEdgeInsets
+  }
+  private var metricsSnapshots = [MetricsSnapshot]()
 
   // These properties are used to prevent scroll jumpiness due to self-sizing after rotation; see
   // comment in `invalidationContext(forPreferredLayoutAttributes:withOriginalAttributes:)` for more
