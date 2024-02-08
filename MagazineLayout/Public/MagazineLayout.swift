@@ -1245,6 +1245,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     for itemLocationFramePair in modelState.itemLocationFramePairs(forItemsIn: bounds) {
       visibleItemLocationFramePairs.append(itemLocationFramePair)
     }
+    visibleItemLocationFramePairs.sort { $0.elementLocation < $1.elementLocation }
 
     let firstVisibleItemLocationFramePair = visibleItemLocationFramePairs.first {
       $0.frame.minY >= bounds.minY + topInset
