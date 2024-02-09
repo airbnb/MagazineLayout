@@ -22,8 +22,8 @@ import UIKit
 enum TargetContentOffsetAnchor: Equatable {
   case top
   case bottom
-  case topItem(id: String, distanceFromTop: CGFloat)
-  case bottomItem(id: String, distanceFromBottom: CGFloat)
+  case topItem(id: String, itemEdge: ItemEdge, distanceFromTop: CGFloat)
+  case bottomItem(id: String, itemEdge: ItemEdge, distanceFromBottom: CGFloat)
 
   static func targetContentOffsetAnchor(
     verticalLayoutDirection: MagazineLayoutVerticalLayoutDirection,
@@ -31,16 +31,19 @@ enum TargetContentOffsetAnchor: Equatable {
     bottomInset: CGFloat,
     bounds: CGRect,
     contentHeight: CGFloat,
+    scale: CGFloat,
     firstVisibleItemID: String,
     lastVisibleItemID: String,
     firstVisibleItemFrame: CGRect,
     lastVisibleItemFrame: CGRect)
     -> Self
   {
+    let top = (-topInset).alignedToPixel(forScreenWithScale: scale)
+    let bottom = (contentHeight + bottomInset - bounds.height).alignedToPixel(forScreenWithScale: scale)
     let position: Position
-    if bounds.minY <= -topInset {
+    if bounds.minY <= top {
       position = .atTop
-    } else if bounds.minY >= contentHeight + bottomInset - bounds.height {
+    } else if bounds.minY >= bottom {
       position = .atBottom
     } else {
       position = .inMiddle
@@ -52,14 +55,38 @@ enum TargetContentOffsetAnchor: Equatable {
       case .atTop:
         return .top
       case .inMiddle, .atBottom:
-        let distanceFromTop = firstVisibleItemFrame.minY - (bounds.minY + topInset)
-        return .topItem(id: firstVisibleItemID, distanceFromTop: distanceFromTop)
+        let top = bounds.minY + topInset
+        let topDistanceFromTop = firstVisibleItemFrame.value(for: .top) - top
+        let bottomDistanceFromTop = firstVisibleItemFrame.value(for: .bottom) - top
+        if abs(topDistanceFromTop) < abs(bottomDistanceFromTop) {
+          return .topItem(
+            id: firstVisibleItemID,
+            itemEdge: .top,
+            distanceFromTop: topDistanceFromTop.alignedToPixel(forScreenWithScale: scale))
+        } else {
+          return .topItem(
+            id: firstVisibleItemID,
+            itemEdge: .bottom,
+            distanceFromTop: bottomDistanceFromTop.alignedToPixel(forScreenWithScale: scale))
+        }
       }
     case .bottomToTop:
       switch position {
       case .atTop, .inMiddle:
-        let distanceFromBottom = lastVisibleItemFrame.maxY - (bounds.maxY - bottomInset)
-        return .bottomItem(id: lastVisibleItemID, distanceFromBottom: distanceFromBottom)
+        let bottom = bounds.maxY - bottomInset
+        let topDistanceFromBottom = lastVisibleItemFrame.value(for: .top) - bottom
+        let bottomDistanceFromBottom = lastVisibleItemFrame.value(for: .bottom) - bottom
+        if abs(topDistanceFromBottom) < abs(bottomDistanceFromBottom) {
+          return .bottomItem(
+            id: lastVisibleItemID,
+            itemEdge: .top,
+            distanceFromBottom: topDistanceFromBottom.alignedToPixel(forScreenWithScale: scale))
+        } else {
+          return .bottomItem(
+            id: lastVisibleItemID,
+            itemEdge: .bottom,
+            distanceFromBottom: bottomDistanceFromBottom.alignedToPixel(forScreenWithScale: scale))
+        }
       case .atBottom:
         return .bottom
       }
@@ -82,15 +109,37 @@ enum TargetContentOffsetAnchor: Equatable {
     case .bottom:
       return contentHeight - bounds.height + bottomInset
 
-    case .topItem(let id, let distanceFromTop):
+    case .topItem(let id, let itemEdge, let distanceFromTop):
       guard let indexPath = indexPathForItemID(id) else { return bounds.minY }
       let itemFrame = frameForItemAtIndexPath(indexPath)
-      return itemFrame.minY - topInset - distanceFromTop
+      return itemFrame.value(for: itemEdge) - topInset - distanceFromTop
 
-    case .bottomItem(let id, let distanceFromBottom):
+    case .bottomItem(let id, let itemEdge, let distanceFromBottom):
       guard let indexPath = indexPathForItemID(id) else { return bounds.minY }
       let itemFrame = frameForItemAtIndexPath(indexPath)
-      return itemFrame.maxY - bounds.height + bottomInset - distanceFromBottom
+      return itemFrame.value(for: itemEdge) - bounds.height + bottomInset - distanceFromBottom
+    }
+  }
+
+}
+
+// MARK: ItemEdge
+
+enum ItemEdge {
+  case top
+  case bottom
+}
+
+// MARK: CGRect + Item Edge Value
+
+private extension CGRect {
+
+  func value(for itemEdge: ItemEdge) -> CGFloat {
+    switch itemEdge {
+    case .top:
+      return minY
+    case .bottom:
+      return maxY
     }
   }
 
