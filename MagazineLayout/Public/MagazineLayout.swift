@@ -99,13 +99,6 @@ public final class MagazineLayout: UICollectionViewLayout {
   override public func prepare() {
     super.prepare()
 
-    // Save the most recent content inset. We read this later in `invalidateLayout:`. Unlike the
-    // bounds and content size, the content insets are updated _before_ `invalidateLayout` is
-    // called, leaving us no choice other than tracking it separately here.
-    lastContentInset = contentInset
-
-    guard !prepareActions.isEmpty else { return }
-
     // Save the previous collection view width if necessary
     if prepareActions.contains(.cachePreviousWidth) {
       cachedCollectionViewWidth = currentCollectionView.bounds.width
@@ -255,6 +248,9 @@ public final class MagazineLayout: UICollectionViewLayout {
     modelState.applyUpdates(updates)
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
 
+    lastSizedElementMinY = nil
+    lastSizedElementPreferredHeight = nil
+
     super.prepare(forCollectionViewUpdates: updateItems)
   }
 
@@ -265,6 +261,15 @@ public final class MagazineLayout: UICollectionViewLayout {
     supplementaryViewLayoutAttributesForPendingAnimations.removeAll()
 
     targetContentOffsetAnchor = nil
+    preInvalidationContentSize = nil
+
+    if let stagedContentOffsetAdjustment {
+      let context = MagazineLayoutInvalidationContext()
+      context.invalidateLayoutMetrics = false
+      context.contentOffsetAdjustment = stagedContentOffsetAdjustment
+      invalidateLayout(with: context)
+    }
+    stagedContentOffsetAdjustment = nil
 
     super.finalizeCollectionViewUpdates()
   }
@@ -272,25 +277,21 @@ public final class MagazineLayout: UICollectionViewLayout {
   override public func prepare(forAnimatedBoundsChange oldBounds: CGRect) {
     super.prepare(forAnimatedBoundsChange: oldBounds)
 
-    let contentSize: CGSize
-    let contentInset: UIEdgeInsets
-    if let metricsSnapshot = metricsSnapshots.first(where: { $0.bounds == oldBounds }) {
-      contentSize = metricsSnapshot.contentSize
-      contentInset = metricsSnapshot.contentInset
-    } else {
-      contentSize = collectionViewContentSize
-      contentInset = self.contentInset
-    }
-
     targetContentOffsetAnchor = targetContentOffsetAnchor(
       bounds: oldBounds,
-      contentHeight: contentSize.height,
-      topInset: contentInset.top,
-      bottomInset: contentInset.bottom)
+      contentHeight: preInvalidationContentSize?.height ?? currentCollectionView.contentSize.height,
+      // There doesn't seem to be a reliable way to get the correct content insets here. We can try
+      // track them in invalidateLayout or prepare, but then there are edge cases where we need to
+      // track multiple past inset values. It's a huge mess, and I don't think it's worth solving.
+      // The downside is that if your insets change on rotation, you won't always land in the exact
+      // correct spot if you're in the middle of the content. Being at the top or bottom works fine.
+      topInset: 0,
+      bottomInset: 0)
   }
 
   override public func finalizeAnimatedBoundsChange() {
     targetContentOffsetAnchor = nil
+    preInvalidationContentSize = nil
 
     super.finalizeAnimatedBoundsChange()
   }
@@ -671,6 +672,8 @@ public final class MagazineLayout: UICollectionViewLayout {
     withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
     -> UICollectionViewLayoutInvalidationContext
   {
+    let originalAttributes = originalAttributes.copy() as! UICollectionViewLayoutAttributes
+
     switch preferredAttributes.representedElementCategory {
     case .cell:
       modelState.updateItemHeight(
@@ -721,29 +724,60 @@ public final class MagazineLayout: UICollectionViewLayout {
       forPreferredLayoutAttributes: preferredAttributes,
       withOriginalAttributes: originalAttributes) as! MagazineLayoutInvalidationContext
 
-    // If layout information is discarded above our current scroll position (on rotation, for
-    // example), we need to compensate for preferred size changes to items as we're scrolling up,
-    // otherwise, the collection view will appear to jump each time an element is sized.
-    // Since size adjustments can occur for multiple items in the same soon-to-be-visible row, we
-    // need to account for this by considering the preferred height for previously sized elements in
-    // the same row so that we only adjust the content offset by the exact amount needed to create
-    // smooth scrolling.
     let isScrolling = currentCollectionView.isDragging || currentCollectionView.isDecelerating
-    let isSizingElementAboveTopEdge = originalAttributes.frame.minY < currentCollectionView.contentOffset.y
+    let top = currentCollectionView.bounds.minY + contentInset.top
+    let bottom = currentCollectionView.bounds.maxY
+    let isSizingElementAboveTopEdge = originalAttributes.frame.minY < top
+    let isSizingElementBelowBottomEdge = originalAttributes.frame.minY > bottom
 
-    if isScrolling && isSizingElementAboveTopEdge {
+    let contentOffsetAdjustment: CGPoint
+    if verticalLayoutDirection == .topToBottom, isSizingElementAboveTopEdge {
+      // If layout information is discarded above our current scroll position (on rotation, for
+      // example), we need to compensate for preferred size changes to items as we're scrolling up,
+      // otherwise, the collection view will appear to jump each time an element is sized.
+      // Since size adjustments can occur for multiple items in the same soon-to-be-visible row, we
+      // need to account for this by considering the preferred height for previously sized elements
+      // in the same row so that we only adjust the content offset by the exact amount needed to
+      // create smooth scrolling.
       let isSameRowAsLastSizedElement = lastSizedElementMinY?.isEqual(
         to: currentElementY,
         threshold: 1 / scale)
         ?? false
+
       if isSameRowAsLastSizedElement {
         let lastSizedElementPreferredHeight = self.lastSizedElementPreferredHeight ?? 0
         if preferredAttributes.size.height > lastSizedElementPreferredHeight {
-          context.contentOffsetAdjustment.y = preferredAttributes.size.height - lastSizedElementPreferredHeight
+          contentOffsetAdjustment = CGPoint(
+            x: 0,
+            y: preferredAttributes.size.height - lastSizedElementPreferredHeight)
+        } else {
+          contentOffsetAdjustment = .zero
         }
       } else {
-        context.contentOffsetAdjustment.y = preferredAttributes.size.height - originalAttributes.size.height
+        contentOffsetAdjustment = CGPoint(
+          x: 0,
+          y: preferredAttributes.size.height - originalAttributes.size.height)
       }
+    } else if
+      verticalLayoutDirection == .bottomToTop,
+      !isSizingElementBelowBottomEdge,
+      modelState.isPerformingBatchUpdates
+    {
+      contentOffsetAdjustment = CGPoint(
+        x: 0,
+        y: preferredAttributes.size.height - originalAttributes.size.height)
+    } else {
+      contentOffsetAdjustment = .zero
+    }
+
+    if modelState.isPerformingBatchUpdates {
+      // If we're in the middle of a batch update, we need to adjust our content offset. Doing it
+      // here in the middle of a batch update gets ignored for some reason. Instead, we delay
+      // slightly and do it in `finalizeCollectionViewUpdates`.
+      // This needs to be set in `finalizeCollectionViewUpdates`, otherwise it doesn't get applied.
+      stagedContentOffsetAdjustment = contentOffsetAdjustment
+    } else if isScrolling {
+      context.contentOffsetAdjustment = contentOffsetAdjustment
     }
 
     lastSizedElementMinY = currentElementY
@@ -758,30 +792,6 @@ public final class MagazineLayout: UICollectionViewLayout {
     guard let context = context as? MagazineLayoutInvalidationContext else {
       assertionFailure("`context` must be an instance of `MagazineLayoutInvalidationContext`")
       return
-    }
-
-    // We need to save a few content size and content inset values for different bounds. This
-    // allows us to compute the correct target content offset in `prepareForAnimatedBoundsChange`.
-    // The root issue is that in the aforementioned function, we need a way to know what the content
-    // size and content inset _were_ for a given bounds value.
-    let metricsSnapshot = MetricsSnapshot(
-      bounds: currentCollectionView.bounds,
-      contentSize: collectionViewContentSize,
-      contentInset: lastContentInset ?? contentInset)
-
-    // Replace existing snapshot if the bounds is the same
-    let indexOfExistingMetricsSnapshot = metricsSnapshots.firstIndex {
-      $0.bounds == metricsSnapshot.bounds
-    }
-    if let indexOfExistingMetricsSnapshot {
-      metricsSnapshots[indexOfExistingMetricsSnapshot] = metricsSnapshot
-    } else {
-      metricsSnapshots.append(metricsSnapshot)
-    }
-
-    // Limit to 3 snapshots
-    if metricsSnapshots.count > 3 {
-      metricsSnapshots.removeFirst()
     }
 
     let shouldInvalidateLayoutMetrics = !context.invalidateEverything &&
@@ -854,15 +864,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   private let _flipsHorizontallyInOppositeLayoutDirection: Bool
   private let verticalLayoutDirection: MagazineLayoutVerticalLayoutDirection
 
-  private var lastContentInset: UIEdgeInsets?
   private var cachedCollectionViewWidth: CGFloat?
-
-  private struct MetricsSnapshot {
-    let bounds: CGRect
-    let contentSize: CGSize
-    let contentInset: UIEdgeInsets
-  }
-  private var metricsSnapshots = [MetricsSnapshot]()
 
   // These properties are used to prevent scroll jumpiness due to self-sizing after rotation; see
   // comment in `invalidationContext(forPreferredLayoutAttributes:withOriginalAttributes:)` for more
@@ -900,6 +902,8 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private var isPerformingAnimatedBoundsChange = false
   private var targetContentOffsetAnchor: TargetContentOffsetAnchor?
+  private var preInvalidationContentSize: CGSize?
+  private var stagedContentOffsetAdjustment: CGPoint?
 
   // Used to provide the model state with the current visible bounds for the sole purpose of
   // supporting pinned headers and footers.
@@ -1271,17 +1275,15 @@ public final class MagazineLayout: UICollectionViewLayout {
     bottomInset: CGFloat)
     -> TargetContentOffsetAnchor?
   {
+    let insetBounds = bounds.inset(by: .init(top: topInset, left: 0, bottom: bottomInset, right: 0))
     var visibleItemLocationFramePairs = [ElementLocationFramePair]()
-    for itemLocationFramePair in modelState.itemLocationFramePairs(forItemsIn: bounds) {
+    for itemLocationFramePair in modelState.itemLocationFramePairs(forItemsIn: insetBounds) {
       visibleItemLocationFramePairs.append(itemLocationFramePair)
     }
+    visibleItemLocationFramePairs.sort { $0.elementLocation < $1.elementLocation }
 
-    let firstVisibleItemLocationFramePair = visibleItemLocationFramePairs.first {
-      $0.frame.minY >= bounds.minY + topInset
-    }
-    let lastVisibleItemLocationFramePair = visibleItemLocationFramePairs.last {
-      $0.frame.maxY <= bounds.minY + bounds.height - bottomInset
-    }
+    let firstVisibleItemLocationFramePair = visibleItemLocationFramePairs.first
+    let lastVisibleItemLocationFramePair = visibleItemLocationFramePairs.last
 
     guard
       let firstVisibleItemLocationFramePair,
@@ -1302,6 +1304,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       bottomInset: bottomInset,
       bounds: bounds,
       contentHeight: contentHeight,
+      scale: scale,
       firstVisibleItemID: firstVisibleItemID,
       lastVisibleItemID: lastVisibleItemID,
       firstVisibleItemFrame: firstVisibleItemLocationFramePair.frame,

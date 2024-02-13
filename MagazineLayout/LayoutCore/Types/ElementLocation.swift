@@ -52,3 +52,14 @@ struct ElementLocation: Hashable {
   }
 
 }
+
+// MARK: Comparable
+
+extension ElementLocation: Comparable {
+
+  static func < (lhs: ElementLocation, rhs: ElementLocation) -> Bool {
+    lhs.sectionIndex < rhs.sectionIndex
+      || (lhs.sectionIndex == rhs.sectionIndex && lhs.elementIndex < rhs.elementIndex)
+  }
+
+}
