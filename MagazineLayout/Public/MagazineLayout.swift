@@ -277,16 +277,18 @@ public final class MagazineLayout: UICollectionViewLayout {
   override public func prepare(forAnimatedBoundsChange oldBounds: CGRect) {
     super.prepare(forAnimatedBoundsChange: oldBounds)
 
-    targetContentOffsetAnchor = targetContentOffsetAnchor(
-      bounds: oldBounds,
-      contentHeight: preInvalidationContentSize?.height ?? currentCollectionView.contentSize.height,
-      // There doesn't seem to be a reliable way to get the correct content insets here. We can try
-      // track them in invalidateLayout or prepare, but then there are edge cases where we need to
-      // track multiple past inset values. It's a huge mess, and I don't think it's worth solving.
-      // The downside is that if your insets change on rotation, you won't always land in the exact
-      // correct spot if you're in the middle of the content. Being at the top or bottom works fine.
-      topInset: 0,
-      bottomInset: 0)
+    if currentCollectionView.bounds.size != oldBounds.size {
+      targetContentOffsetAnchor = targetContentOffsetAnchor(
+        bounds: oldBounds,
+        contentHeight: preInvalidationContentSize?.height ?? currentCollectionView.contentSize.height,
+        // There doesn't seem to be a reliable way to get the correct content insets here. We can try
+        // track them in invalidateLayout or prepare, but then there are edge cases where we need to
+        // track multiple past inset values. It's a huge mess, and I don't think it's worth solving.
+        // The downside is that if your insets change on rotation, you won't always land in the exact
+        // correct spot if you're in the middle of the content. Being at the top or bottom works fine.
+        topInset: 0,
+        bottomInset: 0)
+    }
   }
 
   override public func finalizeAnimatedBoundsChange() {
