@@ -239,11 +239,21 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     // Calculate the target offset before applying updates, since the target offset should be based
     // on the pre-update state.
-    targetContentOffsetAnchor = targetContentOffsetAnchor(
+    let proposedTargetContentOffsetAnchor = targetContentOffsetAnchor(
       bounds: currentCollectionView.bounds,
       contentHeight: collectionViewContentSize.height,
       topInset: contentInset.top,
       bottomInset: contentInset.bottom)
+    switch proposedTargetContentOffsetAnchor {
+    case .top, .bottom: 
+      targetContentOffsetAnchor = proposedTargetContentOffsetAnchor
+    case .topItem, .bottomItem:
+      // Preserving the content offset when we're not fully at the top or bottom is tricky when
+      // inserting / deleting items, so we don't even attempt to do it for now.
+      break
+    case .none:
+      break
+    }
 
     modelState.applyUpdates(updates)
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
@@ -728,12 +738,10 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     let isScrolling = currentCollectionView.isDragging || currentCollectionView.isDecelerating
     let top = currentCollectionView.bounds.minY + contentInset.top
-    let bottom = currentCollectionView.bounds.maxY
     let isSizingElementAboveTopEdge = originalAttributes.frame.minY < top
-    let isSizingElementBelowBottomEdge = originalAttributes.frame.minY > bottom
 
     let contentOffsetAdjustment: CGPoint
-    if verticalLayoutDirection == .topToBottom, isSizingElementAboveTopEdge {
+    if isSizingElementAboveTopEdge, isScrolling {
       // If layout information is discarded above our current scroll position (on rotation, for
       // example), we need to compensate for preferred size changes to items as we're scrolling up,
       // otherwise, the collection view will appear to jump each time an element is sized.
@@ -760,11 +768,7 @@ public final class MagazineLayout: UICollectionViewLayout {
           x: 0,
           y: preferredAttributes.size.height - originalAttributes.size.height)
       }
-    } else if
-      verticalLayoutDirection == .bottomToTop,
-      !isSizingElementBelowBottomEdge,
-      modelState.isPerformingBatchUpdates
-    {
+    } else if targetContentOffsetAnchor == .bottom {
       contentOffsetAdjustment = CGPoint(
         x: 0,
         y: preferredAttributes.size.height - originalAttributes.size.height)
