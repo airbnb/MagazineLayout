@@ -102,22 +102,27 @@ enum TargetContentOffsetAnchor: Equatable {
     frameForItemAtIndexPath: (_ indexPath: IndexPath) -> CGRect)
     -> CGFloat
   {
+    let minYOffset = -topInset
+    let maxYOffset = max(contentHeight - bounds.height + bottomInset, minYOffset)
+
     switch self {
     case .top:
-      return -topInset
+      return minYOffset
 
     case .bottom:
-      return contentHeight - bounds.height + bottomInset
+      return maxYOffset
 
     case .topItem(let id, let itemEdge, let distanceFromTop):
       guard let indexPath = indexPathForItemID(id) else { return bounds.minY }
       let itemFrame = frameForItemAtIndexPath(indexPath)
-      return itemFrame.value(for: itemEdge) - topInset - distanceFromTop
+      let proposedYOffset = itemFrame.value(for: itemEdge) - topInset - distanceFromTop
+      return min(max(proposedYOffset, minYOffset), maxYOffset) // Clamp between minYOffset...maxYOffset
 
     case .bottomItem(let id, let itemEdge, let distanceFromBottom):
       guard let indexPath = indexPathForItemID(id) else { return bounds.minY }
       let itemFrame = frameForItemAtIndexPath(indexPath)
-      return itemFrame.value(for: itemEdge) - bounds.height + bottomInset - distanceFromBottom
+      let proposedYOffset = itemFrame.value(for: itemEdge) - bounds.height + bottomInset - distanceFromBottom
+      return min(max(proposedYOffset, minYOffset), maxYOffset) // Clamp between minYOffset...maxYOffset
     }
   }
 
