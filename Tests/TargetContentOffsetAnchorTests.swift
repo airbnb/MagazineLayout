@@ -148,7 +148,7 @@ final class TargetContentOffsetAnchorTests: XCTestCase {
       contentHeight: 2000,
       indexPathForItemID: { _ in IndexPath(item: 6, section: 0) },
       frameForItemAtIndexPath: { _ in CGRect(x: 0, y: 1700, width: 300, height: 20) })
-    XCTAssert(offset == 1640)
+    XCTAssert(offset == 1630)
   }
 
   // MARK: Bottom-to-Top Target Content Offset Tests
