@@ -40,10 +40,19 @@ enum TargetContentOffsetAnchor: Equatable {
   {
     let top = (-topInset).alignedToPixel(forScreenWithScale: scale)
     let bottom = (contentHeight + bottomInset - bounds.height).alignedToPixel(forScreenWithScale: scale)
+    let isAtTop = bounds.minY <= top
+    let isAtBottom = bounds.minY >= bottom
     let position: Position
-    if bounds.minY <= top {
+    if isAtTop, isAtBottom {
+      switch verticalLayoutDirection {
+      case .topToBottom: 
+        position = .atTop
+      case .bottomToTop: 
+        position = .atBottom
+      }
+    } else if isAtTop {
       position = .atTop
-    } else if bounds.minY >= bottom {
+    } else if isAtBottom {
       position = .atBottom
     } else {
       position = .inMiddle

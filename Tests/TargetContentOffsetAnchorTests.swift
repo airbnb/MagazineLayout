@@ -66,6 +66,21 @@ final class TargetContentOffsetAnchorTests: XCTestCase {
     XCTAssert(anchor == .topItem(id: "6", itemEdge: .top, distanceFromTop: 20))
   }
 
+  func testAnchor_TopToBottom_SmallContentHeight() throws {
+    let anchor = TargetContentOffsetAnchor.targetContentOffsetAnchor(
+      verticalLayoutDirection: .topToBottom,
+      topInset: 50,
+      bottomInset: 30,
+      bounds: CGRect(x: 0, y: -50, width: 300, height: 400),
+      contentHeight: 50,
+      scale: 1,
+      firstVisibleItemID: "0",
+      lastVisibleItemID: "1",
+      firstVisibleItemFrame: CGRect(x: 0, y: 0, width: 300, height: 20),
+      lastVisibleItemFrame: CGRect(x: 0, y: 30, width: 300, height: 20))
+    XCTAssert(anchor == .top)
+  }
+
   // MARK: Bottom-to-Top Anchor Tests
 
   func testAnchor_BottomToTop_ScrolledToTop() throws {
@@ -113,7 +128,22 @@ final class TargetContentOffsetAnchorTests: XCTestCase {
     XCTAssert(anchor == .bottom)
   }
 
-  // MARK: To-to-Bottom Target Content Offset Tests
+  func testAnchor_BottomToTop_SmallContentHeight() throws {
+    let anchor = TargetContentOffsetAnchor.targetContentOffsetAnchor(
+      verticalLayoutDirection: .bottomToTop,
+      topInset: 50,
+      bottomInset: 30,
+      bounds: CGRect(x: 0, y: -50, width: 300, height: 400),
+      contentHeight: 50,
+      scale: 1,
+      firstVisibleItemID: "0",
+      lastVisibleItemID: "1",
+      firstVisibleItemFrame: CGRect(x: 0, y: 0, width: 300, height: 20),
+      lastVisibleItemFrame: CGRect(x: 0, y: 30, width: 300, height: 20))
+    XCTAssert(anchor == .bottom)
+  }
+
+  // MARK: Top-to-Bottom Target Content Offset Tests
 
   func testOffset_TopToBottom_ScrolledToTop() {
     let anchor = TargetContentOffsetAnchor.top
