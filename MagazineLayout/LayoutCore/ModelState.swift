@@ -608,7 +608,7 @@ final class ModelState {
   }
 
   func removeFooter(forSectionAtIndex sectionIndex: Int) {
-    if (currentSectionModels[sectionIndex].removeFooter()) {
+    if currentSectionModels[sectionIndex].removeFooter() {
       invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
       prepareElementLocationsForFlattenedIndices()
     }
