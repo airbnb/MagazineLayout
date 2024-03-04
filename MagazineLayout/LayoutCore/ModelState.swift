@@ -593,11 +593,10 @@ final class ModelState {
   }
 
   func removeHeader(forSectionAtIndex sectionIndex: Int) {
-    currentSectionModels[sectionIndex].removeHeader()
-
-    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
-
-    prepareElementLocationsForFlattenedIndices()
+    if(currentSectionModels[sectionIndex].removeHeader()) {
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+      prepareElementLocationsForFlattenedIndices()
+    }
   }
 
   func setFooter(_ footerModel: FooterModel, forSectionAtIndex sectionIndex: Int) {
@@ -609,11 +608,10 @@ final class ModelState {
   }
 
   func removeFooter(forSectionAtIndex sectionIndex: Int) {
-    currentSectionModels[sectionIndex].removeFooter()
-
-    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
-
-    prepareElementLocationsForFlattenedIndices()
+    if (currentSectionModels[sectionIndex].removeFooter()) {
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+      prepareElementLocationsForFlattenedIndices()
+    }
   }
 
   func setBackground(
@@ -626,9 +624,9 @@ final class ModelState {
   }
 
   func removeBackground(forSectionAtIndex sectionIndex: Int) {
-    currentSectionModels[sectionIndex].removeBackground()
-
-    prepareElementLocationsForFlattenedIndices()
+    if(currentSectionModels[sectionIndex].removeBackground()) {
+      prepareElementLocationsForFlattenedIndices()
+    }
   }
 
   func setSections(_ sectionModels: [SectionModel]) {

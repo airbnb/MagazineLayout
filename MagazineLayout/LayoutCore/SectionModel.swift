@@ -247,20 +247,22 @@ struct SectionModel {
     }
   }
 
-  mutating func removeHeader() {
-    if let indexOfHeader = indexOfHeaderRow() {
-      updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfHeader)
+  mutating func removeHeader() -> Bool {
+    guard let indexOfHeader = indexOfHeaderRow() else {
+      return false
     }
-
+    updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfHeader)
     headerModel = nil
+    return true
   }
 
-  mutating func removeFooter() {
-    if let indexOfFooter = indexOfFooterRow() {
-      updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfFooter)
+  mutating func removeFooter() -> Bool {
+    guard let indexOfFooter = indexOfFooterRow() else {
+      return false
     }
-
+    updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfFooter)
     footerModel = nil
+    return true
   }
 
   mutating func updateItemHeight(toPreferredHeight preferredHeight: CGFloat, atIndex index: Int) {
@@ -334,9 +336,13 @@ struct SectionModel {
     // No need to invalidate since the background doesn't affect the layout.
   }
 
-  mutating func removeBackground() {
-    backgroundModel = nil
+  mutating func removeBackground() -> Bool {
+    guard backgroundModel != nil else {
+      return false
+    }
+    self.backgroundModel = nil
     // No need to invalidate since the background doesn't affect the layout.
+    return true
   }
 
   // MARK: Private
