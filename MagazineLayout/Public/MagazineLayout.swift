@@ -586,11 +586,26 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-    let isSameWidth = collectionView?.bounds.size.width.isEqual(
-      to: newBounds.size.width,
-      threshold: 1 / scale)
-      ?? false
-    return !isSameWidth || hasPinnedHeaderOrFooter
+    // When using the topToBottom layout direction, we only want
+    // to invalidate the layout when the widths differ.
+    // When using the bottomToTop layout direction, we want to
+    // invalidate on any size change due to the requirement of
+    // needing to preserve scroll position from the bottom
+    let shouldInvalidateDueToSize = switch verticalLayoutDirection {
+    case .topToBottom:
+      !currentCollectionView.bounds.size.width.isEqual(
+        to: newBounds.size.width,
+        threshold: 1 / scale)
+    case .bottomToTop:
+      !(currentCollectionView.bounds.size.width.isEqual(
+        to: newBounds.size.width,
+        threshold: 1 / scale) &&
+      currentCollectionView.bounds.size.height.isEqual(
+        to: newBounds.size.height,
+        threshold: 1 / scale))
+    }
+
+    return shouldInvalidateDueToSize || hasPinnedHeaderOrFooter
   }
 
   override public func invalidationContext(
@@ -604,6 +619,12 @@ public final class MagazineLayout: UICollectionViewLayout {
       width: newBounds.width - currentCollectionView.bounds.width,
       height: newBounds.height - currentCollectionView.bounds.height)
     invalidationContext.invalidateLayoutMetrics = false
+
+    // If our layout direction is bottom to top we want to
+    // adjust scroll position relative to the bottom
+    if case .bottomToTop = verticalLayoutDirection {
+      invalidationContext.contentOffsetAdjustment = CGPoint(x: 0.0, y: currentCollectionView.bounds.height - newBounds.height)
+    }
 
     return invalidationContext
   }
