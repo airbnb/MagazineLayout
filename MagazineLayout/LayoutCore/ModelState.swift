@@ -624,7 +624,7 @@ final class ModelState {
   }
 
   func removeBackground(forSectionAtIndex sectionIndex: Int) {
-    if(currentSectionModels[sectionIndex].removeBackground()) {
+    if currentSectionModels[sectionIndex].removeBackground() {
       prepareElementLocationsForFlattenedIndices()
     }
   }
