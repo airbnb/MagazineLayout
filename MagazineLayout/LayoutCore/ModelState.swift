@@ -593,7 +593,7 @@ final class ModelState {
   }
 
   func removeHeader(forSectionAtIndex sectionIndex: Int) {
-    if(currentSectionModels[sectionIndex].removeHeader()) {
+    if currentSectionModels[sectionIndex].removeHeader() {
       invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
       prepareElementLocationsForFlattenedIndices()
     }
