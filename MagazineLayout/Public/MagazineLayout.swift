@@ -589,7 +589,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     // When using the topToBottom layout direction, we only want to invalidate the layout when the
     // widths differ. When using the bottomToTop layout direction, we want to invalidate on any
     // size change due to the requirement of  needing to preserve scroll position from the bottom
-    var shouldInvalidateDueToSize = false
+    let shouldInvalidateDueToSize: Bool
     switch verticalLayoutDirection {
     case .topToBottom:
       shouldInvalidateDueToSize = !currentCollectionView.bounds.size.width.isEqual(
