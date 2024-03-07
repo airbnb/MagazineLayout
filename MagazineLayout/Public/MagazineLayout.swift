@@ -66,13 +66,6 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     let width: CGFloat
     if let collectionView = collectionView {
-      let contentInset: UIEdgeInsets
-      if #available(iOS 11.0, tvOS 11.0, *) {
-        contentInset = collectionView.adjustedContentInset
-      } else {
-        contentInset = collectionView.contentInset
-      }
-
       // This is a workaround for `layoutAttributesForElementsInRect:` not getting invoked enough
       // times if `collectionViewContentSize.width` is not smaller than the width of the collection
       // view, minus horizontal insets. This results in visual defects when performing batch
@@ -266,6 +259,8 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
     stagedContentOffsetAdjustment = nil
 
+    targetContentOffsetCompensatingYOffsetForAppearingItem = nil
+
     super.finalizeCollectionViewUpdates()
   }
 
@@ -449,6 +444,9 @@ public final class MagazineLayout: UICollectionViewLayout {
           initialLayoutAttributesForInsertedItemAt: itemIndexPath,
           byModifying: $0)
       }
+
+      attributes?.frame.origin.y += targetContentOffsetCompensatingYOffsetForAppearingItem ?? 0
+
       itemLayoutAttributesForPendingAnimations[itemIndexPath] = attributes
       return attributes
     } else if
@@ -459,7 +457,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     {
       return previousLayoutAttributesForItem(at: initialIndexPath)
     } else {
-      return super.layoutAttributesForItem(at: itemIndexPath)
+      return super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
     }
   }
 
@@ -490,7 +488,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       itemLayoutAttributesForPendingAnimations[finalIndexPath] = attributes
       return attributes
     } else {
-      return super.layoutAttributesForItem(at: itemIndexPath)
+      return super.finalLayoutAttributesForDisappearingItem(at: itemIndexPath)
     }
   }
 
@@ -713,10 +711,12 @@ public final class MagazineLayout: UICollectionViewLayout {
         contentOffsetAdjustment = nil
       }
 
-      let layoutAttributesForPendingAnimation = itemLayoutAttributesForPendingAnimations[preferredAttributes.indexPath]
-      layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForItem(
-        at: ElementLocation(indexPath: preferredAttributes.indexPath),
-        .afterUpdates).height
+      if let attributes = itemLayoutAttributesForPendingAnimations[preferredAttributes.indexPath] {
+        attributes.frame.size.height = modelState.frameForItem(
+          at: ElementLocation(indexPath: preferredAttributes.indexPath),
+          .afterUpdates).height
+        attributes.frame.origin.y -= (contentOffsetAdjustment?.y ?? 0)
+      }
 
     case .supplementaryView:
       contentOffsetAdjustment = nil
@@ -777,6 +777,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   override public func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
     guard let context = context as? MagazineLayoutInvalidationContext else {
       assertionFailure("`context` must be an instance of `MagazineLayoutInvalidationContext`")
+      super.invalidateLayout(with: context)
       return
     }
 
@@ -819,6 +820,9 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     let yOffset = yOffset(for: targetContentOffsetAnchor)
+
+    targetContentOffsetCompensatingYOffsetForAppearingItem = proposedContentOffset.y - yOffset
+
     return CGPoint(x: proposedContentOffset.x, y: yOffset)
   }
 
@@ -863,6 +867,11 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var itemLayoutAttributesForPendingAnimations = [IndexPath: UICollectionViewLayoutAttributes]()
   private var supplementaryViewLayoutAttributesForPendingAnimations = [IndexPath: UICollectionViewLayoutAttributes]()
 
+  // We need to apply the target content offset to the initial y-offset of an appearing item.
+  // Without this, the appearing item will be visually at the wrong spot, making it look like it
+  // slides into place rather than appearing at its final position.
+  private var targetContentOffsetCompensatingYOffsetForAppearingItem: CGFloat?
+
   private struct PrepareActions: OptionSet {
     let rawValue: UInt
 
@@ -884,13 +893,6 @@ public final class MagazineLayout: UICollectionViewLayout {
   // Used to provide the model state with the current visible bounds for the sole purpose of
   // supporting pinned headers and footers.
   private var currentVisibleBounds: CGRect {
-    let contentInset: UIEdgeInsets
-    if #available(iOS 11.0, tvOS 11.0, *) {
-      contentInset = currentCollectionView.adjustedContentInset
-    } else {
-      contentInset = currentCollectionView.contentInset
-    }
-
     let refreshControlHeight: CGFloat
     #if os(iOS)
     if
