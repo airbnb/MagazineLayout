@@ -808,6 +808,13 @@ public final class MagazineLayout: UICollectionViewLayout {
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = context.invalidateDataSourceCounts &&
       !context.invalidateEverything
 
+    if context.invalidateDataSourceCounts {
+      itemLayoutAttributes.removeAll()
+      headerLayoutAttributes.removeAll()
+      footerLayoutAttributes.removeAll()
+      backgroundLayoutAttributes.removeAll()
+    }
+
     super.invalidateLayout(with: context)
   }
 
