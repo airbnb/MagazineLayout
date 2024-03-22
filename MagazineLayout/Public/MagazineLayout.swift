@@ -612,9 +612,6 @@ public final class MagazineLayout: UICollectionViewLayout {
     let invalidationContext = super.invalidationContext(
       forBoundsChange: newBounds) as! MagazineLayoutInvalidationContext
 
-    invalidationContext.contentSizeAdjustment = CGSize(
-      width: newBounds.width - currentCollectionView.bounds.width,
-      height: newBounds.height - currentCollectionView.bounds.height)
     invalidationContext.invalidateLayoutMetrics = false
 
     // If our layout direction is bottom to top we want to adjust scroll position relative to the
@@ -622,7 +619,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     if case .bottomToTop = verticalLayoutDirection {
       invalidationContext.contentOffsetAdjustment = CGPoint(
         x: 0.0,
-        y: currentCollectionView.bounds.height - newBounds.height + contentInset.bottom)
+        y: max(currentCollectionView.bounds.height - newBounds.height + contentInset.bottom, 0))
     }
 
     return invalidationContext
@@ -790,14 +787,11 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     // Checking `cachedCollectionViewWidth != collectionView?.bounds.size.width` is necessary
     // because the collection view's width can change without a `contentSizeAdjustment` occurring.
-    let isContentWidthAdjustmentZero = context.contentSizeAdjustment.width.isEqual(
-      to: 0,
-      threshold: 1 / scale)
     let isSameWidth = collectionView?.bounds.size.width.isEqual(
       to: cachedCollectionViewWidth ?? -.greatestFiniteMagnitude,
       threshold: 1 / scale)
       ?? false
-    if !isContentWidthAdjustmentZero || !isSameWidth {
+    if !isSameWidth {
       prepareActions.formUnion([.updateLayoutMetrics, .cachePreviousWidth])
     }
 
