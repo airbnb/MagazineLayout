@@ -622,7 +622,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     if case .bottomToTop = verticalLayoutDirection {
       invalidationContext.contentOffsetAdjustment = CGPoint(
         x: 0.0,
-        y: currentCollectionView.bounds.height - newBounds.height)
+        y: currentCollectionView.bounds.height - newBounds.height + contentInset.bottom)
     }
 
     return invalidationContext
