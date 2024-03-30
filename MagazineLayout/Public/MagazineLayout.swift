@@ -584,22 +584,21 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-    // When using the topToBottom layout direction, we only want to invalidate the layout when the
-    // widths differ. When using the bottomToTop layout direction, we want to invalidate on any
-    // size change due to the requirement of  needing to preserve scroll position from the bottom
+    let isSameWidth = currentCollectionView.bounds.size.width.isEqual(
+      to: newBounds.size.width,
+      screenScale: scale)
     let shouldInvalidateDueToSize: Bool
     switch verticalLayoutDirection {
     case .topToBottom:
-      shouldInvalidateDueToSize = !currentCollectionView.bounds.size.width.isEqual(
-        to: newBounds.size.width,
-        threshold: 1 / scale)
+      shouldInvalidateDueToSize = !isSameWidth
     case .bottomToTop:
-      shouldInvalidateDueToSize = !(currentCollectionView.bounds.size.width.isEqual(
-        to: newBounds.size.width,
-        threshold: 1 / scale) &&
-      currentCollectionView.bounds.size.height.isEqual(
+      // When using the topToBottom layout direction, we only want to invalidate the layout when the
+      // widths differ. When using the bottomToTop layout direction, we want to invalidate on any
+      // size change due to the requirement of  needing to preserve scroll position from the bottom
+      let isSameHeight = currentCollectionView.bounds.size.height.isEqual(
         to: newBounds.size.height,
-        threshold: 1 / scale))
+        screenScale: scale)
+      shouldInvalidateDueToSize = !isSameWidth || !isSameHeight
     }
 
     return shouldInvalidateDueToSize || hasPinnedHeaderOrFooter
@@ -638,7 +637,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     let isSameHeight = preferredAttributes.size.height.isEqual(
       to: originalAttributes.size.height,
-      threshold: 1 / scale)
+      screenScale: scale)
     let hasNewPreferredHeight = !isSameHeight
 
     switch (preferredAttributes.representedElementCategory, preferredAttributes.representedElementKind) {
@@ -655,7 +654,7 @@ public final class MagazineLayout: UICollectionViewLayout {
           at: preferredAttributes.indexPath)
         let isSameHeight = preferredAttributes.size.height.isEqual(
           to: currentPreferredHeight ?? -.greatestFiniteMagnitude,
-          threshold: 1 / scale)
+          screenScale: scale)
         return hasNewPreferredHeight && !isSameHeight
       case nil:
         return false
@@ -789,7 +788,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     // because the collection view's width can change without a `contentSizeAdjustment` occurring.
     let isSameWidth = collectionView?.bounds.size.width.isEqual(
       to: cachedCollectionViewWidth ?? -.greatestFiniteMagnitude,
-      threshold: 1 / scale)
+      screenScale: scale)
       ?? false
     if !isSameWidth {
       prepareActions.formUnion([.updateLayoutMetrics, .cachePreviousWidth])

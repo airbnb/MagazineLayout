@@ -22,10 +22,12 @@ extension CGFloat {
     (self * scale).rounded() / scale
   }
 
-  /// Tests `self` for approximate equality using the threshold value. For example, 1.48 equals 1.52 if the threshold is 0.05.
-  /// `threshold` will be treated as a positive value by taking its absolute value.
-  func isEqual(to rhs: CGFloat, threshold: CGFloat) -> Bool {
-    abs(self - rhs) <= abs(threshold)
+  /// Tests `self` for approximate equality, first rounding the operands to be pixel-aligned for a screen with the given
+  /// `screenScale`. For example, 1.48 equals 1.52 if the `screenScale` is `2`.
+  func isEqual(to rhs: CGFloat, screenScale: CGFloat) -> Bool {
+    let lhs = alignedToPixel(forScreenWithScale: screenScale)
+    let rhs = rhs.alignedToPixel(forScreenWithScale: screenScale)
+    return lhs == rhs
   }
 
 }
