@@ -22,8 +22,8 @@ import UIKit
 enum TargetContentOffsetAnchor: Equatable {
   case top
   case bottom
-  case topItem(id: String, itemEdge: ItemEdge, distanceFromTop: CGFloat)
-  case bottomItem(id: String, itemEdge: ItemEdge, distanceFromBottom: CGFloat)
+  case topItem(id: String, distanceFromTop: CGFloat)
+  case bottomItem(id: String, distanceFromBottom: CGFloat)
 
   static func targetContentOffsetAnchor(
     verticalLayoutDirection: MagazineLayoutVerticalLayoutDirection,
@@ -65,37 +65,19 @@ enum TargetContentOffsetAnchor: Equatable {
         return .top
       case .inMiddle, .atBottom:
         let top = bounds.minY + topInset
-        let topDistanceFromTop = firstVisibleItemFrame.value(for: .top) - top
-        let bottomDistanceFromTop = firstVisibleItemFrame.value(for: .bottom) - top
-        if abs(topDistanceFromTop) < abs(bottomDistanceFromTop) {
-          return .topItem(
-            id: firstVisibleItemID,
-            itemEdge: .top,
-            distanceFromTop: topDistanceFromTop.alignedToPixel(forScreenWithScale: scale))
-        } else {
-          return .topItem(
-            id: firstVisibleItemID,
-            itemEdge: .bottom,
-            distanceFromTop: bottomDistanceFromTop.alignedToPixel(forScreenWithScale: scale))
-        }
+        let distanceFromTop = firstVisibleItemFrame.minY - top
+        return .topItem(
+          id: firstVisibleItemID,
+          distanceFromTop: distanceFromTop.alignedToPixel(forScreenWithScale: scale))
       }
     case .bottomToTop:
       switch position {
       case .atTop, .inMiddle:
         let bottom = bounds.maxY - bottomInset
-        let topDistanceFromBottom = lastVisibleItemFrame.value(for: .top) - bottom
-        let bottomDistanceFromBottom = lastVisibleItemFrame.value(for: .bottom) - bottom
-        if abs(topDistanceFromBottom) < abs(bottomDistanceFromBottom) {
-          return .bottomItem(
-            id: lastVisibleItemID,
-            itemEdge: .top,
-            distanceFromBottom: topDistanceFromBottom.alignedToPixel(forScreenWithScale: scale))
-        } else {
-          return .bottomItem(
-            id: lastVisibleItemID,
-            itemEdge: .bottom,
-            distanceFromBottom: bottomDistanceFromBottom.alignedToPixel(forScreenWithScale: scale))
-        }
+        let distanceFromBottom = lastVisibleItemFrame.maxY - bottom
+        return .bottomItem(
+          id: lastVisibleItemID,
+          distanceFromBottom: distanceFromBottom.alignedToPixel(forScreenWithScale: scale))
       case .atBottom:
         return .bottom
       }
@@ -121,39 +103,17 @@ enum TargetContentOffsetAnchor: Equatable {
     case .bottom:
       return maxYOffset
 
-    case .topItem(let id, let itemEdge, let distanceFromTop):
+    case .topItem(let id, let distanceFromTop):
       guard let indexPath = indexPathForItemID(id) else { return bounds.minY }
       let itemFrame = frameForItemAtIndexPath(indexPath)
-      let proposedYOffset = itemFrame.value(for: itemEdge) - topInset - distanceFromTop
+      let proposedYOffset = itemFrame.minY - topInset - distanceFromTop
       return min(max(proposedYOffset, minYOffset), maxYOffset) // Clamp between minYOffset...maxYOffset
 
-    case .bottomItem(let id, let itemEdge, let distanceFromBottom):
+    case .bottomItem(let id, let distanceFromBottom):
       guard let indexPath = indexPathForItemID(id) else { return bounds.minY }
       let itemFrame = frameForItemAtIndexPath(indexPath)
-      let proposedYOffset = itemFrame.value(for: itemEdge) - bounds.height + bottomInset - distanceFromBottom
+      let proposedYOffset = itemFrame.maxY - bounds.height + bottomInset - distanceFromBottom
       return min(max(proposedYOffset, minYOffset), maxYOffset) // Clamp between minYOffset...maxYOffset
-    }
-  }
-
-}
-
-// MARK: ItemEdge
-
-enum ItemEdge {
-  case top
-  case bottom
-}
-
-// MARK: CGRect + Item Edge Value
-
-private extension CGRect {
-
-  func value(for itemEdge: ItemEdge) -> CGFloat {
-    switch itemEdge {
-    case .top:
-      return minY
-    case .bottom:
-      return maxY
     }
   }
 
