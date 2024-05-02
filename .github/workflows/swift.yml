@@ -1,4 +1,4 @@
-name: Swift
+name: CI
 
 on:
   push:
@@ -8,17 +8,14 @@ on:
 
 jobs:
   build:
-
-    runs-on: macos-latest
-
+    runs-on: macos-13
     strategy:
       matrix:
-        destination: ['platform=iOS Simulator,OS=11.0,name=iPhone 8', 'platform=iOS Simulator,OS=16.2,name=iPhone 14']
-
+        xcode:
+        - '15.0' # Swift 5.9
     steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: xcodebuild clean build -scheme MagazineLayout
-    - name: Run tests
-      run: xcodebuild clean test -project MagazineLayout.xcodeproj -scheme MagazineLayout -destination "name=iPhone 14,OS=16.2"
-
+      - uses: actions/checkout@v4
+      - name: Build
+        run: xcodebuild clean build -scheme MagazineLayout -destination "generic/platform=iOS Simulator"
+      - name: Run tests
+        run: xcodebuild clean test -project MagazineLayout.xcodeproj -scheme MagazineLayout -destination "name=iPhone 14,OS=17.2"

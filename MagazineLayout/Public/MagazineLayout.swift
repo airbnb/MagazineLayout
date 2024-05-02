@@ -1261,9 +1261,8 @@ public final class MagazineLayout: UICollectionViewLayout {
     bottomInset: CGFloat)
     -> TargetContentOffsetAnchor?
   {
-    let insetBounds = bounds.inset(by: .init(top: topInset, left: 0, bottom: bottomInset, right: 0))
     var visibleItemLocationFramePairs = [ElementLocationFramePair]()
-    for itemLocationFramePair in modelState.itemLocationFramePairs(forItemsIn: insetBounds) {
+    for itemLocationFramePair in modelState.itemLocationFramePairs(forItemsIn: bounds) {
       visibleItemLocationFramePairs.append(itemLocationFramePair)
     }
     visibleItemLocationFramePairs.sort { $0.elementLocation < $1.elementLocation }
