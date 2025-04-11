@@ -660,20 +660,27 @@ final class ModelState {
       switch update {
       case let .sectionReload(sectionIndex, newSection):
         sectionModelReloadIndexPairs.append((newSection, sectionIndex))
+
       case let .itemReload(itemIndexPath, newItem):
         itemModelReloadIndexPathPairs.append((newItem, itemIndexPath))
 
       case let .sectionDelete(sectionIndex):
         sectionIndicesToDelete.append(sectionIndex)
         self.sectionIndicesToDelete.insert(sectionIndex)
+
       case let .itemDelete(itemIndexPath):
         itemIndexPathsToDelete.append(itemIndexPath)
         self.itemIndexPathsToDelete.insert(itemIndexPath)
 
       case let .sectionMove(initialSectionIndex, finalSectionIndex):
         sectionIndicesToDelete.append(initialSectionIndex)
-        let sectionModelToMove = sectionModelsBeforeBatchUpdates[initialSectionIndex]
+        var sectionModelToMove = sectionModelsBeforeBatchUpdates[initialSectionIndex]
+        // Item moves are handled separately, so we need to clear out existing items
+        for itemIndex in (0..<sectionModelToMove.numberOfItems).reversed() {
+          sectionModelToMove.deleteItemModel(atIndex: itemIndex)
+        }
         sectionModelInsertIndexPairs.append((sectionModelToMove, finalSectionIndex))
+
       case let .itemMove(initialItemIndexPath, finalItemIndexPath):
         itemIndexPathsToDelete.append(initialItemIndexPath)
         let sectionContainingItemModelToMove = sectionModelsBeforeBatchUpdates[initialItemIndexPath.section]
@@ -684,6 +691,7 @@ final class ModelState {
       case let .sectionInsert(sectionIndex, newSection):
         sectionModelInsertIndexPairs.append((newSection, sectionIndex))
         sectionIndicesToInsert.insert(sectionIndex)
+
       case let .itemInsert(itemIndexPath, newItem):
         itemModelInsertIndexPathPairs.append((newItem, itemIndexPath))
         itemIndexPathsToInsert.insert(itemIndexPath)

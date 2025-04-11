@@ -192,13 +192,18 @@ final class ModelStateUpdateTests: XCTestCase {
   func testSectionMoves() {
     let initialSections = ModelHelpers.basicSectionModels(
       numberOfSections: 3,
-      numberOfItemsPerSection: 0)
+      numberOfItemsPerSection: 2)
     modelState.setSections(initialSections)
 
     modelState.applyUpdates(
       [
         .sectionMove(initialSectionIndex: 0, finalSectionIndex: 1),
+        .itemMove(initialItemIndexPath: .init(item: 0, section: 0), finalItemIndexPath: .init(item: 0, section: 1)),
+        .itemMove(initialItemIndexPath: .init(item: 1, section: 0), finalItemIndexPath: .init(item: 1, section: 1)),
+
         .sectionMove(initialSectionIndex: 2, finalSectionIndex: 0),
+        .itemMove(initialItemIndexPath: .init(item: 0, section: 2), finalItemIndexPath: .init(item: 0, section: 0)),
+        .itemMove(initialItemIndexPath: .init(item: 1, section: 2), finalItemIndexPath: .init(item: 1, section: 0)),
       ])
 
     XCTAssert(
@@ -220,6 +225,17 @@ final class ModelStateUpdateTests: XCTestCase {
         modelState.indexForSectionModel(withID: initialSections[0].id, .afterUpdates) == 1 &&
         modelState.indexForSectionModel(withID: initialSections[1].id, .afterUpdates) == 2 &&
         modelState.indexForSectionModel(withID: initialSections[2].id, .afterUpdates) == 0
+      ),
+      "The model state's section models before / after updates are in an incorrect state")
+
+    XCTAssert(
+      (
+        modelState.numberOfItems(inSectionAtIndex: 0, .beforeUpdates) ==
+          modelState.numberOfItems(inSectionAtIndex: 1, .afterUpdates) &&
+        modelState.numberOfItems(inSectionAtIndex: 1, .beforeUpdates) ==
+          modelState.numberOfItems(inSectionAtIndex: 2, .afterUpdates) &&
+        modelState.numberOfItems(inSectionAtIndex: 2, .beforeUpdates) ==
+          modelState.numberOfItems(inSectionAtIndex: 0, .afterUpdates)
       ),
       "The model state's section models before / after updates are in an incorrect state")
   }
