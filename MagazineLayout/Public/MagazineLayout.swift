@@ -613,15 +613,22 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     invalidationContext.invalidateLayoutMetrics = false
 
-    // If our layout direction is bottom to top we want to adjust scroll position relative to the
-    // bottom
-    if
-      case .bottomToTop = verticalLayoutDirection,
-       newBounds.maxY < currentCollectionView.contentSize.height + contentInset.bottom
-    {
-      invalidationContext.contentOffsetAdjustment = CGPoint(
-        x: 0.0,
-        y: currentCollectionView.bounds.maxY - newBounds.maxY)
+    // If our layout direction is `bottomToTop`, we need to handle the case of a non-animated bounds
+    // change by using the invalidation context's `contentOffsetAdjustment`. The calculation to get
+    // this right is odd, and is dependent on how close we were to the bottom of the collection view.
+    if case .bottomToTop = verticalLayoutDirection {
+      if newBounds.height < currentCollectionView.bounds.height {
+        invalidationContext.contentOffsetAdjustment = CGPoint(
+          x: 0.0,
+          y: currentCollectionView.bounds.midY - newBounds.midY)
+      } else if newBounds.height > currentCollectionView.bounds.height {
+        let distanceFromBottom = currentCollectionView.contentSize.height - currentCollectionView.bounds.maxY
+        let midYDelta = newBounds.midY - currentCollectionView.bounds.midY
+        let heightDelta = newBounds.height - currentCollectionView.bounds.height
+        invalidationContext.contentOffsetAdjustment = CGPoint(
+          x: 0.0,
+          y: midYDelta - min(distanceFromBottom, heightDelta))
+      }
     }
 
     return invalidationContext
