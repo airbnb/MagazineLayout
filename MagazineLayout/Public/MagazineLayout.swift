@@ -787,6 +787,19 @@ public final class MagazineLayout: UICollectionViewLayout {
       return
     }
 
+    // If our layout direction is `bottomToTop`, allow changes to the bottom content inset to
+    // automatically adjust the content offset. `UICollectionView` behaves this way by default when
+    // the top content inset changes, so this adds the same behavior to the bottom.
+    let bottomContentInset = contentInset.bottom
+    if
+      case .bottomToTop = verticalLayoutDirection,
+      let previousBottomContentInset,
+      previousBottomContentInset != bottomContentInset
+    {
+      context.contentOffsetAdjustment.y = bottomContentInset - previousBottomContentInset
+    }
+    previousBottomContentInset = bottomContentInset
+
     let shouldInvalidateLayoutMetrics = !context.invalidateEverything &&
       !context.invalidateDataSourceCounts
 
@@ -899,6 +912,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var isPerformingAnimatedBoundsChange = false
   private var targetContentOffsetAnchor: TargetContentOffsetAnchor?
   private var stagedContentOffsetAdjustment: CGPoint?
+  private var previousBottomContentInset: CGFloat?
 
   // Used to provide the model state with the current visible bounds for the sole purpose of
   // supporting pinned headers and footers.
