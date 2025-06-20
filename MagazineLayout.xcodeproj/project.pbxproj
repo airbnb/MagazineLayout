@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		60432D952E05DB41001728F0 /* ContentInsetAdjustingContentOffsetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60432D942E05DB41001728F0 /* ContentInsetAdjustingContentOffsetTests.swift */; };
 		9332FB0822969B5600483D99 /* RowOffsetTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9332FB0622969AB200483D99 /* RowOffsetTrackerTests.swift */; };
 		93424B012256878B003D00C0 /* MagazineLayoutFooterVisibilityMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93424B002256878B003D00C0 /* MagazineLayoutFooterVisibilityMode.swift */; };
 		93540AB0282E25D90008BD6F /* ScreenPixelAlignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93540AAF282E25D90008BD6F /* ScreenPixelAlignment.swift */; };
@@ -58,6 +59,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		60432D942E05DB41001728F0 /* ContentInsetAdjustingContentOffsetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentInsetAdjustingContentOffsetTests.swift; sourceTree = "<group>"; };
 		9332FB0622969AB200483D99 /* RowOffsetTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowOffsetTrackerTests.swift; sourceTree = "<group>"; };
 		93424B002256878B003D00C0 /* MagazineLayoutFooterVisibilityMode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MagazineLayoutFooterVisibilityMode.swift; sourceTree = "<group>"; };
 		93540AAF282E25D90008BD6F /* ScreenPixelAlignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenPixelAlignment.swift; sourceTree = "<group>"; };
@@ -156,6 +158,7 @@
 				9332FB0622969AB200483D99 /* RowOffsetTrackerTests.swift */,
 				93A1C00E21ACED0100DED67D /* TestingSupport.swift */,
 				93540AB1282E26340008BD6F /* ScreenPixelAlignmentTests.swift */,
+				60432D942E05DB41001728F0 /* ContentInsetAdjustingContentOffsetTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -382,6 +385,7 @@
 			files = (
 				FDE08E162B2CC47800C9D24D /* TargetContentOffsetAnchorTests.swift in Sources */,
 				93A1C04B21ACED1100DED67D /* ModelStateInitiallSetUpTests.swift in Sources */,
+				60432D952E05DB41001728F0 /* ContentInsetAdjustingContentOffsetTests.swift in Sources */,
 				9332FB0822969B5600483D99 /* RowOffsetTrackerTests.swift in Sources */,
 				93A1C04C21ACED1100DED67D /* ModelStateLayoutTests.swift in Sources */,
 				93A1C04921ACED1100DED67D /* ModelStateEmptySectionLayoutTests.swift in Sources */,
