@@ -789,7 +789,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     // If our layout direction is `bottomToTop`, allow changes to the top and bottom content insets
     // to automatically adjust the content offset. `UICollectionView` behaves this way by default
-    // when the top content inset changes, so this adds the same behavior to the bottom.
+    // when the top content inset changes, so this adds the same behavior.
     if
       case .bottomToTop = verticalLayoutDirection,
       let previousContentInset
