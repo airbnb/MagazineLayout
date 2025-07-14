@@ -105,6 +105,17 @@ final class ModelState {
     return nil
   }
 
+  func isItemHeightSettled(indexPath: IndexPath) -> Bool {
+    let item = sectionModels(for: .afterUpdates)[indexPath.section].itemModel(
+      atIndex: indexPath.item)
+    switch item.sizeMode.heightMode {
+    case .static:
+      return true
+    case .dynamicAndStretchToTallestItemInRow, .dynamic(_):
+      return item.preferredHeight != nil
+    }
+  }
+
   func itemModelHeightModeDuringPreferredAttributesCheck(
     at indexPath: IndexPath)
     -> MagazineLayoutItemHeightMode?
