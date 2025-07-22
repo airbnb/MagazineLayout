@@ -1298,7 +1298,8 @@ public final class MagazineLayout: UICollectionViewLayout {
       // When scrolling up, only calculate a target content offset based on visible, already-sized
       // cells. Otherwise, scrolling will be jumpy.
       modelState.isItemHeightSettled(indexPath: $0.elementLocation.indexPath)
-    }
+    } ?? visibleItemLocationFramePairs.first // fallback to the first item if we can't find one with a settled height
+
     let lastVisibleItemLocationFramePair = visibleItemLocationFramePairs.last
 
     guard
