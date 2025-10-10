@@ -233,6 +233,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     // Calculate the target offset before applying updates, since the target offset should be based
     // on the pre-update state.
     targetContentOffsetAnchor = currentTargetContentOffsetAnchor
+    contentHeightBeforeUpdates = collectionViewContentSize.height
 
     modelState.applyUpdates(updates)
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
@@ -249,15 +250,16 @@ public final class MagazineLayout: UICollectionViewLayout {
     itemLayoutAttributesForPendingAnimations.removeAll()
     supplementaryViewLayoutAttributesForPendingAnimations.removeAll()
 
-    targetContentOffsetAnchor = nil
-
-    if let stagedContentOffsetAdjustment {
+    if let targetContentOffsetAnchor {
+      let targetYOffset = yOffset(for: targetContentOffsetAnchor)
       let context = MagazineLayoutInvalidationContext()
       context.invalidateLayoutMetrics = false
-      context.contentOffsetAdjustment = stagedContentOffsetAdjustment
+      context.contentOffsetAdjustment.y = targetYOffset - currentCollectionView.contentOffset.y
       invalidateLayout(with: context)
     }
-    stagedContentOffsetAdjustment = nil
+
+    targetContentOffsetAnchor = nil
+    contentHeightBeforeUpdates = nil
 
     targetContentOffsetCompensatingYOffsetForAppearingItem = nil
 
@@ -718,10 +720,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
 
       if let attributes = itemLayoutAttributesForPendingAnimations[preferredAttributes.indexPath] {
-        attributes.frame.size.height = modelState.frameForItem(
+        attributes.frame = modelState.frameForItem(
           at: ElementLocation(indexPath: preferredAttributes.indexPath),
-          .afterUpdates).height
-        attributes.frame.origin.y -= (contentOffsetAdjustment?.y ?? 0)
+          .afterUpdates)
       }
 
     case .supplementaryView:
@@ -764,15 +765,11 @@ public final class MagazineLayout: UICollectionViewLayout {
       forPreferredLayoutAttributes: preferredAttributes,
       withOriginalAttributes: originalAttributes) as! MagazineLayoutInvalidationContext
 
-    if let contentOffsetAdjustment {
-      if modelState.isPerformingBatchUpdates {
-        // If we're in the middle of a batch update, we need to adjust our content offset. Doing it
-        // here in the middle of a batch update gets ignored for some reason. Instead, we delay
-        // slightly and do it in `finalizeCollectionViewUpdates`.
-        stagedContentOffsetAdjustment = contentOffsetAdjustment
-      } else {
-        context.contentOffsetAdjustment = contentOffsetAdjustment
-      }
+    if let contentOffsetAdjustment, !modelState.isPerformingBatchUpdates {
+      // If we're in the middle of a batch update, we need to adjust our content offset. Doing it
+      // here in the middle of a batch update gets ignored for some reason. Instead, we delay
+      // slightly and do it in `finalizeCollectionViewUpdates`.
+      context.contentOffsetAdjustment = contentOffsetAdjustment
     }
 
     context.invalidateLayoutMetrics = false
@@ -914,7 +911,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private var isPerformingAnimatedBoundsChange = false
   private var targetContentOffsetAnchor: TargetContentOffsetAnchor?
-  private var stagedContentOffsetAdjustment: CGPoint?
+  private var contentHeightBeforeUpdates: CGFloat?
   private var previousContentInset: UIEdgeInsets?
 
   // Used to provide the model state with the current visible bounds for the sole purpose of
