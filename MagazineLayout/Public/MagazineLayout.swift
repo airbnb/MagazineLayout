@@ -102,6 +102,19 @@ public final class MagazineLayout: UICollectionViewLayout {
       prepareActions.contains(.recreateSectionModels)
     {
       hasPinnedHeaderOrFooter = false
+      lastSizedElementMinY = nil
+      lastSizedElementPreferredHeight = nil
+    }
+
+    // Recreate section models from scratch if necessary
+    if prepareActions.contains(.recreateSectionModels) {
+      var sections = [SectionModel]()
+      for sectionIndex in 0..<currentCollectionView.numberOfSections {
+        let sectionModel = sectionModelForSection(atIndex: sectionIndex)
+        sections.append(sectionModel)
+      }
+
+      modelState.setSections(sections)
     }
 
     // Update layout metrics if necessary
@@ -134,25 +147,6 @@ public final class MagazineLayout: UICollectionViewLayout {
           modelState.updateItemSizeMode(to: sizeModeForItem(at: indexPath), forItemAt: indexPath)
         }
       }
-    }
-
-    // Recreate section models from scratch if necessary
-    if prepareActions.contains(.recreateSectionModels) {
-      var sections = [SectionModel]()
-      for sectionIndex in 0..<currentCollectionView.numberOfSections {
-        let sectionModel = sectionModelForSection(atIndex: sectionIndex)
-        sections.append(sectionModel)
-      }
-
-      modelState.setSections(sections)
-    }
-
-    if
-      prepareActions.contains(.recreateSectionModels) ||
-      prepareActions.contains(.updateLayoutMetrics)
-    {
-      lastSizedElementMinY = nil
-      lastSizedElementPreferredHeight = nil
     }
 
     prepareActions = []
