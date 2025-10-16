@@ -685,11 +685,7 @@ final class ModelState {
 
       case let .sectionMove(initialSectionIndex, finalSectionIndex):
         sectionIndicesToDelete.append(initialSectionIndex)
-        var sectionModelToMove = sectionModelsBeforeBatchUpdates[initialSectionIndex]
-        // Item moves are handled separately, so we need to clear out existing items
-        for itemIndex in (0..<sectionModelToMove.numberOfItems).reversed() {
-          sectionModelToMove.deleteItemModel(atIndex: itemIndex)
-        }
+        let sectionModelToMove = sectionModelsBeforeBatchUpdates[initialSectionIndex]
         sectionModelInsertIndexPairs.append((sectionModelToMove, finalSectionIndex))
 
       case let .itemMove(initialItemIndexPath, finalItemIndexPath):
@@ -1106,7 +1102,18 @@ final class ModelState {
   {
     // Always insert in ascending order
     for (itemModel, insertIndexPath) in (itemModelInsertIndexPathPairs.sorted { $0.insertIndexPath < $1.insertIndexPath }) {
-      currentSectionModels[insertIndexPath.section].insert(itemModel, atIndex: insertIndexPath.item)
+      let sectionIndex = insertIndexPath.section
+      let itemIndex = insertIndexPath.item
+      let section = currentSectionModels[sectionIndex]
+      if itemIndex < section.numberOfItems, itemModel.id == section.idForItemModel(atIndex: itemIndex) {
+        // If the `itemModel` to insert already exists at the destination index, then there's no need to insert it again. This
+        // happens if item move updates are generated in addition to section move updates, which appears to be the case when using
+        // `UICollectionViewDiffableDataSource`. Other diffing approaches, like Paul Heckel's, do not produce item moves when
+        // their containing sections move.
+        continue
+      } else {
+        currentSectionModels[insertIndexPath.section].insert(itemModel, atIndex: itemIndex)
+      }
     }
   }
 
