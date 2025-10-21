@@ -22,8 +22,8 @@ import UIKit
 enum TargetContentOffsetAnchor: Equatable {
   case top
   case bottom
-  case topItem(id: String, distanceFromTop: CGFloat)
-  case bottomItem(id: String, distanceFromBottom: CGFloat)
+  case topItem(id: UUID, distanceFromTop: CGFloat)
+  case bottomItem(id: UUID, distanceFromBottom: CGFloat)
 
   static func targetContentOffsetAnchor(
     verticalLayoutDirection: MagazineLayoutVerticalLayoutDirection,
@@ -32,8 +32,8 @@ enum TargetContentOffsetAnchor: Equatable {
     bounds: CGRect,
     contentHeight: CGFloat,
     scale: CGFloat,
-    firstVisibleItemID: String,
-    lastVisibleItemID: String,
+    firstVisibleItemID: UUID,
+    lastVisibleItemID: UUID,
     firstVisibleItemFrame: CGRect,
     lastVisibleItemFrame: CGRect)
     -> Self
@@ -89,7 +89,7 @@ enum TargetContentOffsetAnchor: Equatable {
     bottomInset: CGFloat,
     bounds: CGRect,
     contentHeight: CGFloat,
-    indexPathForItemID: (_ id: String) -> IndexPath?,
+    indexPathForItemID: (_ id: UUID) -> IndexPath?,
     frameForItemAtIndexPath: (_ indexPath: IndexPath) -> CGRect)
     -> CGFloat
   {
