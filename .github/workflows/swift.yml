@@ -8,14 +8,14 @@ on:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-15
     strategy:
       matrix:
         xcode:
-        - '15.0' # Swift 5.9
+        - '18.0' # Swift 6
     steps:
       - uses: actions/checkout@v4
       - name: Build
         run: xcodebuild clean build -scheme MagazineLayout -destination "generic/platform=iOS Simulator"
       - name: Run tests
-        run: xcodebuild clean test -project MagazineLayout.xcodeproj -scheme MagazineLayout -destination "name=iPhone 14,OS=17.2"
+        run: xcodebuild clean test -project MagazineLayout.xcodeproj -scheme MagazineLayout -destination "name=iPhone 16,OS=18.4"

@@ -60,6 +60,7 @@ final class ModelHelpers {
 
 // MARK: - FrameHelpers
 
+@available(iOS 18.0, *)
 final class FrameHelpers {
 
   static func expectedFrames(
@@ -187,6 +188,7 @@ final class FrameHelpers {
 
 // MARK: - Remove duplicates
 
+@available(iOS 18.0, *)
 extension Array where Element == CGRect {
 
   func removingDuplicates() -> [Element] {
@@ -201,35 +203,6 @@ extension Array where Element == CGRect {
     }
 
     return newArray
-  }
-
-}
-
-// MARK: Hashable
-
-extension CGRect: Hashable {
-
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(size)
-    hasher.combine(origin)
-  }
-
-}
-
-extension CGSize: Hashable {
-
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(height)
-    hasher.combine(width)
-  }
-
-}
-
-extension CGPoint: Hashable {
-
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(x)
-    hasher.combine(y)
   }
 
 }
