@@ -841,7 +841,6 @@ public final class MagazineLayout: UICollectionViewLayout {
   // MARK: Private
 
   private let _flipsHorizontallyInOppositeLayoutDirection: Bool
-  private let verticalLayoutDirection: MagazineLayoutVerticalLayoutDirection
 
   private lazy var modelState: ModelState = {
     return ModelState(currentVisibleBoundsProvider: { [weak self] in
