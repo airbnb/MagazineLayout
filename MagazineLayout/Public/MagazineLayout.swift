@@ -62,7 +62,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public var collectionViewContentSize: CGSize {
-    let numberOfSections = modelState.numberOfSections(.afterUpdates)
+    let numberOfSections = modelState.numberOfSections
 
     let width: CGFloat
     if let collectionView = collectionView {
@@ -83,7 +83,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     if numberOfSections <= 0 {
       height = 0
     } else {
-      height = modelState.sectionMaxY(forSectionAtIndex: numberOfSections - 1, .afterUpdates)
+      height = modelState.sectionMaxY(forSectionAtIndex: numberOfSections - 1)
     }
 
     return CGSize(width: width, height: height)
@@ -106,7 +106,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     // Update layout metrics if necessary
     if prepareActions.contains(.updateLayoutMetrics) {
-      for sectionIndex in 0..<modelState.numberOfSections(.afterUpdates) {
+      for sectionIndex in 0..<modelState.numberOfSections {
         let sectionMetrics = metricsForSection(atIndex: sectionIndex)
         modelState.updateMetrics(to: sectionMetrics, forSectionAtIndex: sectionIndex)
 
@@ -128,7 +128,7 @@ public final class MagazineLayout: UICollectionViewLayout {
           modelState.removeBackground(forSectionAtIndex: sectionIndex)
         }
 
-        let numberOfItems = modelState.numberOfItems(inSectionAtIndex: sectionIndex, .afterUpdates)
+        let numberOfItems = modelState.numberOfItems(inSectionAtIndex: sectionIndex)
         for itemIndex in 0..<numberOfItems {
           let indexPath = IndexPath(item: itemIndex, section: sectionIndex)
           modelState.updateItemSizeMode(to: sizeModeForItem(at: indexPath), forItemAt: indexPath)
@@ -159,6 +159,9 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
+    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    self.modelStateBeforeBatchUpdates = modelStateBeforeBatchUpdates
+
     var updates = [CollectionViewUpdate<SectionModel, ItemModel>]()
 
     for updateItem in updateItems {
@@ -235,7 +238,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     targetContentOffsetAnchor = currentTargetContentOffsetAnchor
     contentHeightBeforeUpdates = collectionViewContentSize.height
 
-    modelState.applyUpdates(updates)
+    modelState.applyUpdates(updates, modelStateBeforeBatchUpdates: modelStateBeforeBatchUpdates)
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
 
     lastSizedElementMinY = nil
@@ -262,6 +265,8 @@ public final class MagazineLayout: UICollectionViewLayout {
     contentHeightBeforeUpdates = nil
 
     targetContentOffsetCompensatingYOffsetForAppearingItem = nil
+
+    modelStateBeforeBatchUpdates = nil
 
     super.finalizeCollectionViewUpdates()
   }
@@ -377,8 +382,8 @@ public final class MagazineLayout: UICollectionViewLayout {
     let itemLocation = ElementLocation(indexPath: indexPath)
 
     guard
-      itemLocation.sectionIndex < modelState.numberOfSections(.afterUpdates),
-      itemLocation.elementIndex < modelState.numberOfItems(inSectionAtIndex: itemLocation.sectionIndex, .afterUpdates)
+      itemLocation.sectionIndex < modelState.numberOfSections,
+      itemLocation.elementIndex < modelState.numberOfItems(inSectionAtIndex: itemLocation.sectionIndex)
     else
     {
       // On iOS 9, `layoutAttributesForItem(at:)` can be invoked for an index path of a new item
@@ -391,7 +396,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       return itemLayoutAttributes(for: itemLocation, frame: .zero)
     }
 
-    let itemFrame = modelState.frameForItem(at: itemLocation, .afterUpdates)
+    let itemFrame = modelState.frameForItem(at: itemLocation)
     return itemLayoutAttributes(for: itemLocation, frame: itemFrame)
   }
 
@@ -407,22 +412,19 @@ public final class MagazineLayout: UICollectionViewLayout {
     if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionHeader,
       let headerFrame = modelState.frameForHeader(
-        inSectionAtIndex: elementLocation.sectionIndex,
-        .afterUpdates)
+        inSectionAtIndex: elementLocation.sectionIndex)
     {
       return headerLayoutAttributes(for: elementLocation, frame: headerFrame)
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionFooter,
       let footerFrame = modelState.frameForFooter(
-        inSectionAtIndex: elementLocation.sectionIndex,
-        .afterUpdates)
+        inSectionAtIndex: elementLocation.sectionIndex)
     {
       return footerLayoutAttributes(for: elementLocation, frame: footerFrame)
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionBackground,
       let backgroundFrame = modelState.frameForBackground(
-        inSectionAtIndex: elementLocation.sectionIndex,
-        .afterUpdates)
+        inSectionAtIndex: elementLocation.sectionIndex)
     {
       return backgroundLayoutAttributes(for: elementLocation, frame: backgroundFrame)
     } else {
@@ -452,10 +454,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       itemLayoutAttributesForPendingAnimations[itemIndexPath] = attributes
       return attributes
     } else if
-      let movedItemID = modelState.idForItemModel(at: itemIndexPath, .afterUpdates),
-      let initialIndexPath = modelState.indexPathForItemModel(
-        withID: movedItemID,
-        .beforeUpdates)
+      let movedItemID = modelState.idForItemModel(at: itemIndexPath),
+      let initialIndexPath = modelStateBeforeBatchUpdates?.indexPathForItemModel(
+        withID: movedItemID)
     {
       return previousLayoutAttributesForItem(at: initialIndexPath)
     } else {
@@ -481,10 +482,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
       return attributes
     } else if
-      let movedItemID = modelState.idForItemModel(at: itemIndexPath, .beforeUpdates),
+      let movedItemID = modelStateBeforeBatchUpdates?.idForItemModel(at: itemIndexPath),
       let finalIndexPath = modelState.indexPathForItemModel(
-        withID: movedItemID,
-        .afterUpdates)
+        withID: movedItemID)
     {
       let attributes = layoutAttributesForItem(at: finalIndexPath)?.copy() as? UICollectionViewLayoutAttributes
       itemLayoutAttributesForPendingAnimations[finalIndexPath] = attributes
@@ -522,11 +522,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       return attributes
     } else if
       let movedSectionID = modelState.idForSectionModel(
-        atIndex: elementIndexPath.section,
-        .afterUpdates),
-      let initialSectionIndex = modelState.indexForSectionModel(
-        withID: movedSectionID,
-        .beforeUpdates)
+        atIndex: elementIndexPath.section),
+      let initialSectionIndex = modelStateBeforeBatchUpdates?.indexForSectionModel(
+        withID: movedSectionID)
     {
       let initialIndexPath = IndexPath(item: 0, section: initialSectionIndex)
       return previousLayoutAttributesForSupplementaryView(
@@ -565,12 +563,10 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
       return attributes
     } else if
-      let movedSectionID = modelState.idForSectionModel(
-        atIndex: elementIndexPath.section,
-        .beforeUpdates),
+      let movedSectionID = modelStateBeforeBatchUpdates?.idForSectionModel(
+        atIndex: elementIndexPath.section),
       let finalSectionIndex = modelState.indexForSectionModel(
-        withID: movedSectionID,
-        .afterUpdates)
+        withID: movedSectionID)
     {
       let finalIndexPath = IndexPath(item: 0, section: finalSectionIndex)
       let attributes = layoutAttributesForSupplementaryView(
@@ -654,15 +650,14 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     switch (preferredAttributes.representedElementCategory, preferredAttributes.representedElementKind) {
     case (.cell, nil):
-      let itemHeightMode = modelState.itemModelHeightModeDuringPreferredAttributesCheck(
-        at: preferredAttributes.indexPath)
+      let itemHeightMode = modelState.itemModelHeightMode(at: preferredAttributes.indexPath)
       switch itemHeightMode {
       case .some(.static):
         return false
       case .some(.dynamic):
         return hasNewPreferredHeight
       case .some(.dynamicAndStretchToTallestItemInRow):
-        let currentPreferredHeight = modelState.itemModelPreferredHeightDuringPreferredAttributesCheck(
+        let currentPreferredHeight = modelState.itemModelPreferredHeight(
           at: preferredAttributes.indexPath)
         let isSameHeight = preferredAttributes.size.height.isEqual(
           to: currentPreferredHeight ?? -.greatestFiniteMagnitude,
@@ -673,12 +668,12 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
 
     case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionHeader):
-      let headerHeightMode = modelState.headerModelHeightModeDuringPreferredAttributesCheck(
+      let headerHeightMode = modelState.headerModelHeightMode(
         atSectionIndex: preferredAttributes.indexPath.section)
       return headerHeightMode == .dynamic
 
     case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionFooter):
-      let footerHeightMode = modelState.footerModelHeightModeDuringPreferredAttributesCheck(
+      let footerHeightMode = modelState.footerModelHeightMode(
         atSectionIndex: preferredAttributes.indexPath.section)
       return footerHeightMode == .dynamic
 
@@ -721,8 +716,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
       if let attributes = itemLayoutAttributesForPendingAnimations[preferredAttributes.indexPath] {
         attributes.frame = modelState.frameForItem(
-          at: ElementLocation(indexPath: preferredAttributes.indexPath),
-          .afterUpdates)
+          at: ElementLocation(indexPath: preferredAttributes.indexPath))
       }
 
     case .supplementaryView:
@@ -736,8 +730,7 @@ public final class MagazineLayout: UICollectionViewLayout {
           forSectionAtIndex: preferredAttributes.indexPath.section)
 
         layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForHeader(
-          inSectionAtIndex: preferredAttributes.indexPath.section,
-          .afterUpdates)?.height ?? preferredAttributes.size.height
+          inSectionAtIndex: preferredAttributes.indexPath.section)?.height ?? preferredAttributes.size.height
 
       case MagazineLayout.SupplementaryViewKind.sectionFooter?:
         modelState.updateFooterHeight(
@@ -745,8 +738,7 @@ public final class MagazineLayout: UICollectionViewLayout {
           forSectionAtIndex: preferredAttributes.indexPath.section)
 
         layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForFooter(
-          inSectionAtIndex: preferredAttributes.indexPath.section,
-          .afterUpdates)?.height ?? preferredAttributes.size.height
+          inSectionAtIndex: preferredAttributes.indexPath.section)?.height ?? preferredAttributes.size.height
 
       default:
         break
@@ -765,7 +757,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       forPreferredLayoutAttributes: preferredAttributes,
       withOriginalAttributes: originalAttributes) as! MagazineLayoutInvalidationContext
 
-    if let contentOffsetAdjustment, !modelState.isPerformingBatchUpdates {
+    if let contentOffsetAdjustment, !isPerformingBatchUpdates {
       // If we're in the middle of a batch update, we need to adjust our content offset. Doing it
       // here in the middle of a batch update gets ignored for some reason. Instead, we delay
       // slightly and do it in `finalizeCollectionViewUpdates`.
@@ -851,22 +843,15 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   // MARK: Private
 
-  private var currentCollectionView: UICollectionView {
-    guard let collectionView = collectionView else {
-      preconditionFailure("`collectionView` should not be `nil`")
-    }
-
-    return collectionView
-  }
+  private let _flipsHorizontallyInOppositeLayoutDirection: Bool
+  private let verticalLayoutDirection: MagazineLayoutVerticalLayoutDirection
 
   private lazy var modelState: ModelState = {
     return ModelState(currentVisibleBoundsProvider: { [weak self] in
       return self?.currentVisibleBounds ?? .zero
     })
   }()
-
-  private let _flipsHorizontallyInOppositeLayoutDirection: Bool
-  private let verticalLayoutDirection: MagazineLayoutVerticalLayoutDirection
+  private var modelStateBeforeBatchUpdates: ModelState?
 
   private var cachedCollectionViewWidth: CGFloat?
 
@@ -914,6 +899,14 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var contentHeightBeforeUpdates: CGFloat?
   private var previousContentInset: UIEdgeInsets?
 
+  private var currentCollectionView: UICollectionView {
+    guard let collectionView = collectionView else {
+      preconditionFailure("`collectionView` should not be `nil`")
+    }
+
+    return collectionView
+  }
+
   // Used to provide the model state with the current visible bounds for the sole purpose of
   // supporting pinned headers and footers.
   private var currentVisibleBounds: CGRect {
@@ -947,11 +940,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   private var contentInset: UIEdgeInsets {
-    if #available(iOS 11.0, tvOS 11.0, *) {
-      return currentCollectionView.adjustedContentInset
-    } else {
-      return currentCollectionView.contentInset
-    }
+    currentCollectionView.adjustedContentInset
   }
 
   private var currentTargetContentOffsetAnchor: TargetContentOffsetAnchor? {
@@ -960,6 +949,10 @@ public final class MagazineLayout: UICollectionViewLayout {
       contentHeight: currentCollectionView.contentSize.height,
       topInset: contentInset.top,
       bottomInset: contentInset.bottom)
+  }
+
+  private var isPerformingBatchUpdates: Bool {
+    modelStateBeforeBatchUpdates != nil
   }
 
   private func metricsForSection(atIndex sectionIndex: Int) -> MagazineLayoutSectionMetrics {
@@ -1135,7 +1128,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   {
     let layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(forCellWith: indexPath)
 
-    guard modelState.isPerformingBatchUpdates else {
+    guard let modelStateBeforeBatchUpdates else {
       // TODO(bryankeller): Look into whether this happens on iOS 10. It definitely does on iOS 9.
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
@@ -1144,9 +1137,10 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     guard
-      indexPath.section < modelState.numberOfSections(.beforeUpdates),
-      indexPath.item < modelState.numberOfItems(inSectionAtIndex: indexPath.section, .beforeUpdates) else
-    {
+      indexPath.section < modelStateBeforeBatchUpdates.numberOfSections,
+      indexPath.item < modelStateBeforeBatchUpdates.numberOfItems(
+        inSectionAtIndex: indexPath.section)
+    else {
       // On iOS 9, `layoutAttributesForItem(at:)` can be invoked for an index path of a new item
       // before the layout is notified of this new item (through either `prepare` or
       // `prepare(forCollectionViewUpdates:)`). This seems to be fixed in iOS 10 and higher.
@@ -1157,9 +1151,8 @@ public final class MagazineLayout: UICollectionViewLayout {
       return layoutAttributes
     }
 
-    layoutAttributes.frame = modelState.frameForItem(
-      at: ElementLocation(indexPath: indexPath),
-      .beforeUpdates)
+    layoutAttributes.frame = modelStateBeforeBatchUpdates.frameForItem(
+      at: ElementLocation(indexPath: indexPath))
 
     return layoutAttributes
   }
@@ -1173,7 +1166,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       forSupplementaryViewOfKind: elementKind,
       with: indexPath)
 
-    guard modelState.isPerformingBatchUpdates else {
+    guard let modelStateBeforeBatchUpdates else {
       // TODO(bryankeller): Look into whether this happens on iOS 10. It definitely does on iOS 9.
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
@@ -1181,7 +1174,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       return layoutAttributes
     }
 
-    guard indexPath.section < modelState.numberOfSections(.beforeUpdates) else {
+    guard indexPath.section < modelStateBeforeBatchUpdates.numberOfSections else {
       // On iOS 9, `layoutAttributesForItem(at:)` can be invoked for an index path of a new
       // supplementary view before the layout is notified of this new item (through either `prepare`
       // or `prepare(forCollectionViewUpdates:)`). This seems to be fixed in iOS 10 and higher.
@@ -1194,23 +1187,20 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionHeader,
-      let headerFrame = modelState.frameForHeader(
-        inSectionAtIndex: indexPath.section,
-        .beforeUpdates)
+      let headerFrame = modelStateBeforeBatchUpdates.frameForHeader(
+        inSectionAtIndex: indexPath.section)
     {
       layoutAttributes.frame = headerFrame
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionFooter,
-      let footerFrame = modelState.frameForFooter(
-        inSectionAtIndex: indexPath.section,
-        .beforeUpdates)
+      let footerFrame = modelStateBeforeBatchUpdates.frameForFooter(
+        inSectionAtIndex: indexPath.section)
     {
       layoutAttributes.frame = footerFrame
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionBackground,
-      let backgroundFrame = modelState.frameForBackground(
-        inSectionAtIndex: indexPath.section,
-        .beforeUpdates)
+      let backgroundFrame = modelStateBeforeBatchUpdates.frameForBackground(
+        inSectionAtIndex: indexPath.section)
     {
       layoutAttributes.frame = backgroundFrame
     } else {
@@ -1303,11 +1293,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       let firstVisibleItemLocationFramePair,
       let lastVisibleItemLocationFramePair,
       let firstVisibleItemID = modelState.idForItemModel(
-        at: firstVisibleItemLocationFramePair.elementLocation.indexPath,
-        .afterUpdates),
+        at: firstVisibleItemLocationFramePair.elementLocation.indexPath),
       let lastVisibleItemID = modelState.idForItemModel(
-        at: lastVisibleItemLocationFramePair.elementLocation.indexPath,
-        .afterUpdates)
+        at: lastVisibleItemLocationFramePair.elementLocation.indexPath)
     else {
       return nil
     }
@@ -1331,9 +1319,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       bottomInset: contentInset.bottom,
       bounds: currentCollectionView.bounds,
       contentHeight: collectionViewContentSize.height,
-      indexPathForItemID: { modelState.indexPathForItemModel(withID: $0, .afterUpdates) },
+      indexPathForItemID: { modelState.indexPathForItemModel(withID: $0) },
       frameForItemAtIndexPath: {
-        modelState.frameForItem(at: ElementLocation(indexPath: $0), .afterUpdates)
+        modelState.frameForItem(at: ElementLocation(indexPath: $0))
       })
   }
 
