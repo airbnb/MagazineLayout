@@ -19,7 +19,7 @@ import XCTest
 final class ContentInsetAdjustingContentOffsetTests: XCTestCase {
 
   func testContentOffsetIsNotAdjustedForTopInsetChangeWithToTopBottomLayout() {
-    let layout = MagazineLayout(verticalLayoutDirection: .topToBottom)
+    let layout = MagazineLayout()
     let collectionView = StubCollectionView(
       frame: .zero,
       collectionViewLayout: layout)
@@ -33,7 +33,8 @@ final class ContentInsetAdjustingContentOffsetTests: XCTestCase {
   }
 
   func testContentOffsetIsAdjustedForTopInsetChangeWithBottomToTopLayout() {
-    let layout = MagazineLayout(verticalLayoutDirection: .bottomToTop)
+    let layout = MagazineLayout()
+    layout.verticalLayoutDirection = .bottomToTop
     let collectionView = StubCollectionView(
       frame: .zero,
       collectionViewLayout: layout)
@@ -47,7 +48,8 @@ final class ContentInsetAdjustingContentOffsetTests: XCTestCase {
   }
 
   func testContentOffsetIsAdjustedForBottomInsetChangeWithBottomToTopLayout() {
-    let layout = MagazineLayout(verticalLayoutDirection: .bottomToTop)
+    let layout = MagazineLayout()
+    layout.verticalLayoutDirection = .bottomToTop
     let collectionView = StubCollectionView(
       frame: .zero,
       collectionViewLayout: layout)
@@ -61,7 +63,8 @@ final class ContentInsetAdjustingContentOffsetTests: XCTestCase {
   }
 
   func testContentOffsetIsAdjustedForTopAndBottomInsetChangesWithBottomToTopLayout() {
-    let layout = MagazineLayout(verticalLayoutDirection: .bottomToTop)
+    let layout = MagazineLayout()
+    layout.verticalLayoutDirection = .bottomToTop
     let collectionView = StubCollectionView(
       frame: .zero,
       collectionViewLayout: layout)
