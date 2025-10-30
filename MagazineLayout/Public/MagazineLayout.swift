@@ -30,24 +30,21 @@ public final class MagazineLayout: UICollectionViewLayout {
   ///   - flipsHorizontallyInOppositeLayoutDirection: Indicates whether the horizontal coordinate
   ///     system is automatically flipped at appropriate times. In practice, this is used to support
   ///     right-to-left layout.
-  ///   - verticalLayoutDirection: The vertical layout direction of items in the collection view. This property changes the
-  ///   behavior of scroll-position-preservation when performing batch updates or when the collection view's bounds changes.
-  public init(
-    flipsHorizontallyInOppositeLayoutDirection: Bool = true,
-    verticalLayoutDirection: MagazineLayoutVerticalLayoutDirection = .topToBottom)
-  {
+  public init(flipsHorizontallyInOppositeLayoutDirection: Bool = true) {
     _flipsHorizontallyInOppositeLayoutDirection = flipsHorizontallyInOppositeLayoutDirection
-    self.verticalLayoutDirection = verticalLayoutDirection
     super.init()
   }
 
   required init?(coder aDecoder: NSCoder) {
     _flipsHorizontallyInOppositeLayoutDirection = true
-    verticalLayoutDirection = .topToBottom
     super.init(coder: aDecoder)
   }
 
   // MARK: Public
+  
+  /// The vertical layout direction of items in the collection view. This property changes the behavior of
+  /// scroll-position-preservation when performing batch updates or when the collection view's bounds changes.
+  public var verticalLayoutDirection = MagazineLayoutVerticalLayoutDirection.topToBottom
 
   override public class var layoutAttributesClass: AnyClass {
     return MagazineLayoutCollectionViewLayoutAttributes.self
