@@ -92,10 +92,9 @@ final class FrameHelpers {
     var checkedFramesCount = 0
 
     for sectionIndex in sectionIndexRange {
-      for itemIndex in 0..<modelState.numberOfItems(inSectionAtIndex: sectionIndex, .afterUpdates) {
+      for itemIndex in 0..<modelState.numberOfItems(inSectionAtIndex: sectionIndex) {
         let itemFrame = modelState.frameForItem(
-          at: ElementLocation(elementIndex: itemIndex, sectionIndex: sectionIndex),
-          .afterUpdates)
+          at: ElementLocation(elementIndex: itemIndex, sectionIndex: sectionIndex))
         if !expectedFrames.contains(itemFrame) {
           return false
         }
@@ -115,7 +114,7 @@ final class FrameHelpers {
   {
     var expectedFrameIndex = 0
     for sectionIndex in sectionIndexRange {
-      let headerFrame = modelState.frameForHeader(inSectionAtIndex: sectionIndex, .afterUpdates)
+      let headerFrame = modelState.frameForHeader(inSectionAtIndex: sectionIndex)
 
       guard headerFrame != nil else { continue }
 
@@ -140,7 +139,7 @@ final class FrameHelpers {
   {
     var expectedFrameIndex = 0
     for sectionIndex in sectionIndexRange {
-      let footerFrame = modelState.frameForFooter(inSectionAtIndex: sectionIndex, .afterUpdates)
+      let footerFrame = modelState.frameForFooter(inSectionAtIndex: sectionIndex)
 
       guard footerFrame != nil else { continue }
 
@@ -165,9 +164,7 @@ final class FrameHelpers {
   {
     var expectedFrameIndex = 0
     for sectionIndex in sectionIndexRange {
-      let backgroundFrame = modelState.frameForBackground(
-        inSectionAtIndex: sectionIndex,
-        .afterUpdates)
+      let backgroundFrame = modelState.frameForBackground(inSectionAtIndex: sectionIndex)
 
       guard backgroundFrame != nil else { continue }
 

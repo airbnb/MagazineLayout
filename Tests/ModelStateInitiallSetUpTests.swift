@@ -31,12 +31,8 @@ final class ModelStateInitialSetUpTests: XCTestCase {
 
   func testInitialEmptyModelState() {
     XCTAssert(
-      modelState.numberOfSections(.afterUpdates) == 0,
+      modelState.numberOfSections == 0,
       "The model state should contain 0 sections")
-
-    XCTAssert(
-      modelState.isPerformingBatchUpdates == false,
-      "`isPerformingBatchUpdates` should be false")
     XCTAssert(
       modelState.sectionIndicesToInsert.count == 0,
       "`sectionIndicesToInsert` should be empty")
@@ -58,16 +54,16 @@ final class ModelStateInitialSetUpTests: XCTestCase {
     modelState.setSections(sectionModels)
 
     XCTAssert(
-      modelState.numberOfSections(.afterUpdates) == 2,
+      modelState.numberOfSections == 2,
       "The model state should contain 2 sections")
     XCTAssert(
-      (modelState.numberOfItems(inSectionAtIndex: 0, .afterUpdates) == 3 &&
-        modelState.numberOfItems(inSectionAtIndex: 1, .afterUpdates) == 3),
+      (modelState.numberOfItems(inSectionAtIndex: 0) == 3 &&
+        modelState.numberOfItems(inSectionAtIndex: 1) == 3),
       "The model state should contain 3 items for each section")
 
     modelState.setSections([])
     XCTAssert(
-      modelState.numberOfSections(.afterUpdates) == 0,
+      modelState.numberOfSections == 0,
       "The model state should contain 0 sections")
   }
 

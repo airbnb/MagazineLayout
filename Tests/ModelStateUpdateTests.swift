@@ -34,17 +34,20 @@ final class ModelStateUpdateTests: XCTestCase {
     let sectionToInsert = ModelHelpers.basicSectionModels(
       numberOfSections: 1,
       numberOfItemsPerSection: 0).first!
-    modelState.applyUpdates([.sectionInsert(sectionIndex: 0, newSection: sectionToInsert)])
+    modelState.applyUpdates([
+        .sectionInsert(sectionIndex: 0, newSection: sectionToInsert)
+      ],
+      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
 
     XCTAssert(
-      modelState.isPerformingBatchUpdates == true,
-      "`isPerformingBatchUpdates` should be true")
+      !modelState.sectionIndicesToInsert.isEmpty,
+      "`sectionIndicesToInsert` should not be empty")
 
     modelState.clearInProgressBatchUpdateState()
 
     XCTAssert(
-      modelState.isPerformingBatchUpdates == false,
-      "`isPerformingBatchUpdates` should be false")
+      modelState.sectionIndicesToInsert.isEmpty,
+      "`sectionIndicesToInsert` should be empty")
   }
 
   func testSectionReload() {
@@ -52,20 +55,21 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfSections: 1,
       numberOfItemsPerSection: 3)
     modelState.setSections(initialSections)
-
     let replacementSection = ModelHelpers.basicSectionModels(
       numberOfSections: 3,
       numberOfItemsPerSection: 1).first!
-    modelState.applyUpdates(
-      [
+
+    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    modelState.applyUpdates([
         .sectionReload(sectionIndex: 0, newSection: replacementSection)
-      ])
+      ],
+      modelStateBeforeBatchUpdates: modelStateBeforeBatchUpdates)
 
     XCTAssert(
-      modelState.numberOfItems(inSectionAtIndex: 0, .afterUpdates) == 1,
+      modelState.numberOfItems(inSectionAtIndex: 0) == 1,
       "The model state should contain 1 item in section 0")
     XCTAssert(
-      modelState.numberOfItems(inSectionAtIndex: 0, .beforeUpdates) == 3,
+      modelStateBeforeBatchUpdates.numberOfItems(inSectionAtIndex: 0) == 3,
       "The model state's section models before updates should contain 3 items in section 0")
   }
 
@@ -77,16 +81,18 @@ final class ModelStateUpdateTests: XCTestCase {
 
     let replacementItem = ModelHelpers.basicItemModel()
     let indexPath = IndexPath(item: 0, section: 0)
-    modelState.applyUpdates(
-      [
+
+    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    modelState.applyUpdates([
         .itemReload(itemIndexPath: indexPath, newItem: replacementItem)
-      ])
+      ],
+      modelStateBeforeBatchUpdates: modelStateBeforeBatchUpdates)
 
     XCTAssert(
-      modelState.idForItemModel(at: indexPath, .afterUpdates) == replacementItem.id,
+      modelState.idForItemModel(at: indexPath) == replacementItem.id,
       "The model state should contain 1 item in section 0")
     XCTAssert(
-      modelState.numberOfItems(inSectionAtIndex: 0, .beforeUpdates) == 3,
+      modelStateBeforeBatchUpdates.numberOfItems(inSectionAtIndex: 0) == 3,
       "The model state's section models before updates should contain 3 items in section 0")
   }
 
@@ -94,18 +100,20 @@ final class ModelStateUpdateTests: XCTestCase {
     let sectionsToInsert = ModelHelpers.basicSectionModels(
       numberOfSections: 3,
       numberOfItemsPerSection: 0)
-    modelState.applyUpdates(
-      [
+
+    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    modelState.applyUpdates([
         .sectionInsert(sectionIndex: 2, newSection: sectionsToInsert[2]),
         .sectionInsert(sectionIndex: 1, newSection: sectionsToInsert[1]),
         .sectionInsert(sectionIndex: 0, newSection: sectionsToInsert[0]),
-      ])
+      ],
+      modelStateBeforeBatchUpdates: modelStateBeforeBatchUpdates)
 
     XCTAssert(
-      modelState.numberOfSections(.afterUpdates) == 3,
+      modelState.numberOfSections == 3,
       "The model state should contain 3 sections")
     XCTAssert(
-      modelState.numberOfSections(.beforeUpdates) == 0,
+      modelStateBeforeBatchUpdates.numberOfSections == 0,
       "The model state's section models before updates should contain 0 sections")
     XCTAssert(
       modelState.sectionIndicesToInsert == [0, 1, 2],
@@ -123,18 +131,20 @@ final class ModelStateUpdateTests: XCTestCase {
       ModelHelpers.basicItemModel(),
       ModelHelpers.basicItemModel(),
     ]
-    modelState.applyUpdates(
-      [
+
+    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    modelState.applyUpdates([
         .itemInsert(itemIndexPath: IndexPath(item: 2, section: 0), newItem: itemsToInsert[2]),
         .itemInsert(itemIndexPath: IndexPath(item: 0, section: 0), newItem: itemsToInsert[0]),
         .itemInsert(itemIndexPath: IndexPath(item: 1, section: 0), newItem: itemsToInsert[1]),
-      ])
+      ],
+      modelStateBeforeBatchUpdates: modelStateBeforeBatchUpdates)
 
     XCTAssert(
-      modelState.numberOfItems(inSectionAtIndex: 0, .afterUpdates) == 3,
+      modelState.numberOfItems(inSectionAtIndex: 0) == 3,
       "The model state should contain 3 items in section 0")
     XCTAssert(
-      modelState.numberOfItems(inSectionAtIndex: 0, .beforeUpdates) == 0,
+      modelStateBeforeBatchUpdates.numberOfItems(inSectionAtIndex: 0) == 0,
       "The model state's section models before updates should contain 0 items in section 0")
     XCTAssert(
       modelState.itemIndexPathsToInsert == Set([0, 1, 2].map { IndexPath(item: $0, section: 0) }),
@@ -147,18 +157,19 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfItemsPerSection: 0)
     modelState.setSections(initialSections)
 
-    modelState.applyUpdates(
-      [
+    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    modelState.applyUpdates([
         .sectionDelete(sectionIndex: 2),
         .sectionDelete(sectionIndex: 0),
         .sectionDelete(sectionIndex: 1),
-      ])
+      ],
+      modelStateBeforeBatchUpdates: modelStateBeforeBatchUpdates)
 
     XCTAssert(
-      modelState.numberOfSections(.afterUpdates) == 0,
+      modelState.numberOfSections == 0,
       "The model state should contain 0 sections")
     XCTAssert(
-      modelState.numberOfSections(.beforeUpdates) == 3,
+      modelStateBeforeBatchUpdates.numberOfSections == 3,
       "The model state's section models before updates should contain 3 sections")
     XCTAssert(
       modelState.sectionIndicesToDelete == [0, 1, 2],
@@ -171,18 +182,19 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfItemsPerSection: 3)
     modelState.setSections(initialSections)
 
-    modelState.applyUpdates(
-      [
+    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    modelState.applyUpdates([
         .itemDelete(itemIndexPath: IndexPath(item: 2, section: 0)),
         .itemDelete(itemIndexPath: IndexPath(item: 0, section: 0)),
         .itemDelete(itemIndexPath: IndexPath(item: 1, section: 0)),
-      ])
+      ],
+      modelStateBeforeBatchUpdates: modelStateBeforeBatchUpdates)
 
     XCTAssert(
-      modelState.numberOfItems(inSectionAtIndex: 0, .afterUpdates) == 0,
+      modelState.numberOfItems(inSectionAtIndex: 0) == 0,
       "The model state should contain 0 items in section 0")
     XCTAssert(
-      modelState.numberOfItems(inSectionAtIndex: 0, .beforeUpdates) == 3,
+      modelStateBeforeBatchUpdates.numberOfItems(inSectionAtIndex: 0) == 3,
       "The model state's section models before updates should contain 3 items in section 0")
     XCTAssert(
       modelState.itemIndexPathsToDelete == Set([0, 1, 2].map { IndexPath(item: $0, section: 0) }),
@@ -195,8 +207,8 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfItemsPerSection: 2)
     modelState.setSections(initialSections)
 
-    modelState.applyUpdates(
-      [
+    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    modelState.applyUpdates([
         .sectionMove(initialSectionIndex: 0, finalSectionIndex: 1),
         .itemMove(initialItemIndexPath: .init(item: 0, section: 0), finalItemIndexPath: .init(item: 0, section: 1)),
         .itemMove(initialItemIndexPath: .init(item: 1, section: 0), finalItemIndexPath: .init(item: 1, section: 1)),
@@ -204,38 +216,39 @@ final class ModelStateUpdateTests: XCTestCase {
         .sectionMove(initialSectionIndex: 2, finalSectionIndex: 0),
         .itemMove(initialItemIndexPath: .init(item: 0, section: 2), finalItemIndexPath: .init(item: 0, section: 0)),
         .itemMove(initialItemIndexPath: .init(item: 1, section: 2), finalItemIndexPath: .init(item: 1, section: 0)),
-      ])
+    ],
+    modelStateBeforeBatchUpdates: modelStateBeforeBatchUpdates)
 
     XCTAssert(
       (
-        modelState.idForSectionModel(atIndex: 0, .beforeUpdates) ==
-          modelState.idForSectionModel(atIndex: 1, .afterUpdates) &&
-        modelState.idForSectionModel(atIndex: 1, .beforeUpdates) ==
-          modelState.idForSectionModel(atIndex: 2, .afterUpdates) &&
-        modelState.idForSectionModel(atIndex: 2, .beforeUpdates) ==
-          modelState.idForSectionModel(atIndex: 0, .afterUpdates)
+        modelStateBeforeBatchUpdates.idForSectionModel(atIndex: 0) ==
+          modelState.idForSectionModel(atIndex: 1) &&
+        modelStateBeforeBatchUpdates.idForSectionModel(atIndex: 1) ==
+          modelState.idForSectionModel(atIndex: 2) &&
+        modelStateBeforeBatchUpdates.idForSectionModel(atIndex: 2) ==
+          modelState.idForSectionModel(atIndex: 0)
       ),
       "The model state's section models before / after updates are in an incorrect state")
 
     XCTAssert(
       (
-        modelState.indexForSectionModel(withID: initialSections[0].id, .beforeUpdates) == 0 &&
-        modelState.indexForSectionModel(withID: initialSections[1].id, .beforeUpdates) == 1 &&
-        modelState.indexForSectionModel(withID: initialSections[2].id, .beforeUpdates) == 2 &&
-        modelState.indexForSectionModel(withID: initialSections[0].id, .afterUpdates) == 1 &&
-        modelState.indexForSectionModel(withID: initialSections[1].id, .afterUpdates) == 2 &&
-        modelState.indexForSectionModel(withID: initialSections[2].id, .afterUpdates) == 0
+        modelStateBeforeBatchUpdates.indexForSectionModel(withID: initialSections[0].id) == 0 &&
+        modelStateBeforeBatchUpdates.indexForSectionModel(withID: initialSections[1].id) == 1 &&
+        modelStateBeforeBatchUpdates.indexForSectionModel(withID: initialSections[2].id) == 2 &&
+        modelState.indexForSectionModel(withID: initialSections[0].id) == 1 &&
+        modelState.indexForSectionModel(withID: initialSections[1].id) == 2 &&
+        modelState.indexForSectionModel(withID: initialSections[2].id) == 0
       ),
       "The model state's section models before / after updates are in an incorrect state")
 
     XCTAssert(
       (
-        modelState.numberOfItems(inSectionAtIndex: 0, .beforeUpdates) ==
-          modelState.numberOfItems(inSectionAtIndex: 1, .afterUpdates) &&
-        modelState.numberOfItems(inSectionAtIndex: 1, .beforeUpdates) ==
-          modelState.numberOfItems(inSectionAtIndex: 2, .afterUpdates) &&
-        modelState.numberOfItems(inSectionAtIndex: 2, .beforeUpdates) ==
-          modelState.numberOfItems(inSectionAtIndex: 0, .afterUpdates)
+        modelStateBeforeBatchUpdates.numberOfItems(inSectionAtIndex: 0) ==
+          modelState.numberOfItems(inSectionAtIndex: 1) &&
+        modelStateBeforeBatchUpdates.numberOfItems(inSectionAtIndex: 1) ==
+          modelState.numberOfItems(inSectionAtIndex: 2) &&
+        modelStateBeforeBatchUpdates.numberOfItems(inSectionAtIndex: 2) ==
+          modelState.numberOfItems(inSectionAtIndex: 0)
       ),
       "The model state's section models before / after updates are in an incorrect state")
   }
@@ -246,49 +259,51 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfItemsPerSection: 2)
     modelState.setSections(initialSections)
 
+    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
     modelState.applyUpdates([
-      .itemMove(
-        initialItemIndexPath: IndexPath(item: 0, section: 0),
-        finalItemIndexPath: IndexPath(item: 3, section: 1)),
-      .itemMove(
-        initialItemIndexPath: IndexPath(item: 1, section: 0),
-        finalItemIndexPath: IndexPath(item: 0, section: 1)),
-      .itemMove(
-        initialItemIndexPath: IndexPath(item: 0, section: 2),
-        finalItemIndexPath: IndexPath(item: 1, section: 2)),
-      ])
+        .itemMove(
+          initialItemIndexPath: IndexPath(item: 0, section: 0),
+          finalItemIndexPath: IndexPath(item: 3, section: 1)),
+        .itemMove(
+          initialItemIndexPath: IndexPath(item: 1, section: 0),
+          finalItemIndexPath: IndexPath(item: 0, section: 1)),
+        .itemMove(
+          initialItemIndexPath: IndexPath(item: 0, section: 2),
+          finalItemIndexPath: IndexPath(item: 1, section: 2)),
+      ],
+      modelStateBeforeBatchUpdates: modelStateBeforeBatchUpdates)
 
     XCTAssert(
       (
-        modelState.idForItemModel(at: IndexPath(item: 0, section: 0), .beforeUpdates) ==
-          modelState.idForItemModel(at: IndexPath(item: 3, section: 1), .afterUpdates) &&
-        modelState.idForItemModel(at: IndexPath(item: 1, section: 0), .beforeUpdates) ==
-          modelState.idForItemModel(at: IndexPath(item: 0, section: 1), .afterUpdates) &&
-        modelState.idForItemModel(at: IndexPath(item: 0, section: 2), .beforeUpdates) ==
-          modelState.idForItemModel(at: IndexPath(item: 1, section: 2), .afterUpdates)
+        modelStateBeforeBatchUpdates.idForItemModel(at: IndexPath(item: 0, section: 0)) ==
+          modelState.idForItemModel(at: IndexPath(item: 3, section: 1)) &&
+        modelStateBeforeBatchUpdates.idForItemModel(at: IndexPath(item: 1, section: 0)) ==
+          modelState.idForItemModel(at: IndexPath(item: 0, section: 1)) &&
+        modelStateBeforeBatchUpdates.idForItemModel(at: IndexPath(item: 0, section: 2)) ==
+          modelState.idForItemModel(at: IndexPath(item: 1, section: 2))
       ),
       "The model state item models before / after updates are in an incorrect state")
 
     XCTAssert(
       (
+        modelStateBeforeBatchUpdates.indexPathForItemModel(
+          withID: modelStateBeforeBatchUpdates.idForItemModel(at: IndexPath(item: 0, section: 0))!)! ==
+          IndexPath(item: 0, section: 0) &&
+        modelStateBeforeBatchUpdates.indexPathForItemModel(
+          withID: modelStateBeforeBatchUpdates.idForItemModel(at: IndexPath(item: 1, section: 0))!)! ==
+          IndexPath(item: 1, section: 0) &&
+        modelStateBeforeBatchUpdates.indexPathForItemModel(
+          withID: modelStateBeforeBatchUpdates.idForItemModel(at: IndexPath(item: 0, section: 2))!)! ==
+          IndexPath(item: 0, section: 2) &&
         modelState.indexPathForItemModel(
-          withID: modelState.idForItemModel(at: IndexPath(item: 0, section: 0), .beforeUpdates)!,
-          .beforeUpdates)! == IndexPath(item: 0, section: 0) &&
+          withID: modelStateBeforeBatchUpdates.idForItemModel(at: IndexPath(item: 0, section: 0))!)! ==
+          IndexPath(item: 3, section: 1) &&
         modelState.indexPathForItemModel(
-          withID: modelState.idForItemModel(at: IndexPath(item: 1, section: 0), .beforeUpdates)!,
-          .beforeUpdates)! == IndexPath(item: 1, section: 0) &&
+          withID: modelStateBeforeBatchUpdates.idForItemModel(at: IndexPath(item: 1, section: 0))!)! ==
+          IndexPath(item: 0, section: 1) &&
         modelState.indexPathForItemModel(
-          withID: modelState.idForItemModel(at: IndexPath(item: 0, section: 2), .beforeUpdates)!,
-          .beforeUpdates)! == IndexPath(item: 0, section: 2) &&
-        modelState.indexPathForItemModel(
-          withID: modelState.idForItemModel(at: IndexPath(item: 0, section: 0), .beforeUpdates)!,
-          .afterUpdates)! == IndexPath(item: 3, section: 1) &&
-        modelState.indexPathForItemModel(
-          withID: modelState.idForItemModel(at: IndexPath(item: 1, section: 0), .beforeUpdates)!,
-          .afterUpdates)! == IndexPath(item: 0, section: 1) &&
-        modelState.indexPathForItemModel(
-          withID: modelState.idForItemModel(at: IndexPath(item: 0, section: 2), .beforeUpdates)!,
-          .afterUpdates)! == IndexPath(item: 1, section: 2)
+          withID: modelStateBeforeBatchUpdates.idForItemModel(at: IndexPath(item: 0, section: 2))!)! ==
+          IndexPath(item: 1, section: 2)
       ),
       "The model state item models before / after updates are in an incorrect state")
   }
@@ -299,8 +314,7 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfItemsPerSection: 2)
     modelState.setSections(initialSections)
 
-    modelState.applyUpdates(
-      [
+    modelState.applyUpdates([
         .sectionReload(
           sectionIndex: 3,
           newSection: ModelHelpers.basicSectionModels(
@@ -323,7 +337,8 @@ final class ModelStateUpdateTests: XCTestCase {
         .itemMove(
           initialItemIndexPath: IndexPath(item: 0, section: 4),
           finalItemIndexPath: IndexPath(item: 0, section: 1)),
-      ])
+      ],
+      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
 
     XCTAssert(true)
   }

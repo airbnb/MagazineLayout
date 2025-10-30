@@ -132,8 +132,7 @@ final class ModelStateLayoutTests: XCTestCase {
           toPreferredHeight: sizeModeAndHeight.height,
           forItemAt: indexPath)
 
-        let preferredHeight = modelState.itemModelPreferredHeightDuringPreferredAttributesCheck(
-          at: indexPath)
+        let preferredHeight = modelState.itemModelPreferredHeight(at: indexPath)
         XCTAssert(preferredHeight == sizeModeAndHeight.height, "Item preferred height is incorrect")
       case .static:
         continue
@@ -353,7 +352,8 @@ final class ModelStateLayoutTests: XCTestCase {
             widthMode: .halfWidth,
             heightMode: .static(height: 10)),
           height: 10)),
-      ])
+      ],
+      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
 
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 25.0, y: 90.0, width: 280.0, height: 20.0),
@@ -437,7 +437,8 @@ final class ModelStateLayoutTests: XCTestCase {
             widthMode: .thirdWidth,
             heightMode: .static(height: 20)),
           height: 20)),
-      ])
+      ],
+      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 125.0, y: 380.0, width: 80.0, height: 50.0),
@@ -504,8 +505,9 @@ final class ModelStateLayoutTests: XCTestCase {
 
   func testLayoutAfterDeletingItems() {
     modelState.applyUpdates([
-      .itemDelete(itemIndexPath: IndexPath(item: 5, section: 0)),
-    ])
+        .itemDelete(itemIndexPath: IndexPath(item: 5, section: 0)),
+      ],
+      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
 
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 15.0, y: 140.0, width: 300.0, height: 150.0),
@@ -566,11 +568,12 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedBackgroundFrames1: expectedBackgroundFrames1)
 
     modelState.applyUpdates([
-      .itemDelete(itemIndexPath: IndexPath(item: 1, section: 0)),
-      .itemDelete(itemIndexPath: IndexPath(item: 6, section: 1)),
-      .itemDelete(itemIndexPath: IndexPath(item: 0, section: 1)),
-      .itemDelete(itemIndexPath: IndexPath(item: 5, section: 0)),
-    ])
+        .itemDelete(itemIndexPath: IndexPath(item: 1, section: 0)),
+        .itemDelete(itemIndexPath: IndexPath(item: 6, section: 1)),
+        .itemDelete(itemIndexPath: IndexPath(item: 0, section: 1)),
+        .itemDelete(itemIndexPath: IndexPath(item: 5, section: 0)),
+      ],
+      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 25.0, y: 200.0, width: 130.0, height: 150.0),
@@ -631,10 +634,11 @@ final class ModelStateLayoutTests: XCTestCase {
 
   func testLayoutAfterMovingItems() {
     modelState.applyUpdates([
-      .itemMove(
-        initialItemIndexPath: IndexPath(item: 0, section: 1),
-        finalItemIndexPath: IndexPath(item: 5, section: 0)),
-    ])
+        .itemMove(
+          initialItemIndexPath: IndexPath(item: 0, section: 1),
+          finalItemIndexPath: IndexPath(item: 5, section: 0)),
+      ],
+      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
 
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 25.0, y: 380.0, width: 130.0, height: 150.0),
@@ -696,19 +700,20 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedBackgroundFrames1: expectedBackgroundFrames1)
 
     modelState.applyUpdates([
-      .itemMove(
-        initialItemIndexPath: IndexPath(item: 7, section: 1),
-        finalItemIndexPath: IndexPath(item: 5, section: 1)),
-      .itemMove(
-        initialItemIndexPath: IndexPath(item: 0, section: 0),
-        finalItemIndexPath: IndexPath(item: 1, section: 1)),
-      .itemMove(
-        initialItemIndexPath: IndexPath(item: 3, section: 0),
-        finalItemIndexPath: IndexPath(item: 6, section: 0)),
-      .itemMove(
-        initialItemIndexPath: IndexPath(item: 2, section: 1),
-        finalItemIndexPath: IndexPath(item: 0, section: 1)),
-    ])
+        .itemMove(
+          initialItemIndexPath: IndexPath(item: 7, section: 1),
+          finalItemIndexPath: IndexPath(item: 5, section: 1)),
+        .itemMove(
+          initialItemIndexPath: IndexPath(item: 0, section: 0),
+          finalItemIndexPath: IndexPath(item: 1, section: 1)),
+        .itemMove(
+          initialItemIndexPath: IndexPath(item: 3, section: 0),
+          finalItemIndexPath: IndexPath(item: 6, section: 0)),
+        .itemMove(
+          initialItemIndexPath: IndexPath(item: 2, section: 1),
+          finalItemIndexPath: IndexPath(item: 0, section: 1)),
+      ],
+      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 25.0, y: 490.0, width: 80.0, height: 150.0),
@@ -1343,7 +1348,7 @@ final class ModelStateLayoutTests: XCTestCase {
     XCTAssert(
       FrameHelpers.expectedFrames(
         (expectedItemFrames0 + expectedItemFrames1).removingDuplicates(),
-        matchItemFramesInSectionIndexRange: 0..<modelState.numberOfSections(.afterUpdates),
+        matchItemFramesInSectionIndexRange: 0..<modelState.numberOfSections,
         modelState: modelState),
       "Item frames are incorrect")
 
@@ -1360,7 +1365,7 @@ final class ModelStateLayoutTests: XCTestCase {
     XCTAssert(
       FrameHelpers.expectedFrames(
         (expectedHeaderFrames0 + expectedHeaderFrames1).removingDuplicates(),
-        matchHeaderFramesInSectionIndexRange: 0..<modelState.numberOfSections(.afterUpdates),
+        matchHeaderFramesInSectionIndexRange: 0..<modelState.numberOfSections,
         modelState: modelState),
       "Header frames are incorrect")
 
@@ -1377,7 +1382,7 @@ final class ModelStateLayoutTests: XCTestCase {
     XCTAssert(
       FrameHelpers.expectedFrames(
         (expectedFooterFrames0 + expectedFooterFrames1).removingDuplicates(),
-        matchFooterFramesInSectionIndexRange: 0..<modelState.numberOfSections(.afterUpdates),
+        matchFooterFramesInSectionIndexRange: 0..<modelState.numberOfSections,
         modelState: modelState),
       "Footer frames are incorrect")
 
@@ -1394,7 +1399,7 @@ final class ModelStateLayoutTests: XCTestCase {
     XCTAssert(
       FrameHelpers.expectedFrames(
         (expectedBackgroundFrames0 + expectedBackgroundFrames1).removingDuplicates(),
-        matchBackgroundFramesInSectionIndexRange: 0..<modelState.numberOfSections(.afterUpdates),
+        matchBackgroundFramesInSectionIndexRange: 0..<modelState.numberOfSections,
         modelState: modelState),
       "Background frames are incorrect")
   }
