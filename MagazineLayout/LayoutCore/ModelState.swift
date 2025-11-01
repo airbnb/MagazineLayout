@@ -209,9 +209,7 @@ final class ModelState {
     }
 
     let maxY = cachedMaxYForSection(atIndex: targetSectionIndex) ?? sectionMaxY
-    if !disableSectionMaxYsCache {
-      cacheMaxY(maxY, forSectionAtIndex: targetSectionIndex)
-    }
+    cacheMaxY(maxY, forSectionAtIndex: targetSectionIndex)
     return maxY
   }
 
@@ -301,11 +299,10 @@ final class ModelState {
     return backgroundFrame
   }
 
-  func copyForBatchUpdates() -> ModelState {
+  func copy() -> ModelState {
     let currentVisibleBounds = currentVisibleBoundsProvider()
     let newModelState = ModelState(currentVisibleBoundsProvider: { currentVisibleBounds })
     newModelState.sectionModels = sectionModels
-    newModelState.disableSectionMaxYsCache = true
     newModelState.headerLocationsForFlattenedIndices = headerLocationsForFlattenedIndices
     newModelState.footerLocationsForFlattenedIndices = footerLocationsForFlattenedIndices
     newModelState.backgroundLocationsForFlattenedIndices = backgroundLocationsForFlattenedIndices
@@ -507,7 +504,6 @@ final class ModelState {
   private var sectionModels = [SectionModel]()
 
   private var sectionMaxYsCache = [CGFloat?]()
-  private var disableSectionMaxYsCache = false
 
   private var headerLocationsForFlattenedIndices = [Int: ElementLocation]()
   private var footerLocationsForFlattenedIndices = [Int: ElementLocation]()

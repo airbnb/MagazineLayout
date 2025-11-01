@@ -59,31 +59,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public var collectionViewContentSize: CGSize {
-    let numberOfSections = modelState.numberOfSections
-
-    let width: CGFloat
-    if let collectionView = collectionView {
-      // This is a workaround for `layoutAttributesForElementsInRect:` not getting invoked enough
-      // times if `collectionViewContentSize.width` is not smaller than the width of the collection
-      // view, minus horizontal insets. This results in visual defects when performing batch
-      // updates. To work around this, we subtract 0.0001 from our content size width calculation;
-      // this small decrease in `collectionViewContentSize.width` is enough to work around the
-      // incorrect, internal collection view `CGRect` checks, without introducing any visual
-      // differences for elements in the collection view.
-      // See https://openradar.appspot.com/radar?id=5025850143539200 for more details.
-      width = collectionView.bounds.width - contentInset.left - contentInset.right - 0.0001
-    } else {
-      width = 0
-    }
-
-    let height: CGFloat
-    if numberOfSections <= 0 {
-      height = 0
-    } else {
-      height = modelState.sectionMaxY(forSectionAtIndex: numberOfSections - 1)
-    }
-
-    return CGSize(width: width, height: height)
+    guard collectionView != nil else { return .zero }
+    return layoutState.contentSize
   }
 
   override public func prepare() {
@@ -135,6 +112,13 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     // Recreate section models from scratch if necessary
     if prepareActions.contains(.recreateSectionModels) {
+      layoutStateBeforeRecreateSectionModels = LayoutState(
+        modelState: layoutState.modelState.copy(),
+        bounds: currentCollectionView.bounds,
+        contentInset: contentInset,
+        scale: scale,
+        verticalLayoutDirection: verticalLayoutDirection)
+
       var sections = [SectionModel]()
       for sectionIndex in 0..<currentCollectionView.numberOfSections {
         let sectionModel = sectionModelForSection(atIndex: sectionIndex)
@@ -156,8 +140,13 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
-    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
-    self.modelStateBeforeBatchUpdates = modelStateBeforeBatchUpdates
+    let layoutStateBeforeCollectionViewUpdates = LayoutState(
+      modelState: layoutState.modelState.copy(),
+      bounds: currentCollectionView.bounds,
+      contentInset: contentInset,
+      scale: scale,
+      verticalLayoutDirection: verticalLayoutDirection)
+    self.layoutStateBeforeCollectionViewUpdates = layoutStateBeforeCollectionViewUpdates
 
     var updates = [CollectionViewUpdate<SectionModel, ItemModel>]()
 
@@ -230,12 +219,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
     }
 
-    // Calculate the target offset before applying updates, since the target offset should be based
-    // on the pre-update state.
-    targetContentOffsetAnchor = currentTargetContentOffsetAnchor
-    contentHeightBeforeUpdates = collectionViewContentSize.height
-
-    modelState.applyUpdates(updates, modelStateBeforeBatchUpdates: modelStateBeforeBatchUpdates)
+    modelState.applyUpdates(
+      updates,
+      modelStateBeforeBatchUpdates: layoutStateBeforeCollectionViewUpdates.modelState)
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
 
     lastSizedElementMinY = nil
@@ -250,20 +236,18 @@ public final class MagazineLayout: UICollectionViewLayout {
     itemLayoutAttributesForPendingAnimations.removeAll()
     supplementaryViewLayoutAttributesForPendingAnimations.removeAll()
 
-    if let targetContentOffsetAnchor {
-      let targetYOffset = yOffset(for: targetContentOffsetAnchor)
+    if let layoutStateBeforeCollectionViewUpdates{
+      let targetContentOffsetAnchor = layoutStateBeforeCollectionViewUpdates.targetContentOffsetAnchor
+      let targetYOffset = layoutState.yOffset(for: targetContentOffsetAnchor)
       let context = MagazineLayoutInvalidationContext()
       context.invalidateLayoutMetrics = false
-      context.contentOffsetAdjustment.y = targetYOffset - currentCollectionView.contentOffset.y
+      context.contentOffsetAdjustment.y = targetYOffset - layoutState.bounds.minY
       invalidateLayout(with: context)
     }
 
-    targetContentOffsetAnchor = nil
-    contentHeightBeforeUpdates = nil
-
     targetContentOffsetCompensatingYOffsetForAppearingItem = nil
 
-    modelStateBeforeBatchUpdates = nil
+    layoutStateBeforeCollectionViewUpdates = nil
 
     super.finalizeCollectionViewUpdates()
   }
@@ -272,21 +256,17 @@ public final class MagazineLayout: UICollectionViewLayout {
     super.prepare(forAnimatedBoundsChange: oldBounds)
 
     if currentCollectionView.bounds.size != oldBounds.size {
-      targetContentOffsetAnchor = targetContentOffsetAnchor(
+      layoutStateBeforeAnimatedBoundsChange = LayoutState(
+        modelState: layoutState.modelState.copy(),
         bounds: oldBounds,
-        contentHeight: currentCollectionView.contentSize.height,
-        // There doesn't seem to be a reliable way to get the correct content insets here. We can try
-        // track them in invalidateLayout or prepare, but then there are edge cases where we need to
-        // track multiple past inset values. It's a huge mess, and I don't think it's worth solving.
-        // The downside is that if your insets change on rotation, you won't always land in the exact
-        // correct spot if you're in the middle of the content. Being at the top or bottom works fine.
-        topInset: 0,
-        bottomInset: 0)
+        contentInset: contentInset,
+        scale: scale,
+        verticalLayoutDirection: verticalLayoutDirection)
     }
   }
 
   override public func finalizeAnimatedBoundsChange() {
-    targetContentOffsetAnchor = nil
+    layoutStateBeforeAnimatedBoundsChange = nil
 
     super.finalizeAnimatedBoundsChange()
   }
@@ -433,11 +413,13 @@ public final class MagazineLayout: UICollectionViewLayout {
     at itemIndexPath: IndexPath)
     -> UICollectionViewLayoutAttributes?
   {
+    let attributes = super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
+    attributes?.frame = modelState.frameForItem(at: ElementLocation(indexPath: itemIndexPath))
+
     if
       modelState.itemIndexPathsToInsert.contains(itemIndexPath) ||
       modelState.sectionIndicesToInsert.contains(itemIndexPath.section)
     {
-      let attributes = layoutAttributesForItem(at: itemIndexPath)?.copy() as? UICollectionViewLayoutAttributes
       attributes.map {
         delegateMagazineLayout?.collectionView(
           currentCollectionView,
@@ -446,19 +428,22 @@ public final class MagazineLayout: UICollectionViewLayout {
           byModifying: $0)
       }
 
-      attributes?.frame.origin.y += targetContentOffsetCompensatingYOffsetForAppearingItem ?? 0
+      attributes?.transform = CGAffineTransform(
+        translationX: 0,
+        y: targetContentOffsetCompensatingYOffsetForAppearingItem ?? 0,
+      )
 
       itemLayoutAttributesForPendingAnimations[itemIndexPath] = attributes
-      return attributes
     } else if
       let movedItemID = modelState.idForItemModel(at: itemIndexPath),
-      let initialIndexPath = modelStateBeforeBatchUpdates?.indexPathForItemModel(
-        withID: movedItemID)
+      let initialIndexPath = layoutStateBeforeCollectionViewUpdates?.modelState.indexPathForItemModel(
+        withID: movedItemID),
+      let frame = layoutStateBeforeCollectionViewUpdates?.modelState.frameForItem(at: ElementLocation(indexPath: initialIndexPath))
     {
-      return previousLayoutAttributesForItem(at: initialIndexPath)
-    } else {
-      return super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
+      attributes?.frame = frame
     }
+
+    return attributes
   }
 
   override public func finalLayoutAttributesForDisappearingItem(
@@ -479,7 +464,8 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
       return attributes
     } else if
-      let movedItemID = modelStateBeforeBatchUpdates?.idForItemModel(at: itemIndexPath),
+      let movedItemID = layoutStateBeforeCollectionViewUpdates?.modelState.idForItemModel(
+        at: itemIndexPath),
       let finalIndexPath = modelState.indexPathForItemModel(
         withID: movedItemID)
     {
@@ -520,7 +506,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     } else if
       let movedSectionID = modelState.idForSectionModel(
         atIndex: elementIndexPath.section),
-      let initialSectionIndex = modelStateBeforeBatchUpdates?.indexForSectionModel(
+      let initialSectionIndex = layoutStateBeforeCollectionViewUpdates?.modelState.indexForSectionModel(
         withID: movedSectionID)
     {
       let initialIndexPath = IndexPath(item: 0, section: initialSectionIndex)
@@ -560,7 +546,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
       return attributes
     } else if
-      let movedSectionID = modelStateBeforeBatchUpdates?.idForSectionModel(
+      let movedSectionID = layoutStateBeforeCollectionViewUpdates?.modelState.idForSectionModel(
         atIndex: elementIndexPath.section),
       let finalSectionIndex = modelState.indexForSectionModel(
         withID: movedSectionID)
@@ -688,36 +674,59 @@ public final class MagazineLayout: UICollectionViewLayout {
     withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
     -> UICollectionViewLayoutInvalidationContext
   {
-    let contentOffsetAdjustment: CGPoint?
+    let context = super.invalidationContext(
+      forPreferredLayoutAttributes: preferredAttributes,
+      withOriginalAttributes: originalAttributes) as! MagazineLayoutInvalidationContext
+    context.invalidateLayoutMetrics = false
+
     switch preferredAttributes.representedElementCategory {
     case .cell:
-      let targetContentOffsetAnchor = targetContentOffsetAnchor ?? currentTargetContentOffsetAnchor
-
-      let targetYOffsetBeforeUpdate: CGFloat?
-      if let targetContentOffsetAnchor {
-        targetYOffsetBeforeUpdate = yOffset(for: targetContentOffsetAnchor)
-      } else {
-        targetYOffsetBeforeUpdate = nil
-      }
+      let targetContentOffsetAnchor = (
+        layoutStateBeforeRecreateSectionModels ??
+          layoutStateBeforeCollectionViewUpdates ??
+          layoutStateBeforeAnimatedBoundsChange ??
+          self.layoutState
+      ).targetContentOffsetAnchor
+      let targetYOffsetBefore = layoutState.yOffset(for: targetContentOffsetAnchor)
 
       modelState.updateItemHeight(
         toPreferredHeight: preferredAttributes.size.height,
         forItemAt: preferredAttributes.indexPath)
 
-      if let targetYOffsetBeforeUpdate, let targetContentOffsetAnchor {
-        let targetYOffsetAfterUpdate = yOffset(for: targetContentOffsetAnchor)
-        contentOffsetAdjustment = CGPoint(x: 0, y: targetYOffsetAfterUpdate - targetYOffsetBeforeUpdate)
-      } else {
-        contentOffsetAdjustment = nil
+      switch targetContentOffsetAnchor {
+      case .top:
+        context.contentOffsetAdjustment.y = layoutState.minContentOffset.y - layoutState.bounds.minY
+
+      case .bottom:
+        context.contentOffsetAdjustment.y = layoutState.maxContentOffset.y - layoutState.bounds.minY
+
+      case .topItem, .bottomItem:
+        let targetYOffsetAfter = layoutState.yOffset(for: targetContentOffsetAnchor)
+        context.contentOffsetAdjustment.y = targetYOffsetAfter - targetYOffsetBefore
       }
 
       if let attributes = itemLayoutAttributesForPendingAnimations[preferredAttributes.indexPath] {
-        attributes.frame = modelState.frameForItem(
-          at: ElementLocation(indexPath: preferredAttributes.indexPath))
+        switch verticalLayoutDirection {
+        case .topToBottom:
+          attributes.frame = modelState.frameForItem(at: ElementLocation(indexPath: preferredAttributes.indexPath))
+
+        case .bottomToTop:
+          if case .bottom = targetContentOffsetAnchor {
+            attributes.transform = .identity
+            attributes.frame = modelState.frameForItem(at: ElementLocation(indexPath: preferredAttributes.indexPath))
+          } else {
+            let previousHeight = attributes.frame.height
+            attributes.frame = modelState.frameForItem(at: ElementLocation(indexPath: preferredAttributes.indexPath))
+
+            var targetContentOffsetCompensatingYOffsetForAppearingItem = targetContentOffsetCompensatingYOffsetForAppearingItem ?? 0
+            targetContentOffsetCompensatingYOffsetForAppearingItem -= (attributes.frame.height - previousHeight)
+            self.targetContentOffsetCompensatingYOffsetForAppearingItem = targetContentOffsetCompensatingYOffsetForAppearingItem
+            attributes.transform = CGAffineTransform(translationX: 0, y: targetContentOffsetCompensatingYOffsetForAppearingItem)
+          }
+        }
       }
 
     case .supplementaryView:
-      contentOffsetAdjustment = nil
       let layoutAttributesForPendingAnimation = supplementaryViewLayoutAttributesForPendingAnimations[preferredAttributes.indexPath]
 
       switch preferredAttributes.representedElementKind {
@@ -742,26 +751,11 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
 
     case .decorationView:
-      contentOffsetAdjustment = nil
       assertionFailure("`MagazineLayout` does not support decoration views")
 
     @unknown default:
-      contentOffsetAdjustment = nil
       assertionFailure("`MagazineLayout` does not support this kind of element category")
     }
-
-    let context = super.invalidationContext(
-      forPreferredLayoutAttributes: preferredAttributes,
-      withOriginalAttributes: originalAttributes) as! MagazineLayoutInvalidationContext
-
-    if let contentOffsetAdjustment, !isPerformingBatchUpdates {
-      // If we're in the middle of a batch update, we need to adjust our content offset. Doing it
-      // here in the middle of a batch update gets ignored for some reason. Instead, we delay
-      // slightly and do it in `finalizeCollectionViewUpdates`.
-      context.contentOffsetAdjustment = contentOffsetAdjustment
-    }
-
-    context.invalidateLayoutMetrics = false
 
     return context
   }
@@ -820,6 +814,8 @@ public final class MagazineLayout: UICollectionViewLayout {
       backgroundLayoutAttributes.removeAll()
     }
 
+    layoutStateBeforeRecreateSectionModels = nil
+
     super.invalidateLayout(with: context)
   }
 
@@ -827,11 +823,12 @@ public final class MagazineLayout: UICollectionViewLayout {
     forProposedContentOffset proposedContentOffset: CGPoint)
     -> CGPoint
   {
-    guard let targetContentOffsetAnchor else {
+    let layoutStateBefore = layoutStateBeforeCollectionViewUpdates ?? layoutStateBeforeAnimatedBoundsChange
+    guard let layoutStateBefore else {
       return super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
     }
 
-    let yOffset = yOffset(for: targetContentOffsetAnchor)
+    let yOffset = layoutState.yOffset(for: layoutStateBefore.targetContentOffsetAnchor)
 
     targetContentOffsetCompensatingYOffsetForAppearingItem = proposedContentOffset.y - yOffset
 
@@ -842,12 +839,17 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private let _flipsHorizontallyInOppositeLayoutDirection: Bool
 
-  private lazy var modelState: ModelState = {
-    return ModelState(currentVisibleBoundsProvider: { [weak self] in
-      return self?.currentVisibleBounds ?? .zero
-    })
-  }()
-  private var modelStateBeforeBatchUpdates: ModelState?
+  private lazy var _layoutState = LayoutState(
+    modelState: ModelState(currentVisibleBoundsProvider: { [weak self] in
+      self?.currentVisibleBounds ?? .zero
+    }),
+    bounds: currentCollectionView.bounds,
+    contentInset: contentInset,
+    scale: scale,
+    verticalLayoutDirection: verticalLayoutDirection)
+  private var layoutStateBeforeRecreateSectionModels: LayoutState?
+  private var layoutStateBeforeCollectionViewUpdates: LayoutState?
+  private var layoutStateBeforeAnimatedBoundsChange: LayoutState?
 
   private var cachedCollectionViewWidth: CGFloat?
 
@@ -890,7 +892,6 @@ public final class MagazineLayout: UICollectionViewLayout {
   // `layoutAttributesForElementsInRect:` for more details.
   private var hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
 
-  private var isPerformingAnimatedBoundsChange = false
   private var targetContentOffsetAnchor: TargetContentOffsetAnchor?
   private var contentHeightBeforeUpdates: CGFloat?
   private var previousContentInset: UIEdgeInsets?
@@ -939,16 +940,16 @@ public final class MagazineLayout: UICollectionViewLayout {
     currentCollectionView.adjustedContentInset
   }
 
-  private var currentTargetContentOffsetAnchor: TargetContentOffsetAnchor? {
-    targetContentOffsetAnchor(
-      bounds: currentCollectionView.bounds,
-      contentHeight: currentCollectionView.contentSize.height,
-      topInset: contentInset.top,
-      bottomInset: contentInset.bottom)
+  private var layoutState: LayoutState {
+    _layoutState.bounds = currentCollectionView.bounds
+    _layoutState.contentInset = contentInset
+    _layoutState.scale = scale
+    _layoutState.verticalLayoutDirection = verticalLayoutDirection
+    return _layoutState
   }
 
-  private var isPerformingBatchUpdates: Bool {
-    modelStateBeforeBatchUpdates != nil
+  private var modelState: ModelState {
+    layoutState.modelState
   }
 
   private func metricsForSection(atIndex sectionIndex: Int) -> MagazineLayoutSectionMetrics {
@@ -1124,7 +1125,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   {
     let layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(forCellWith: indexPath)
 
-    guard let modelStateBeforeBatchUpdates else {
+    guard let layoutStateBeforeCollectionViewUpdates else {
       // TODO(bryankeller): Look into whether this happens on iOS 10. It definitely does on iOS 9.
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
@@ -1133,8 +1134,8 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     guard
-      indexPath.section < modelStateBeforeBatchUpdates.numberOfSections,
-      indexPath.item < modelStateBeforeBatchUpdates.numberOfItems(
+      indexPath.section < layoutStateBeforeCollectionViewUpdates.modelState.numberOfSections,
+      indexPath.item < layoutStateBeforeCollectionViewUpdates.modelState.numberOfItems(
         inSectionAtIndex: indexPath.section)
     else {
       // On iOS 9, `layoutAttributesForItem(at:)` can be invoked for an index path of a new item
@@ -1147,7 +1148,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       return layoutAttributes
     }
 
-    layoutAttributes.frame = modelStateBeforeBatchUpdates.frameForItem(
+    layoutAttributes.frame = layoutStateBeforeCollectionViewUpdates.modelState.frameForItem(
       at: ElementLocation(indexPath: indexPath))
 
     return layoutAttributes
@@ -1162,7 +1163,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       forSupplementaryViewOfKind: elementKind,
       with: indexPath)
 
-    guard let modelStateBeforeBatchUpdates else {
+    guard let layoutStateBeforeCollectionViewUpdates else {
       // TODO(bryankeller): Look into whether this happens on iOS 10. It definitely does on iOS 9.
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
@@ -1170,7 +1171,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       return layoutAttributes
     }
 
-    guard indexPath.section < modelStateBeforeBatchUpdates.numberOfSections else {
+    guard indexPath.section < layoutStateBeforeCollectionViewUpdates.modelState.numberOfSections else {
       // On iOS 9, `layoutAttributesForItem(at:)` can be invoked for an index path of a new
       // supplementary view before the layout is notified of this new item (through either `prepare`
       // or `prepare(forCollectionViewUpdates:)`). This seems to be fixed in iOS 10 and higher.
@@ -1183,19 +1184,19 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionHeader,
-      let headerFrame = modelStateBeforeBatchUpdates.frameForHeader(
+      let headerFrame = layoutStateBeforeCollectionViewUpdates.modelState.frameForHeader(
         inSectionAtIndex: indexPath.section)
     {
       layoutAttributes.frame = headerFrame
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionFooter,
-      let footerFrame = modelStateBeforeBatchUpdates.frameForFooter(
+      let footerFrame = layoutStateBeforeCollectionViewUpdates.modelState.frameForFooter(
         inSectionAtIndex: indexPath.section)
     {
       layoutAttributes.frame = footerFrame
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionBackground,
-      let backgroundFrame = modelStateBeforeBatchUpdates.frameForBackground(
+      let backgroundFrame = layoutStateBeforeCollectionViewUpdates.modelState.frameForBackground(
         inSectionAtIndex: indexPath.section)
     {
       layoutAttributes.frame = backgroundFrame
@@ -1262,63 +1263,6 @@ public final class MagazineLayout: UICollectionViewLayout {
     default:
       assertionFailure("\(elementKind) is not a valid supplementary view element kind.")
     }
-  }
-
-  private func targetContentOffsetAnchor(
-    bounds: CGRect,
-    contentHeight: CGFloat,
-    topInset: CGFloat,
-    bottomInset: CGFloat)
-    -> TargetContentOffsetAnchor?
-  {
-    var visibleItemLocationFramePairs = [ElementLocationFramePair]()
-    for itemLocationFramePair in modelState.itemLocationFramePairs(forItemsIn: bounds) {
-      visibleItemLocationFramePairs.append(itemLocationFramePair)
-    }
-    visibleItemLocationFramePairs.sort { $0.elementLocation < $1.elementLocation }
-
-    let firstVisibleItemLocationFramePair = visibleItemLocationFramePairs.first {
-      // When scrolling up, only calculate a target content offset based on visible, already-sized
-      // cells. Otherwise, scrolling will be jumpy.
-      modelState.isItemHeightSettled(indexPath: $0.elementLocation.indexPath)
-    } ?? visibleItemLocationFramePairs.first // fallback to the first item if we can't find one with a settled height
-
-    let lastVisibleItemLocationFramePair = visibleItemLocationFramePairs.last
-
-    guard
-      let firstVisibleItemLocationFramePair,
-      let lastVisibleItemLocationFramePair,
-      let firstVisibleItemID = modelState.idForItemModel(
-        at: firstVisibleItemLocationFramePair.elementLocation.indexPath),
-      let lastVisibleItemID = modelState.idForItemModel(
-        at: lastVisibleItemLocationFramePair.elementLocation.indexPath)
-    else {
-      return nil
-    }
-
-    return TargetContentOffsetAnchor.targetContentOffsetAnchor(
-      verticalLayoutDirection: verticalLayoutDirection,
-      topInset: topInset,
-      bottomInset: bottomInset,
-      bounds: bounds,
-      contentHeight: contentHeight,
-      scale: scale,
-      firstVisibleItemID: firstVisibleItemID,
-      lastVisibleItemID: lastVisibleItemID,
-      firstVisibleItemFrame: firstVisibleItemLocationFramePair.frame,
-      lastVisibleItemFrame: lastVisibleItemLocationFramePair.frame)
-  }
-
-  private func yOffset(for targetContentOffsetAnchor: TargetContentOffsetAnchor) -> CGFloat {
-    targetContentOffsetAnchor.yOffset(
-      topInset: contentInset.top,
-      bottomInset: contentInset.bottom,
-      bounds: currentCollectionView.bounds,
-      contentHeight: collectionViewContentSize.height,
-      indexPathForItemID: { modelState.indexPathForItemModel(withID: $0) },
-      frameForItemAtIndexPath: {
-        modelState.frameForItem(at: ElementLocation(indexPath: $0))
-      })
   }
 
 }
