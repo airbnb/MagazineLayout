@@ -20,21 +20,25 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
   // MARK: Internal
 
-  var window: UIWindow?
-
   func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?)
     -> Bool
   {
-    window = UIWindow(frame: UIScreen.main.bounds)
-
-    let navigationController = UINavigationController(rootViewController: ViewController())
-
-    window?.rootViewController = navigationController
-    window?.makeKeyAndVisible()
-
     return true
+  }
+
+  func application(
+    _ application: UIApplication,
+    configurationForConnecting connectingSceneSession: UISceneSession,
+    options: UIScene.ConnectionOptions)
+    -> UISceneConfiguration
+  {
+    let sceneConfiguration = UISceneConfiguration(
+      name: "Default Configuration",
+      sessionRole: connectingSceneSession.role)
+    sceneConfiguration.delegateClass = SceneDelegate.self
+    return sceneConfiguration
   }
 
   func applicationWillResignActive(_ application: UIApplication) {
