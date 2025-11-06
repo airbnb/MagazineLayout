@@ -20,8 +20,15 @@ import UIKit
 /// Used to indicate that collection view properties and/or delegate layout metrics changed.
 public final class MagazineLayoutInvalidationContext: UICollectionViewLayoutInvalidationContext {
 
+  // MARK: Public
+
   /// Indicates whether to recompute the positions and sizes of elements based on the current
   /// collection view and delegate layout metrics.
   public var invalidateLayoutMetrics = true
+
+  // MARK: Internal
+
+  /// Preferred layout attributes to apply.
+  var preferredLayoutAttributes: UICollectionViewLayoutAttributes?
 
 }

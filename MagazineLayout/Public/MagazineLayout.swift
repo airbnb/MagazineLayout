@@ -228,8 +228,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     if let layoutStateBeforeCollectionViewUpdates{
       let targetContentOffsetAnchor = layoutStateBeforeCollectionViewUpdates.targetContentOffsetAnchor
       let targetYOffset = layoutState.yOffset(for: targetContentOffsetAnchor)
-      let context = MagazineLayoutInvalidationContext()
-      context.invalidateLayoutMetrics = false
+      let context = UICollectionViewLayoutInvalidationContext()
       context.contentOffsetAdjustment.y = targetYOffset - layoutState.bounds.minY
       invalidateLayout(with: context)
     }
@@ -667,93 +666,106 @@ public final class MagazineLayout: UICollectionViewLayout {
       forPreferredLayoutAttributes: preferredAttributes,
       withOriginalAttributes: originalAttributes) as! MagazineLayoutInvalidationContext
     context.invalidateLayoutMetrics = false
-
-    switch preferredAttributes.representedElementCategory {
-    case .cell:
-      let targetContentOffsetAnchor = (
-        layoutStateBeforeRecreateSectionModels ??
-          layoutStateBeforeCollectionViewUpdates ??
-          layoutStateBeforeAnimatedBoundsChange ??
-          self.layoutState
-      ).targetContentOffsetAnchor
-      let targetYOffsetBefore = layoutState.yOffset(for: targetContentOffsetAnchor)
-
-      modelState.updateItemHeight(
-        toPreferredHeight: preferredAttributes.size.height,
-        forItemAt: preferredAttributes.indexPath)
-
-      switch targetContentOffsetAnchor {
-      case .top:
-        context.contentOffsetAdjustment.y = layoutState.minContentOffset.y - layoutState.bounds.minY
-
-      case .bottom:
-        context.contentOffsetAdjustment.y = layoutState.maxContentOffset.y - layoutState.bounds.minY
-
-      case .topItem, .bottomItem:
-        let targetYOffsetAfter = layoutState.yOffset(for: targetContentOffsetAnchor)
-        context.contentOffsetAdjustment.y = targetYOffsetAfter - targetYOffsetBefore
-      }
-
-      if let attributes = itemLayoutAttributesForPendingAnimations[preferredAttributes.indexPath] {
-        switch verticalLayoutDirection {
-        case .topToBottom:
-          attributes.frame = modelState.frameForItem(at: ElementLocation(indexPath: preferredAttributes.indexPath))
-
-        case .bottomToTop:
-          if case .bottom = targetContentOffsetAnchor {
-            attributes.transform = .identity
-            attributes.frame = modelState.frameForItem(at: ElementLocation(indexPath: preferredAttributes.indexPath))
-          } else {
-            let previousHeight = attributes.frame.height
-            attributes.frame = modelState.frameForItem(at: ElementLocation(indexPath: preferredAttributes.indexPath))
-
-            var targetContentOffsetCompensatingYOffsetForAppearingItem = targetContentOffsetCompensatingYOffsetForAppearingItem ?? 0
-            targetContentOffsetCompensatingYOffsetForAppearingItem -= (attributes.frame.height - previousHeight)
-            self.targetContentOffsetCompensatingYOffsetForAppearingItem = targetContentOffsetCompensatingYOffsetForAppearingItem
-            attributes.transform = CGAffineTransform(translationX: 0, y: targetContentOffsetCompensatingYOffsetForAppearingItem)
-          }
-        }
-      }
-
-    case .supplementaryView:
-      let layoutAttributesForPendingAnimation = supplementaryViewLayoutAttributesForPendingAnimations[preferredAttributes.indexPath]
-
-      switch preferredAttributes.representedElementKind {
-      case MagazineLayout.SupplementaryViewKind.sectionHeader?:
-        modelState.updateHeaderHeight(
-          toPreferredHeight: preferredAttributes.size.height,
-          forSectionAtIndex: preferredAttributes.indexPath.section)
-
-        layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForHeader(
-          inSectionAtIndex: preferredAttributes.indexPath.section)?.height ?? preferredAttributes.size.height
-
-      case MagazineLayout.SupplementaryViewKind.sectionFooter?:
-        modelState.updateFooterHeight(
-          toPreferredHeight: preferredAttributes.size.height,
-          forSectionAtIndex: preferredAttributes.indexPath.section)
-
-        layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForFooter(
-          inSectionAtIndex: preferredAttributes.indexPath.section)?.height ?? preferredAttributes.size.height
-
-      default:
-        break
-      }
-
-    case .decorationView:
-      assertionFailure("`MagazineLayout` does not support decoration views")
-
-    @unknown default:
-      assertionFailure("`MagazineLayout` does not support this kind of element category")
-    }
-
+    context.preferredLayoutAttributes = preferredAttributes
     return context
   }
 
   override public func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
-    guard let context = context as? MagazineLayoutInvalidationContext else {
-      assertionFailure("`context` must be an instance of `MagazineLayoutInvalidationContext`")
-      super.invalidateLayout(with: context)
-      return
+    if context.invalidateEverything {
+      prepareActions.formUnion([.recreateSectionModels])
+    }
+
+    let shouldInvalidateLayoutMetrics = !context.invalidateEverything &&
+      !context.invalidateDataSourceCounts
+
+    // Handle MagazineLayout-specific invalidation context
+    if let context = context as? MagazineLayoutInvalidationContext {
+      if context.invalidateLayoutMetrics && shouldInvalidateLayoutMetrics {
+        prepareActions.formUnion([.updateLayoutMetrics])
+      }
+
+      if let preferredAttributes = context.preferredLayoutAttributes {
+        switch preferredAttributes.representedElementCategory {
+        case .cell:
+          let targetContentOffsetAnchor = (
+            layoutStateBeforeRecreateSectionModels ??
+            layoutStateBeforeCollectionViewUpdates ??
+            layoutStateBeforeAnimatedBoundsChange ??
+            self.layoutState
+          ).targetContentOffsetAnchor
+          let targetYOffsetBefore = layoutState.yOffset(for: targetContentOffsetAnchor)
+
+          modelState.updateItemHeight(
+            toPreferredHeight: preferredAttributes.size.height,
+            forItemAt: preferredAttributes.indexPath)
+
+          // Correct our content offset given the current targetContentOffsetAnchor
+          switch targetContentOffsetAnchor {
+          case .top:
+            context.contentOffsetAdjustment.y = layoutState.minContentOffset.y - layoutState.bounds.minY
+            
+          case .bottom:
+            context.contentOffsetAdjustment.y = layoutState.maxContentOffset.y - layoutState.bounds.minY
+            
+          case .topItem, .bottomItem:
+            let targetYOffsetAfter = layoutState.yOffset(for: targetContentOffsetAnchor)
+            context.contentOffsetAdjustment.y = targetYOffsetAfter - targetYOffsetBefore
+          }
+
+          // Fix any in-flight-item-insertion layout attributes so that they have a correct frame
+          // during the insertion animation
+          if let attributes = itemLayoutAttributesForPendingAnimations[preferredAttributes.indexPath] {
+            switch verticalLayoutDirection {
+            case .topToBottom:
+              attributes.frame = modelState.frameForItem(at: ElementLocation(indexPath: preferredAttributes.indexPath))
+              
+            case .bottomToTop:
+              if case .bottom = targetContentOffsetAnchor {
+                attributes.transform = .identity
+                attributes.frame = modelState.frameForItem(at: ElementLocation(indexPath: preferredAttributes.indexPath))
+              } else {
+                let previousHeight = attributes.frame.height
+                attributes.frame = modelState.frameForItem(at: ElementLocation(indexPath: preferredAttributes.indexPath))
+                
+                var targetContentOffsetCompensatingYOffsetForAppearingItem = targetContentOffsetCompensatingYOffsetForAppearingItem ?? 0
+                targetContentOffsetCompensatingYOffsetForAppearingItem -= (attributes.frame.height - previousHeight)
+                self.targetContentOffsetCompensatingYOffsetForAppearingItem = targetContentOffsetCompensatingYOffsetForAppearingItem
+                attributes.transform = CGAffineTransform(translationX: 0, y: targetContentOffsetCompensatingYOffsetForAppearingItem)
+              }
+            }
+          }
+          
+        case .supplementaryView:
+          let layoutAttributesForPendingAnimation = supplementaryViewLayoutAttributesForPendingAnimations[preferredAttributes.indexPath]
+          
+          switch preferredAttributes.representedElementKind {
+          case MagazineLayout.SupplementaryViewKind.sectionHeader?:
+            modelState.updateHeaderHeight(
+              toPreferredHeight: preferredAttributes.size.height,
+              forSectionAtIndex: preferredAttributes.indexPath.section)
+            
+            layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForHeader(
+              inSectionAtIndex: preferredAttributes.indexPath.section)?.height ?? preferredAttributes.size.height
+            
+          case MagazineLayout.SupplementaryViewKind.sectionFooter?:
+            modelState.updateFooterHeight(
+              toPreferredHeight: preferredAttributes.size.height,
+              forSectionAtIndex: preferredAttributes.indexPath.section)
+            
+            layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForFooter(
+              inSectionAtIndex: preferredAttributes.indexPath.section)?.height ?? preferredAttributes.size.height
+            
+          default:
+            break
+          }
+          
+        case .decorationView:
+          assertionFailure("`MagazineLayout` does not support decoration views")
+          
+        @unknown default:
+          assertionFailure("`MagazineLayout` does not support this kind of element category")
+        }
+      }
     }
 
     // If our layout direction is `bottomToTop`, allow changes to the top and bottom content insets
@@ -772,13 +784,6 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
     previousContentInset = contentInset
 
-    let shouldInvalidateLayoutMetrics = !context.invalidateEverything &&
-      !context.invalidateDataSourceCounts
-
-    if context.invalidateEverything {
-      prepareActions.formUnion([.recreateSectionModels])
-    }
-
     // Checking `cachedCollectionViewWidth != collectionView?.bounds.size.width` is necessary
     // because the collection view's width can change without a `contentSizeAdjustment` occurring.
     let isSameWidth = collectionView?.bounds.size.width.isEqual(
@@ -787,10 +792,6 @@ public final class MagazineLayout: UICollectionViewLayout {
       ?? false
     if !isSameWidth {
       prepareActions.formUnion([.updateLayoutMetrics, .cachePreviousWidth])
-    }
-
-    if context.invalidateLayoutMetrics && shouldInvalidateLayoutMetrics {
-      prepareActions.formUnion([.updateLayoutMetrics])
     }
 
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = context.invalidateDataSourceCounts &&
