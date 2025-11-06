@@ -37,7 +37,7 @@ final class ModelStateUpdateTests: XCTestCase {
     modelState.applyUpdates([
         .sectionInsert(sectionIndex: 0, newSection: sectionToInsert)
       ],
-      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
+      modelStateBeforeBatchUpdates: modelState.copy())
 
     XCTAssert(
       !modelState.sectionIndicesToInsert.isEmpty,
@@ -59,7 +59,7 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfSections: 3,
       numberOfItemsPerSection: 1).first!
 
-    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    let modelStateBeforeBatchUpdates = modelState.copy()
     modelState.applyUpdates([
         .sectionReload(sectionIndex: 0, newSection: replacementSection)
       ],
@@ -82,7 +82,7 @@ final class ModelStateUpdateTests: XCTestCase {
     let replacementItem = ModelHelpers.basicItemModel()
     let indexPath = IndexPath(item: 0, section: 0)
 
-    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    let modelStateBeforeBatchUpdates = modelState.copy()
     modelState.applyUpdates([
         .itemReload(itemIndexPath: indexPath, newItem: replacementItem)
       ],
@@ -101,7 +101,7 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfSections: 3,
       numberOfItemsPerSection: 0)
 
-    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    let modelStateBeforeBatchUpdates = modelState.copy()
     modelState.applyUpdates([
         .sectionInsert(sectionIndex: 2, newSection: sectionsToInsert[2]),
         .sectionInsert(sectionIndex: 1, newSection: sectionsToInsert[1]),
@@ -132,7 +132,7 @@ final class ModelStateUpdateTests: XCTestCase {
       ModelHelpers.basicItemModel(),
     ]
 
-    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    let modelStateBeforeBatchUpdates = modelState.copy()
     modelState.applyUpdates([
         .itemInsert(itemIndexPath: IndexPath(item: 2, section: 0), newItem: itemsToInsert[2]),
         .itemInsert(itemIndexPath: IndexPath(item: 0, section: 0), newItem: itemsToInsert[0]),
@@ -157,7 +157,7 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfItemsPerSection: 0)
     modelState.setSections(initialSections)
 
-    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    let modelStateBeforeBatchUpdates = modelState.copy()
     modelState.applyUpdates([
         .sectionDelete(sectionIndex: 2),
         .sectionDelete(sectionIndex: 0),
@@ -182,7 +182,7 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfItemsPerSection: 3)
     modelState.setSections(initialSections)
 
-    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    let modelStateBeforeBatchUpdates = modelState.copy()
     modelState.applyUpdates([
         .itemDelete(itemIndexPath: IndexPath(item: 2, section: 0)),
         .itemDelete(itemIndexPath: IndexPath(item: 0, section: 0)),
@@ -207,7 +207,7 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfItemsPerSection: 2)
     modelState.setSections(initialSections)
 
-    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    let modelStateBeforeBatchUpdates = modelState.copy()
     modelState.applyUpdates([
         .sectionMove(initialSectionIndex: 0, finalSectionIndex: 1),
         .itemMove(initialItemIndexPath: .init(item: 0, section: 0), finalItemIndexPath: .init(item: 0, section: 1)),
@@ -259,7 +259,7 @@ final class ModelStateUpdateTests: XCTestCase {
       numberOfItemsPerSection: 2)
     modelState.setSections(initialSections)
 
-    let modelStateBeforeBatchUpdates = modelState.copyForBatchUpdates()
+    let modelStateBeforeBatchUpdates = modelState.copy()
     modelState.applyUpdates([
         .itemMove(
           initialItemIndexPath: IndexPath(item: 0, section: 0),
@@ -338,7 +338,7 @@ final class ModelStateUpdateTests: XCTestCase {
           initialItemIndexPath: IndexPath(item: 0, section: 4),
           finalItemIndexPath: IndexPath(item: 0, section: 1)),
       ],
-      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
+      modelStateBeforeBatchUpdates: modelState.copy())
 
     XCTAssert(true)
   }

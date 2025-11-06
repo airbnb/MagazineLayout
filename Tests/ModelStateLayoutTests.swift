@@ -353,7 +353,7 @@ final class ModelStateLayoutTests: XCTestCase {
             heightMode: .static(height: 10)),
           height: 10)),
       ],
-      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
+      modelStateBeforeBatchUpdates: modelState.copy())
 
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 25.0, y: 90.0, width: 280.0, height: 20.0),
@@ -438,7 +438,7 @@ final class ModelStateLayoutTests: XCTestCase {
             heightMode: .static(height: 20)),
           height: 20)),
       ],
-      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
+      modelStateBeforeBatchUpdates: modelState.copy())
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 125.0, y: 380.0, width: 80.0, height: 50.0),
@@ -507,7 +507,7 @@ final class ModelStateLayoutTests: XCTestCase {
     modelState.applyUpdates([
         .itemDelete(itemIndexPath: IndexPath(item: 5, section: 0)),
       ],
-      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
+      modelStateBeforeBatchUpdates: modelState.copy())
 
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 15.0, y: 140.0, width: 300.0, height: 150.0),
@@ -573,7 +573,7 @@ final class ModelStateLayoutTests: XCTestCase {
         .itemDelete(itemIndexPath: IndexPath(item: 0, section: 1)),
         .itemDelete(itemIndexPath: IndexPath(item: 5, section: 0)),
       ],
-      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
+      modelStateBeforeBatchUpdates: modelState.copy())
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 25.0, y: 200.0, width: 130.0, height: 150.0),
@@ -638,7 +638,7 @@ final class ModelStateLayoutTests: XCTestCase {
           initialItemIndexPath: IndexPath(item: 0, section: 1),
           finalItemIndexPath: IndexPath(item: 5, section: 0)),
       ],
-      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
+      modelStateBeforeBatchUpdates: modelState.copy())
 
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 25.0, y: 380.0, width: 130.0, height: 150.0),
@@ -713,7 +713,7 @@ final class ModelStateLayoutTests: XCTestCase {
           initialItemIndexPath: IndexPath(item: 2, section: 1),
           finalItemIndexPath: IndexPath(item: 0, section: 1)),
       ],
-      modelStateBeforeBatchUpdates: modelState.copyForBatchUpdates())
+      modelStateBeforeBatchUpdates: modelState.copy())
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 25.0, y: 490.0, width: 80.0, height: 150.0),

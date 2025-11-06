@@ -53,7 +53,7 @@ struct MagazineLayoutSectionMetrics: Equatable {
     scale = collectionView.traitCollection.nonZeroDisplayScale
   }
 
-  private init(
+  init(
     collectionViewWidth: CGFloat,
     collectionViewContentInset: UIEdgeInsets,
     verticalSpacing: CGFloat,

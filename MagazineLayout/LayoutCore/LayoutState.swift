@@ -151,7 +151,7 @@ struct LayoutState {
     case .topItem(let id, let distanceFromTop):
       guard let indexPath = modelState.indexPathForItemModel(withID: id) else { return bounds.minY }
       let itemFrame = modelState.frameForItem(at: ElementLocation(indexPath: indexPath))
-      let proposedYOffset = itemFrame.maxY - contentInset.top - distanceFromTop
+      let proposedYOffset = itemFrame.minY - contentInset.top - distanceFromTop
       // Clamp between minYOffset...maxYOffset
       return min(max(proposedYOffset, minContentOffset.y), maxContentOffset.y)
 
