@@ -128,14 +128,6 @@ public final class MagazineLayout: UICollectionViewLayout {
       modelState.setSections(sections)
     }
 
-    if
-      prepareActions.contains(.recreateSectionModels) ||
-      prepareActions.contains(.updateLayoutMetrics)
-    {
-      lastSizedElementMinY = nil
-      lastSizedElementPreferredHeight = nil
-    }
-
     prepareActions = []
   }
 
@@ -223,9 +215,6 @@ public final class MagazineLayout: UICollectionViewLayout {
       updates,
       modelStateBeforeBatchUpdates: layoutStateBeforeCollectionViewUpdates.modelState)
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
-
-    lastSizedElementMinY = nil
-    lastSizedElementPreferredHeight = nil
 
     super.prepare(forCollectionViewUpdates: updateItems)
   }
@@ -851,14 +840,6 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var layoutStateBeforeCollectionViewUpdates: LayoutState?
   private var layoutStateBeforeAnimatedBoundsChange: LayoutState?
 
-  private var cachedCollectionViewWidth: CGFloat?
-
-  // These properties are used to prevent scroll jumpiness due to self-sizing after rotation; see
-  // comment in `invalidationContext(forPreferredLayoutAttributes:withOriginalAttributes:)` for more
-  // details.
-  private var lastSizedElementMinY: CGFloat?
-  private var lastSizedElementPreferredHeight: CGFloat?
-
   private var hasPinnedHeaderOrFooter: Bool = false
 
   // Cached layout attributes; lazily populated using information from the model state.
@@ -892,8 +873,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   // `layoutAttributesForElementsInRect:` for more details.
   private var hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
 
-  private var targetContentOffsetAnchor: TargetContentOffsetAnchor?
-  private var contentHeightBeforeUpdates: CGFloat?
+  private var cachedCollectionViewWidth: CGFloat?
   private var previousContentInset: UIEdgeInsets?
 
   private var currentCollectionView: UICollectionView {
