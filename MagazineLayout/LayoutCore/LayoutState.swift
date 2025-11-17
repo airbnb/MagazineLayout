@@ -64,6 +64,8 @@ struct LayoutState {
   var targetContentOffsetAnchor: TargetContentOffsetAnchor {
     var visibleItemLocationFramePairs = [ElementLocationFramePair]()
     for itemLocationFramePair in modelState.itemLocationFramePairs(forItemsIn: bounds) {
+      // Only consider fully-visible items
+      guard bounds.contains(itemLocationFramePair.frame) else { continue }
       visibleItemLocationFramePairs.append(itemLocationFramePair)
     }
     visibleItemLocationFramePairs.sort { $0.elementLocation < $1.elementLocation }
@@ -74,7 +76,7 @@ struct LayoutState {
       modelState.isItemHeightSettled(indexPath: $0.elementLocation.indexPath)
     } ?? visibleItemLocationFramePairs.first // fallback to the first item if we can't find one with a settled height
 
-    let lastVisibleItemLocationFramePair = visibleItemLocationFramePairs.reversed().first {
+    let lastVisibleItemLocationFramePair = visibleItemLocationFramePairs.last {
       // When scrolling down, only calculate a target content offset based on visible, already-sized
       // cells. Otherwise, scrolling will be jumpy.
       modelState.isItemHeightSettled(indexPath: $0.elementLocation.indexPath)
