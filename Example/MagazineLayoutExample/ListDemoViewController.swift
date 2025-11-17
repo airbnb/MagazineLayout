@@ -383,23 +383,7 @@ private struct ListSection: Hashable {
 
 private struct ListItem: Hashable {
 
-  // MARK: Lifecycle
-
-  init(
-    id: UUID = UUID(),
-    title: String,
-    subtitle: String,
-    color: UIColor)
-  {
-    self.id = id
-    self.title = title
-    self.subtitle = subtitle
-    self.color = color
-  }
-
-  // MARK: Internal
-
-  let id: UUID
+  let id = UUID()
   let title: String
   let subtitle: String
   let color: UIColor

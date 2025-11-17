@@ -302,12 +302,10 @@ private struct Message: Hashable {
   // MARK: Lifecycle
 
   init(
-    id: UUID = UUID(),
     text: String,
     isSent: Bool,
     timestamp: Date = Date())
   {
-    self.id = id
     self.text = text
     self.isSent = isSent
     self.timestamp = timestamp
@@ -315,7 +313,7 @@ private struct Message: Hashable {
 
   // MARK: Internal
 
-  let id: UUID
+  let id = UUID()
   let text: String
   let isSent: Bool
   let timestamp: Date

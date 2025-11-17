@@ -291,23 +291,7 @@ extension GridDemoViewController: UICollectionViewDelegateMagazineLayout {
 
 private struct GridItem: Hashable {
 
-  // MARK: Lifecycle
-
-  init(
-    id: UUID = UUID(),
-    text: String,
-    color: UIColor,
-    widthMode: MagazineLayoutItemWidthMode)
-  {
-    self.id = id
-    self.text = text
-    self.color = color
-    self.widthMode = widthMode
-  }
-
-  // MARK: Internal
-
-  let id: UUID
+  let id = UUID()
   let text: String
   let color: UIColor
   let widthMode: MagazineLayoutItemWidthMode
