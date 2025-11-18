@@ -40,8 +40,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
       verticalLayoutDirection: .topToBottom)
-    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 5, section: 0))!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, distanceFromTop: -160))
+    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 6, section: 0))!
+    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, distanceFromTop: -25))
   }
 
   func testAnchor_TopToBottom_ScrolledToBottom() throws {
@@ -61,8 +61,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       contentInset: measurementLayoutState.contentInset,
       scale: measurementLayoutState.scale,
       verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
-    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 7, section: 0))!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, distanceFromTop: -80))
+    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 9, section: 0))!
+    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, distanceFromTop: 25))
   }
 
   // MARK: Bottom-to-Top Anchor Tests
@@ -87,8 +87,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
       verticalLayoutDirection: .bottomToTop)
-    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 12, section: 0))!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .bottomItem(id: id, distanceFromBottom: 190))
+    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 10, section: 0))!
+    XCTAssert(layoutState.targetContentOffsetAnchor == .bottomItem(id: id, distanceFromBottom: -10))
   }
 
   func testAnchor_BottomToTop_ScrolledToBottom() throws {
