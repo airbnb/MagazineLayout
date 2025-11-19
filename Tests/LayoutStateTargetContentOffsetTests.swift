@@ -65,6 +65,23 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
     XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, distanceFromTop: 25))
   }
 
+  func testAnchor_TopToBottom_NoFullyVisibleCells_UsesFallback() throws {
+    // Create a model state with very large items (500px each) that are taller than the bounds (400px)
+    let bounds = CGRect(x: 0, y: 250, width: 300, height: 400)
+    let modelState = modelStateWithLargeItems(bounds: bounds)
+    let layoutState = LayoutState(
+      modelState: modelState,
+      bounds: bounds,
+      contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
+      scale: 1,
+      verticalLayoutDirection: .topToBottom)
+
+    // Since no items are fully visible, the fallback should use the first partially visible item
+    // instead of returning .top or .bottom
+    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 0, section: 0))!
+    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, distanceFromTop: -300))
+  }
+
   // MARK: Bottom-to-Top Anchor Tests
 
   func testAnchor_BottomToTop_ScrolledToTop() throws {
@@ -226,6 +243,32 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
           ItemModel(widthMode: .thirdWidth, preferredHeight: 200),
           ItemModel(widthMode: .thirdWidth, preferredHeight: 200),
           ItemModel(widthMode: .thirdWidth, preferredHeight: nil),
+        ],
+        headerModel: nil,
+        footerModel: nil,
+        backgroundModel: nil,
+        metrics: MagazineLayoutSectionMetrics(
+          collectionViewWidth: bounds.width,
+          collectionViewContentInset: .zero,
+          verticalSpacing: 0,
+          horizontalSpacing: 0,
+          sectionInsets: .zero,
+          itemInsets: .zero,
+          scale: 1))
+    ]
+    modelState.setSections(sections)
+    return modelState
+  }
+
+  private func modelStateWithLargeItems(bounds: CGRect) -> ModelState {
+    let modelState = ModelState(currentVisibleBoundsProvider: { bounds })
+    let sections = [
+      SectionModel(
+        itemModels: [
+          // Create items that are 500px tall, larger than the 400px bounds height
+          ItemModel(widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 500),
+          ItemModel(widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 500),
+          ItemModel(widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 500),
         ],
         headerModel: nil,
         footerModel: nil,
