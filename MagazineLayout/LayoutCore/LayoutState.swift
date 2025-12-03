@@ -124,6 +124,7 @@ struct LayoutState {
         let distanceFromTop = firstVisibleItemLocationFramePair.frame.minY - top
         return .topItem(
           id: firstVisibleItemID,
+          elementLocation: firstVisibleItemLocationFramePair.elementLocation,
           distanceFromTop: distanceFromTop.alignedToPixel(forScreenWithScale: scale))
       }
     case .bottomToTop:
@@ -133,6 +134,7 @@ struct LayoutState {
         let distanceFromBottom = lastVisibleItemLocationFramePair.frame.maxY - bottom
         return .bottomItem(
           id: lastVisibleItemID,
+          elementLocation: lastVisibleItemLocationFramePair.elementLocation,
           distanceFromBottom: distanceFromBottom.alignedToPixel(forScreenWithScale: scale))
       case .atBottom:
         return .bottom
@@ -140,7 +142,11 @@ struct LayoutState {
     }
   }
 
-  func yOffset(for targetContentOffsetAnchor: TargetContentOffsetAnchor) -> CGFloat {
+  func yOffset(
+    for targetContentOffsetAnchor: TargetContentOffsetAnchor,
+    isPerformingBatchUpdates: Bool)
+    -> CGFloat
+  {
     switch targetContentOffsetAnchor {
     case .top:
       return minContentOffset.y
@@ -148,16 +154,28 @@ struct LayoutState {
     case .bottom:
       return maxContentOffset.y
 
-    case .topItem(let id, let distanceFromTop):
-      guard let indexPath = modelState.indexPathForItemModel(withID: id) else { return bounds.minY }
-      let itemFrame = modelState.frameForItem(at: ElementLocation(indexPath: indexPath))
+    case .topItem(let id, let _elementLocation, let distanceFromTop):
+      let elementLocation =
+        if isPerformingBatchUpdates {
+          modelState.indexPathForItemModel(withID: id).map(ElementLocation.init(indexPath:))
+        } else {
+          _elementLocation
+        }
+      guard let elementLocation else { return bounds.minY }
+      let itemFrame = modelState.frameForItem(at: elementLocation)
       let proposedYOffset = itemFrame.minY - contentInset.top - distanceFromTop
       // Clamp between minYOffset...maxYOffset
       return min(max(proposedYOffset, minContentOffset.y), maxContentOffset.y)
 
-    case .bottomItem(let id, let distanceFromBottom):
-      guard let indexPath = modelState.indexPathForItemModel(withID: id) else { return bounds.minY }
-      let itemFrame = modelState.frameForItem(at: ElementLocation(indexPath: indexPath))
+    case .bottomItem(let id, let _elementLocation, let distanceFromBottom):
+      let elementLocation =
+        if isPerformingBatchUpdates {
+          modelState.indexPathForItemModel(withID: id).map(ElementLocation.init(indexPath:))
+        } else {
+          _elementLocation
+        }
+      guard let elementLocation else { return bounds.minY }
+      let itemFrame = modelState.frameForItem(at: elementLocation)
       let proposedYOffset = itemFrame.maxY - bounds.height + contentInset.bottom - distanceFromBottom
       // Clamp between minYOffset...maxYOffset
       return min(max(proposedYOffset, minContentOffset.y), maxContentOffset.y)

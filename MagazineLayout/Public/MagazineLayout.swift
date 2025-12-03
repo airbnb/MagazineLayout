@@ -227,7 +227,9 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     if let layoutStateBeforeCollectionViewUpdates{
       let targetContentOffsetAnchor = layoutStateBeforeCollectionViewUpdates.targetContentOffsetAnchor
-      let targetYOffset = layoutState.yOffset(for: targetContentOffsetAnchor)
+      let targetYOffset = layoutState.yOffset(
+        for: targetContentOffsetAnchor,
+        isPerformingBatchUpdates: true)
       let context = MagazineLayoutInvalidationContext()
       context.invalidateLayoutMetrics = false
       context.contentOffsetAdjustment.y = targetYOffset - layoutState.bounds.minY
@@ -676,7 +678,9 @@ public final class MagazineLayout: UICollectionViewLayout {
           layoutStateBeforeAnimatedBoundsChange ??
           self.layoutState
       ).targetContentOffsetAnchor
-      let targetYOffsetBefore = layoutState.yOffset(for: targetContentOffsetAnchor)
+      let targetYOffsetBefore = layoutState.yOffset(
+        for: targetContentOffsetAnchor,
+        isPerformingBatchUpdates: layoutStateBeforeCollectionViewUpdates != nil)
 
       modelState.updateItemHeight(
         toPreferredHeight: preferredAttributes.size.height,
@@ -690,7 +694,9 @@ public final class MagazineLayout: UICollectionViewLayout {
         context.contentOffsetAdjustment.y = layoutState.maxContentOffset.y - layoutState.bounds.minY
 
       case .topItem, .bottomItem:
-        let targetYOffsetAfter = layoutState.yOffset(for: targetContentOffsetAnchor)
+        let targetYOffsetAfter = layoutState.yOffset(
+          for: targetContentOffsetAnchor,
+          isPerformingBatchUpdates: layoutStateBeforeCollectionViewUpdates != nil)
         context.contentOffsetAdjustment.y = targetYOffsetAfter - targetYOffsetBefore
       }
 
@@ -817,7 +823,9 @@ public final class MagazineLayout: UICollectionViewLayout {
       return super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
     }
 
-    let yOffset = layoutState.yOffset(for: layoutStateBefore.targetContentOffsetAnchor)
+    let yOffset = layoutState.yOffset(
+      for: layoutStateBefore.targetContentOffsetAnchor,
+      isPerformingBatchUpdates: layoutStateBeforeCollectionViewUpdates != nil)
 
     targetContentOffsetCompensatingYOffsetForAppearingItem = proposedContentOffset.y - yOffset
 
