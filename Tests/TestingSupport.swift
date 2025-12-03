@@ -21,6 +21,8 @@ import UIKit
 
 final class ModelHelpers {
 
+  // MARK: Internal
+
   static func basicSectionModels(
     numberOfSections: UInt,
     numberOfItemsPerSection: UInt)
@@ -35,6 +37,7 @@ final class ModelHelpers {
       }
 
       let sectionModel = SectionModel(
+        idGenerator: idGenerator,
         itemModels: itemModels,
         headerModel: nil,
         footerModel: nil,
@@ -50,11 +53,16 @@ final class ModelHelpers {
 
   static func basicItemModel() -> ItemModel {
     return ItemModel(
+      idGenerator: idGenerator,
       sizeMode: MagazineLayoutItemSizeMode(
         widthMode: .fullWidth(respectsHorizontalInsets: true),
         heightMode: .static(height: 20)),
       height: 20)
   }
+
+  // MARK: Private
+
+  private static let idGenerator = IDGenerator()
 
 }
 

@@ -38,6 +38,7 @@
 		93A1C04D21ACED1100DED67D /* TestingSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A1C00E21ACED0100DED67D /* TestingSupport.swift */; };
 		93A1C04E21ACED1100DED67D /* ElementLocationFramePairsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A1C00F21ACED0100DED67D /* ElementLocationFramePairsTests.swift */; };
 		93A1C04F21ACED1100DED67D /* ModelStateUpdateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A1C01021ACED0100DED67D /* ModelStateUpdateTests.swift */; };
+		93A868552EE0D7870027691E /* IDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A868542EE0D7870027691E /* IDGenerator.swift */; };
 		FCAC642622085AF100973F4C /* MagazineLayoutHeaderVisibilityMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAC642522085AF100973F4C /* MagazineLayoutHeaderVisibilityMode.swift */; };
 		FCAC642822085B0E00973F4C /* FooterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCAC642722085B0E00973F4C /* FooterModel.swift */; };
 		FD244FEF28B41F9900046C0D /* UITraitCollection+DisplayScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD244FEE28B41F9900046C0D /* UITraitCollection+DisplayScale.swift */; };
@@ -94,6 +95,7 @@
 		93A1C02B21ACED0100DED67D /* ModelState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelState.swift; sourceTree = "<group>"; };
 		93A1C05321ACEDFC00DED67D /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		93A1C05421ACEDFC00DED67D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
+		93A868542EE0D7870027691E /* IDGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDGenerator.swift; sourceTree = "<group>"; };
 		FCAC642522085AF100973F4C /* MagazineLayoutHeaderVisibilityMode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MagazineLayoutHeaderVisibilityMode.swift; sourceTree = "<group>"; };
 		FCAC642722085B0E00973F4C /* FooterModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FooterModel.swift; sourceTree = "<group>"; };
 		FD23F5F021AF4A1B00AA78D4 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 				93540AAF282E25D90008BD6F /* ScreenPixelAlignment.swift */,
 				FDABC2572B23D0A000C9B8EF /* TargetContentOffsetAnchor.swift */,
 				FD244FEE28B41F9900046C0D /* UITraitCollection+DisplayScale.swift */,
+				93A868542EE0D7870027691E /* IDGenerator.swift */,
 			);
 			path = Types;
 			sourceTree = "<group>";
@@ -363,6 +366,7 @@
 				93A1C04421ACED0100DED67D /* SectionModel.swift in Sources */,
 				93A1C03E21ACED0100DED67D /* ElementLocation.swift in Sources */,
 				93A1C04821ACED0100DED67D /* ModelState.swift in Sources */,
+				93A868552EE0D7870027691E /* IDGenerator.swift in Sources */,
 				9398462A2296864200E442DA /* RowOffsetTracker.swift in Sources */,
 				FD4DFF0821B0C737001F46CE /* MagazineLayoutCollectionViewCell.swift in Sources */,
 				93443FD22EB582AE00D60F56 /* LayoutState.swift in Sources */,

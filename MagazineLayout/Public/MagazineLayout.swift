@@ -827,6 +827,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   // MARK: Private
 
   private let _flipsHorizontallyInOppositeLayoutDirection: Bool
+  private let idGenerator = IDGenerator()
 
   private lazy var _layoutState = LayoutState(
     modelState: ModelState(currentVisibleBoundsProvider: { [weak self] in
@@ -1042,6 +1043,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     return SectionModel(
+      idGenerator: idGenerator,
       itemModels: itemModels,
       headerModel: headerModelForHeader(inSectionAtIndex: sectionIndex),
       footerModel: footerModelForFooter(inSectionAtIndex: sectionIndex),
@@ -1052,6 +1054,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   private func itemModelForItem(at indexPath: IndexPath) -> ItemModel {
     let itemSizeMode = sizeModeForItem(at: indexPath)
     return ItemModel(
+      idGenerator: idGenerator,
       sizeMode: itemSizeMode,
       height: initialItemHeight(from: itemSizeMode))
   }

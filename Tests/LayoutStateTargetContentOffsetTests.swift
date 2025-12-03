@@ -224,25 +224,28 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
 
   // MARK: Private
 
+  private let idGenerator = IDGenerator()
+
   private func modelState(bounds: CGRect) -> ModelState {
     let modelState = ModelState(currentVisibleBoundsProvider: { bounds })
     let sections = [
       SectionModel(
+        idGenerator: idGenerator,
         itemModels: [
-          ItemModel(widthMode: .halfWidth, preferredHeight: nil),
-          ItemModel(widthMode: .halfWidth, preferredHeight: 70),
-          ItemModel(widthMode: .halfWidth, preferredHeight: 90),
-          ItemModel(widthMode: .halfWidth, preferredHeight: 80),
-          ItemModel(widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: nil),
-          ItemModel(widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 135),
-          ItemModel(widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 135),
-          ItemModel(widthMode: .halfWidth, preferredHeight: 55),
-          ItemModel(widthMode: .halfWidth, preferredHeight: 105),
-          ItemModel(widthMode: .halfWidth, preferredHeight: 80),
-          ItemModel(widthMode: .halfWidth, preferredHeight: 95),
-          ItemModel(widthMode: .thirdWidth, preferredHeight: 200),
-          ItemModel(widthMode: .thirdWidth, preferredHeight: 200),
-          ItemModel(widthMode: .thirdWidth, preferredHeight: nil),
+          ItemModel(idGenerator: idGenerator, widthMode: .halfWidth, preferredHeight: nil),
+          ItemModel(idGenerator: idGenerator, widthMode: .halfWidth, preferredHeight: 70),
+          ItemModel(idGenerator: idGenerator, widthMode: .halfWidth, preferredHeight: 90),
+          ItemModel(idGenerator: idGenerator, widthMode: .halfWidth, preferredHeight: 80),
+          ItemModel(idGenerator: idGenerator, widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: nil),
+          ItemModel(idGenerator: idGenerator, widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 135),
+          ItemModel(idGenerator: idGenerator, widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 135),
+          ItemModel(idGenerator: idGenerator, widthMode: .halfWidth, preferredHeight: 55),
+          ItemModel(idGenerator: idGenerator, widthMode: .halfWidth, preferredHeight: 105),
+          ItemModel(idGenerator: idGenerator, widthMode: .halfWidth, preferredHeight: 80),
+          ItemModel(idGenerator: idGenerator, widthMode: .halfWidth, preferredHeight: 95),
+          ItemModel(idGenerator: idGenerator, widthMode: .thirdWidth, preferredHeight: 200),
+          ItemModel(idGenerator: idGenerator, widthMode: .thirdWidth, preferredHeight: 200),
+          ItemModel(idGenerator: idGenerator, widthMode: .thirdWidth, preferredHeight: nil),
         ],
         headerModel: nil,
         footerModel: nil,
@@ -264,11 +267,12 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
     let modelState = ModelState(currentVisibleBoundsProvider: { bounds })
     let sections = [
       SectionModel(
+        idGenerator: idGenerator,
         itemModels: [
           // Create items that are 500px tall, larger than the 400px bounds height
-          ItemModel(widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 500),
-          ItemModel(widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 500),
-          ItemModel(widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 500),
+          ItemModel(idGenerator: idGenerator, widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 500),
+          ItemModel(idGenerator: idGenerator, widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 500),
+          ItemModel(idGenerator: idGenerator, widthMode: .fullWidth(respectsHorizontalInsets: true), preferredHeight: 500),
         ],
         headerModel: nil,
         footerModel: nil,
@@ -291,8 +295,15 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
 // MARK: - ItemModel
 
 private extension ItemModel {
-  init(widthMode: MagazineLayoutItemWidthMode, preferredHeight: CGFloat?) {
-    self.init(sizeMode: .init(widthMode: widthMode, heightMode: .dynamic), height: 150)
+  init(
+    idGenerator: IDGenerator,
+    widthMode: MagazineLayoutItemWidthMode,
+    preferredHeight: CGFloat?)
+  {
+    self.init(
+      idGenerator: idGenerator,
+      sizeMode: .init(widthMode: widthMode, heightMode: .dynamic),
+      height: 150)
     self.preferredHeight = preferredHeight
   }
 }

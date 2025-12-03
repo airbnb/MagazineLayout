@@ -40,7 +40,7 @@ final class ModelState {
     sectionModels[sectionIndex].numberOfItems
   }
 
-  func idForItemModel(at indexPath: IndexPath) -> UUID? {
+  func idForItemModel(at indexPath: IndexPath) -> UInt64? {
     guard
       indexPath.section < sectionModels.count,
       indexPath.item < sectionModels[indexPath.section].numberOfItems else
@@ -52,7 +52,7 @@ final class ModelState {
     return sectionModels[indexPath.section].idForItemModel(atIndex: indexPath.item)
   }
 
-  func indexPathForItemModel(withID id: UUID) -> IndexPath? {
+  func indexPathForItemModel(withID id: UInt64) -> IndexPath? {
     for sectionIndex in 0..<sectionModels.count {
       guard let index = sectionModels[sectionIndex].indexForItemModel(withID: id) else {
         continue
@@ -63,7 +63,7 @@ final class ModelState {
     return nil
   }
 
-  func idForSectionModel(atIndex index: Int) -> UUID? {
+  func idForSectionModel(atIndex index: Int) -> UInt64? {
     guard index < sectionModels.count else {
       // This occurs when getting layout attributes for initial / final animations
       return nil
@@ -72,7 +72,7 @@ final class ModelState {
     return sectionModels[index].id
   }
 
-  func indexForSectionModel(withID id: UUID) -> Int? {
+  func indexForSectionModel(withID id: UInt64) -> Int? {
     for sectionIndex in 0..<sectionModels.count {
       guard sectionModels[sectionIndex].id == id else { continue }
       return sectionIndex

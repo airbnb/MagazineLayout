@@ -1,5 +1,5 @@
-// Created by bryankeller on 12/8/23.
-// Copyright © 2023 Airbnb Inc. All rights reserved.
+// Created by Bryan Keller on 12/3/25.
+// Copyright © 2025 Airbnb Inc. All rights reserved.
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,14 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import UIKit
+/// Generates sequential `UInt64` IDs for section and item models. 18,446,744,073,709,551,615 ought to be enough for any layout.
+final class IDGenerator {
 
-// MARK: - TargetContentOffsetAnchor
+  // MARK: Internal
 
-/// Anchors representing how the collection view prioritizes keeping certain items visible in target content offset calculations.
-enum TargetContentOffsetAnchor: Equatable {
-  case top
-  case bottom
-  case topItem(id: UInt64, distanceFromTop: CGFloat)
-  case bottomItem(id: UInt64, distanceFromBottom: CGFloat)
+  func next() -> UInt64 {
+    defer { id &+= 1 }
+    return id
+  }
+
+  // MARK: Private
+
+  private var id: UInt64 = 0
 }

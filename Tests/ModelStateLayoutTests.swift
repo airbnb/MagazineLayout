@@ -36,12 +36,13 @@ final class ModelStateLayoutTests: XCTestCase {
       (headerModel1, sizeModesAndHeights1, footerModel1)
     ].map { headerModel, sizeModesAndHeights, footerModel in
       SectionModel(
+        idGenerator: idGenerator,
         itemModels: sizeModesAndHeights.map { sizeMode, height in
           switch sizeMode.heightMode {
           case .static:
-            return ItemModel(sizeMode: sizeMode, height: height)
+            return ItemModel(idGenerator: idGenerator, sizeMode: sizeMode, height: height)
           case .dynamic, .dynamicAndStretchToTallestItemInRow:
-            return ItemModel(sizeMode: sizeMode, height: 150)
+            return ItemModel(idGenerator: idGenerator, sizeMode: sizeMode, height: 150)
           }
         },
         headerModel: headerModel,
@@ -348,6 +349,7 @@ final class ModelStateLayoutTests: XCTestCase {
       .itemInsert(
         itemIndexPath: IndexPath(item: 3, section: 1),
         newItem: ItemModel(
+          idGenerator: idGenerator,
           sizeMode: MagazineLayoutItemSizeMode(
             widthMode: .halfWidth,
             heightMode: .static(height: 10)),
@@ -419,6 +421,7 @@ final class ModelStateLayoutTests: XCTestCase {
       .itemInsert(
         itemIndexPath: IndexPath(item: 4, section: 0),
         newItem: ItemModel(
+          idGenerator: idGenerator,
           sizeMode: MagazineLayoutItemSizeMode(
             widthMode: .thirdWidth,
             heightMode: .static(height: 100)),
@@ -426,6 +429,7 @@ final class ModelStateLayoutTests: XCTestCase {
       .itemInsert(
         itemIndexPath: IndexPath(item: 5, section: 0),
         newItem: ItemModel(
+          idGenerator: idGenerator,
           sizeMode: MagazineLayoutItemSizeMode(
             widthMode: .thirdWidth,
             heightMode: .static(height: 50)),
@@ -433,6 +437,7 @@ final class ModelStateLayoutTests: XCTestCase {
       .itemInsert(
         itemIndexPath: IndexPath(item: 6, section: 0),
         newItem: ItemModel(
+          idGenerator: idGenerator,
           sizeMode: MagazineLayoutItemSizeMode(
             widthMode: .thirdWidth,
             heightMode: .static(height: 20)),
@@ -1245,6 +1250,8 @@ final class ModelStateLayoutTests: XCTestCase {
   }
 
   // MARK: Private
+
+  private let idGenerator = IDGenerator()
 
   private var modelState: ModelState!
 

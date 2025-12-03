@@ -14,7 +14,6 @@
 // limitations under the License.
 
 import CoreGraphics
-import Foundation
 
 /// Represents the layout information for a section.
 struct SectionModel {
@@ -22,13 +21,14 @@ struct SectionModel {
   // MARK: Lifecycle
 
   init(
+    idGenerator: IDGenerator,
     itemModels: [ItemModel],
     headerModel: HeaderModel?,
     footerModel: FooterModel?,
     backgroundModel: BackgroundModel?,
     metrics: MagazineLayoutSectionMetrics)
   {
-    id = UUID()
+    id = idGenerator.next()
     self.itemModels = itemModels
     self.headerModel = headerModel
     self.footerModel = footerModel
@@ -43,7 +43,7 @@ struct SectionModel {
 
   // MARK: Internal
 
-  let id: UUID
+  let id: UInt64
 
   private(set) var headerModel: HeaderModel?
   private(set) var footerModel: FooterModel?
@@ -55,11 +55,11 @@ struct SectionModel {
     return itemModels.count
   }
 
-  func idForItemModel(atIndex index: Int) -> UUID {
+  func idForItemModel(atIndex index: Int) -> UInt64 {
     return itemModels[index].id
   }
 
-  func indexForItemModel(withID id: UUID) -> Int? {
+  func indexForItemModel(withID id: UInt64) -> Int? {
     return itemModels.firstIndex { $0.id == id }
   }
 

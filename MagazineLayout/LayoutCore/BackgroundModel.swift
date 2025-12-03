@@ -14,7 +14,6 @@
 // limitations under the License.
 
 import CoreGraphics
-import Foundation
 
 /// Represents the layout information for a background in a section.
 struct BackgroundModel {
@@ -22,14 +21,11 @@ struct BackgroundModel {
   // MARK: Lifecycle
 
   init() {
-    id = NSUUID().uuidString
     originInSection = .zero
     size = .zero
   }
 
   // MARK: Internal
-
-  let id: String
 
   var originInSection: CGPoint
   var size: CGSize

@@ -14,15 +14,14 @@
 // limitations under the License.
 
 import CoreGraphics
-import Foundation
 
 /// Represents the layout information for an item in a section.
 struct ItemModel {
 
   // MARK: Lifecycle
 
-  init(sizeMode: MagazineLayoutItemSizeMode, height: CGFloat) {
-    id = UUID()
+  init(idGenerator: IDGenerator, sizeMode: MagazineLayoutItemSizeMode, height: CGFloat) {
+    id = idGenerator.next()
     self.sizeMode = sizeMode
     originInSection = .zero
     size = CGSize(width: 0, height: height)
@@ -30,7 +29,7 @@ struct ItemModel {
 
   // MARK: Internal
 
-  let id: UUID
+  let id: UInt64
 
   var sizeMode: MagazineLayoutItemSizeMode
   var originInSection: CGPoint

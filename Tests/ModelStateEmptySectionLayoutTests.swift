@@ -45,12 +45,14 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
 
     let initialSections = [
       SectionModel(
+        idGenerator: idGenerator,
         itemModels: [],
         headerModel: nil,
         footerModel: nil,
         backgroundModel: nil,
         metrics: metrics0),
       SectionModel(
+        idGenerator: idGenerator,
         itemModels: [],
         headerModel: nil,
         footerModel: nil,
@@ -82,6 +84,7 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
 
     let initialSections = [
       SectionModel(
+        idGenerator: idGenerator,
         itemModels: [],
         headerModel: HeaderModel(
           heightMode: .static(height: 45),
@@ -94,6 +97,7 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
         backgroundModel: BackgroundModel(),
         metrics: metrics0),
       SectionModel(
+        idGenerator: idGenerator,
         itemModels: [],
         headerModel: HeaderModel(
           heightMode: .static(height: 65),
@@ -144,6 +148,8 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
   }
 
   // MARK: Private
+
+  private let idGenerator = IDGenerator()
 
   private var modelState: ModelState!
 
