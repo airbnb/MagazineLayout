@@ -40,8 +40,9 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
       verticalLayoutDirection: .topToBottom)
-    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 6, section: 0))!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, distanceFromTop: -25))
+    let indexPath = IndexPath(item: 6, section: 0)
+    let id = layoutState.modelState.idForItemModel(at: indexPath)!
+    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, elementLocation: ElementLocation(indexPath: indexPath), distanceFromTop: -25))
   }
 
   func testAnchor_TopToBottom_ScrolledToBottom() throws {
@@ -61,8 +62,9 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       contentInset: measurementLayoutState.contentInset,
       scale: measurementLayoutState.scale,
       verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
-    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 9, section: 0))!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, distanceFromTop: 25))
+    let indexPath = IndexPath(item: 9, section: 0)
+    let id = layoutState.modelState.idForItemModel(at: indexPath)!
+    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, elementLocation: ElementLocation(indexPath: indexPath), distanceFromTop: 25))
   }
 
   func testAnchor_TopToBottom_NoFullyVisibleCells_UsesFallback() throws {
@@ -78,8 +80,9 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
 
     // Since no items are fully visible, the fallback should use the first partially visible item
     // instead of returning .top or .bottom
-    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 0, section: 0))!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, distanceFromTop: -300))
+    let indexPath = IndexPath(item: 0, section: 0)
+    let id = layoutState.modelState.idForItemModel(at: indexPath)!
+    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, elementLocation: ElementLocation(indexPath: indexPath), distanceFromTop: -300))
   }
 
   // MARK: Bottom-to-Top Anchor Tests
@@ -92,8 +95,9 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
       verticalLayoutDirection: .bottomToTop)
-    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 3, section: 0))!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .bottomItem(id: id, distanceFromBottom: -90))
+    let indexPath = IndexPath(item: 3, section: 0)
+    let id = layoutState.modelState.idForItemModel(at: indexPath)!
+    XCTAssert(layoutState.targetContentOffsetAnchor == .bottomItem(id: id, elementLocation: ElementLocation(indexPath: indexPath), distanceFromBottom: -90))
   }
 
   func testAnchor_BottomToTop_ScrolledToMiddle() throws {
@@ -104,8 +108,9 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
       verticalLayoutDirection: .bottomToTop)
-    let id = layoutState.modelState.idForItemModel(at: IndexPath(item: 10, section: 0))!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .bottomItem(id: id, distanceFromBottom: -10))
+    let indexPath = IndexPath(item: 10, section: 0)
+    let id = layoutState.modelState.idForItemModel(at: indexPath)!
+    XCTAssert(layoutState.targetContentOffsetAnchor == .bottomItem(id: id, elementLocation: ElementLocation(indexPath: indexPath), distanceFromBottom: -10))
   }
 
   func testAnchor_BottomToTop_ScrolledToBottom() throws {
@@ -139,7 +144,7 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       scale: 1,
       verticalLayoutDirection: .topToBottom)
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
-    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor) == -50)
+    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == -50)
   }
 
   func testOffset_TopToBottom_ScrolledToMiddle() {
@@ -151,7 +156,7 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       scale: 1,
       verticalLayoutDirection: .topToBottom)
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
-    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor) == 500)
+    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == 500)
   }
 
   func testOffset_TopToBottom_ScrolledToBottom() {
@@ -172,7 +177,7 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       scale: measurementLayoutState.scale,
       verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
-    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor) == 690)
+    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == 690)
   }
 
   // MARK: Bottom-to-Top Target Content Offset Tests
@@ -186,7 +191,7 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       scale: 1,
       verticalLayoutDirection: .bottomToTop)
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
-    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor) == -50)
+    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == -50)
   }
 
   func testOffset_BottomToTop_ScrolledToMiddle() {
@@ -198,7 +203,7 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       scale: 1,
       verticalLayoutDirection: .bottomToTop)
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
-    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor) == 500)
+    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == 500)
   }
 
   func testOffset_BottomToTop_ScrolledToBottom() {
@@ -219,7 +224,7 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       scale: measurementLayoutState.scale,
       verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
-    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor) == 690)
+    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == 690)
   }
 
   // MARK: Private
