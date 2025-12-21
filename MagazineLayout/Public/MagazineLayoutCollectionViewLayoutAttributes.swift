@@ -34,7 +34,7 @@ public final class MagazineLayoutCollectionViewLayoutAttributes: UICollectionVie
   }
 
   override public func isEqual(_ object: Any?) -> Bool {
-    return super.isEqual(object) &&
+    super.isEqual(object) &&
       shouldVerticallySelfSize == (object as? MagazineLayoutCollectionViewLayoutAttributes)?.shouldVerticallySelfSize
   }
 

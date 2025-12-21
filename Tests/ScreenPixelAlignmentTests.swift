@@ -18,45 +18,50 @@ import XCTest
 
 final class ScreenPixelAlignmentTests: XCTestCase {
 
-  // MARK: Value alignment tests
-
   func test1xScaleValueAlignment() {
     XCTAssert(
       CGFloat(1).alignedToPixel(forScreenWithScale: 1) == CGFloat(1),
-      "Incorrect screen pixel alignment")
+      "Incorrect screen pixel alignment"
+    )
     XCTAssert(
       CGFloat(1.5).alignedToPixel(forScreenWithScale: 1) == CGFloat(2),
-      "Incorrect screen pixel alignment")
+      "Incorrect screen pixel alignment"
+    )
     XCTAssert(
       CGFloat(500.8232134315).alignedToPixel(forScreenWithScale: 1) == CGFloat(501),
-      "Incorrect screen pixel alignment")
+      "Incorrect screen pixel alignment"
+    )
   }
 
   func test2xScaleValueAlignment() {
     XCTAssert(
       CGFloat(1).alignedToPixel(forScreenWithScale: 2) == CGFloat(1),
-      "Incorrect screen pixel alignment")
+      "Incorrect screen pixel alignment"
+    )
     XCTAssert(
       CGFloat(1.5).alignedToPixel(forScreenWithScale: 2) == CGFloat(1.5),
-      "Incorrect screen pixel alignment")
+      "Incorrect screen pixel alignment"
+    )
     XCTAssert(
       CGFloat(500.8232134315).alignedToPixel(forScreenWithScale: 2) == CGFloat(501),
-      "Incorrect screen pixel alignment")
+      "Incorrect screen pixel alignment"
+    )
   }
 
   func test3xScaleValueAlignment() {
     XCTAssert(
       CGFloat(1).alignedToPixel(forScreenWithScale: 3) == CGFloat(1),
-      "Incorrect screen pixel alignment")
+      "Incorrect screen pixel alignment"
+    )
     XCTAssert(
       CGFloat(1.5).alignedToPixel(forScreenWithScale: 3) == CGFloat(1.6666666666666667),
-      "Incorrect screen pixel alignment")
+      "Incorrect screen pixel alignment"
+    )
     XCTAssert(
       CGFloat(500.8232134315).alignedToPixel(forScreenWithScale: 3) == CGFloat(500.6666666666667),
-      "Incorrect screen pixel alignment")
+      "Incorrect screen pixel alignment"
+    )
   }
-
-  // MARK: Approximate equality tests
 
   func testApproximateEquality() {
     XCTAssert(CGFloat(1.48).isEqual(to: 1.52, screenScale: 2))
@@ -67,4 +72,3 @@ final class ScreenPixelAlignmentTests: XCTestCase {
   }
 
 }
-

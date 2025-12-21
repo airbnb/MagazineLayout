@@ -24,8 +24,8 @@ struct MagazineLayoutSectionMetrics: Equatable {
     forSectionAtIndex sectionIndex: Int,
     in collectionView: UICollectionView,
     layout: UICollectionViewLayout,
-    delegate: UICollectionViewDelegateMagazineLayout)
-  {
+    delegate: UICollectionViewDelegateMagazineLayout
+  ) {
     collectionViewWidth = collectionView.bounds.width
 
     collectionViewContentInset = collectionView.adjustedContentInset
@@ -33,22 +33,26 @@ struct MagazineLayoutSectionMetrics: Equatable {
     verticalSpacing = delegate.collectionView(
       collectionView,
       layout: layout,
-      verticalSpacingForElementsInSectionAtIndex: sectionIndex)
+      verticalSpacingForElementsInSectionAtIndex: sectionIndex
+    )
 
     horizontalSpacing = delegate.collectionView(
       collectionView,
       layout: layout,
-      horizontalSpacingForItemsInSectionAtIndex: sectionIndex)
+      horizontalSpacingForItemsInSectionAtIndex: sectionIndex
+    )
 
     sectionInsets = delegate.collectionView(
       collectionView,
       layout: layout,
-      insetsForSectionAtIndex: sectionIndex)
+      insetsForSectionAtIndex: sectionIndex
+    )
 
     itemInsets = delegate.collectionView(
       collectionView,
       layout: layout,
-      insetsForItemsInSectionAtIndex: sectionIndex)
+      insetsForItemsInSectionAtIndex: sectionIndex
+    )
 
     scale = collectionView.traitCollection.nonZeroDisplayScale
   }
@@ -60,8 +64,8 @@ struct MagazineLayoutSectionMetrics: Equatable {
     horizontalSpacing: CGFloat,
     sectionInsets: UIEdgeInsets,
     itemInsets: UIEdgeInsets,
-    scale: CGFloat)
-  {
+    scale: CGFloat
+  ) {
     self.collectionViewWidth = collectionViewWidth
     self.collectionViewContentInset = collectionViewContentInset
     self.verticalSpacing = verticalSpacing
@@ -73,19 +77,19 @@ struct MagazineLayoutSectionMetrics: Equatable {
 
   // MARK: Internal
 
-  var width: CGFloat {
-    return collectionViewWidth -
-      collectionViewContentInset.left -
-      collectionViewContentInset.right -
-      sectionInsets.left -
-      sectionInsets.right
-  }
-
   let verticalSpacing: CGFloat
   let horizontalSpacing: CGFloat
   let sectionInsets: UIEdgeInsets
   let itemInsets: UIEdgeInsets
   let scale: CGFloat
+
+  var width: CGFloat {
+    collectionViewWidth -
+      collectionViewContentInset.left -
+      collectionViewContentInset.right -
+      sectionInsets.left -
+      sectionInsets.right
+  }
 
   static func defaultSectionMetrics(
     forCollectionViewWidth width: CGFloat,
@@ -93,17 +97,17 @@ struct MagazineLayoutSectionMetrics: Equatable {
     horizontalSpacing: CGFloat = MagazineLayout.Default.HorizontalSpacing,
     sectionInsets: UIEdgeInsets = MagazineLayout.Default.SectionInsets,
     itemInsets: UIEdgeInsets = MagazineLayout.Default.ItemInsets,
-    scale: CGFloat)
-    -> MagazineLayoutSectionMetrics
-  {
-    return MagazineLayoutSectionMetrics(
+    scale: CGFloat
+  ) -> MagazineLayoutSectionMetrics {
+    MagazineLayoutSectionMetrics(
       collectionViewWidth: width,
       collectionViewContentInset: .zero,
       verticalSpacing: verticalSpacing,
       horizontalSpacing: horizontalSpacing,
       sectionInsets: sectionInsets,
       itemInsets: itemInsets,
-      scale: scale)
+      scale: scale
+    )
   }
 
   // MARK: Private

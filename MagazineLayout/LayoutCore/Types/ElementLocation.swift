@@ -15,6 +15,8 @@
 
 import Foundation
 
+// MARK: - ElementLocation
+
 /// Represents the location of an item in a section.
 ///
 /// Initializing a `ElementLocation` is measurably faster than initializing an `IndexPath`.
@@ -48,7 +50,7 @@ struct ElementLocation: Hashable {
   let sectionIndex: Int
 
   var indexPath: IndexPath {
-    return IndexPath(item: elementIndex, section: sectionIndex)
+    IndexPath(item: elementIndex, section: sectionIndex)
   }
 
 }
@@ -57,7 +59,7 @@ struct ElementLocation: Hashable {
 
 extension ElementLocation: Comparable {
 
-  static func < (lhs: ElementLocation, rhs: ElementLocation) -> Bool {
+  static func <(lhs: ElementLocation, rhs: ElementLocation) -> Bool {
     lhs.sectionIndex < rhs.sectionIndex
       || (lhs.sectionIndex == rhs.sectionIndex && lhs.elementIndex < rhs.elementIndex)
   }

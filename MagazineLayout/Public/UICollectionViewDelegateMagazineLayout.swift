@@ -30,8 +30,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
   func collectionView(
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
-    sizeModeForItemAt indexPath: IndexPath)
-    -> MagazineLayoutItemSizeMode
+    sizeModeForItemAt indexPath: IndexPath
+  ) -> MagazineLayoutItemSizeMode
 
   ///   Asks the delegate for the visibility mode of the header in the specified section.
   ///
@@ -44,8 +44,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
   func collectionView(
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForHeaderInSectionAtIndex index: Int)
-    -> MagazineLayoutHeaderVisibilityMode
+    visibilityModeForHeaderInSectionAtIndex index: Int
+  ) -> MagazineLayoutHeaderVisibilityMode
 
   ///   Asks the delegate for the visibility mode of the footer in the specified section.
   ///
@@ -58,8 +58,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
   func collectionView(
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForFooterInSectionAtIndex index: Int)
-    -> MagazineLayoutFooterVisibilityMode
+    visibilityModeForFooterInSectionAtIndex index: Int
+  ) -> MagazineLayoutFooterVisibilityMode
 
   ///   Asks the delegate for the visibility mode of the background in the specified section.
   ///
@@ -72,8 +72,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
   func collectionView(
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForBackgroundInSectionAtIndex index: Int)
-    -> MagazineLayoutBackgroundVisibilityMode
+    visibilityModeForBackgroundInSectionAtIndex index: Int
+  ) -> MagazineLayoutBackgroundVisibilityMode
 
   ///   Asks the delegate for the horizontal spacing for items in the specified section.
   ///
@@ -86,8 +86,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
   func collectionView(
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
-    horizontalSpacingForItemsInSectionAtIndex index: Int)
-    -> CGFloat
+    horizontalSpacingForItemsInSectionAtIndex index: Int
+  ) -> CGFloat
 
   ///   Asks the delegate for the vertical spacing for items in the specified section.
   ///
@@ -100,8 +100,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
   func collectionView(
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
-    verticalSpacingForElementsInSectionAtIndex index: Int)
-    -> CGFloat
+    verticalSpacingForElementsInSectionAtIndex index: Int
+  ) -> CGFloat
 
   ///   Asks the delegate for the amount by which to inset elements in the specified section.
   ///
@@ -117,8 +117,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
   func collectionView(
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
-    insetsForSectionAtIndex index: Int)
-    -> UIEdgeInsets
+    insetsForSectionAtIndex index: Int
+  ) -> UIEdgeInsets
 
   ///   Asks the delegate for the amount by which to inset items in the specified section.
   ///
@@ -134,8 +134,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
   func collectionView(
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
-    insetsForItemsInSectionAtIndex index: Int)
-    -> UIEdgeInsets
+    insetsForItemsInSectionAtIndex index: Int
+  ) -> UIEdgeInsets
 
   ///   Asks the delegate to modify a layout attributes instance so that it represents the initial visual state of an item being inserted via
   ///   `UICollectionView.insertItems(at:)`.
@@ -153,7 +153,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     initialLayoutAttributesForInsertedItemAt indexPath: IndexPath,
-    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
+    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes
+  )
 
   ///   Asks the delegate to modify a layout attributes instance so that it represents the initial visual state of a header being inserted
   ///   via `UICollectionView.insertSections(_:)`.
@@ -172,7 +173,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     initialLayoutAttributesForInsertedHeaderInSectionAtIndex index: Int,
-    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
+    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes
+  )
 
   ///   Asks the delegate to modify a layout attributes instance so that it represents the initial visual state of a footer being inserted
   ///   via `UICollectionView.insertSections(_:)`.
@@ -191,7 +193,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     initialLayoutAttributesForInsertedFooterInSectionAtIndex index: Int,
-    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
+    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes
+  )
 
   ///   Asks the delegate to modify a layout attributes instance so that it represents the initial visual state of a background being
   ///   inserted via `UICollectionView.insertSections(_:)`.
@@ -210,7 +213,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     initialLayoutAttributesForInsertedBackgroundInSectionAtIndex index: Int,
-    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
+    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes
+  )
 
   ///   Asks the delegate to modify a layout attributes instance so that it represents the final visual state of an item being removed via
   ///   `UICollectionView.deleteItems(at:)`.
@@ -229,7 +233,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     finalLayoutAttributesForRemovedItemAt indexPath: IndexPath,
-    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes
+  )
 
   ///   Asks the delegate to modify a layout attributes instance so that it represents the final visual state of a header being removed
   ///   via `UICollectionView.deleteSections(_:)`.
@@ -248,7 +253,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     finalLayoutAttributesForRemovedHeaderInSectionAtIndex index: Int,
-    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes
+  )
 
   ///   Asks the delegate to modify a layout attributes instance so that it represents the final visual state of a footer being removed
   ///   via `UICollectionView.deleteSections(_:)`.
@@ -267,7 +273,8 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     finalLayoutAttributesForRemovedFooterInSectionAtIndex index: Int,
-    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes
+  )
 
   ///   Asks the delegate to modify a layout attributes instance so that it represents the final visual state of a background being
   ///   removed via `UICollectionView.deleteSections(_:)`.
@@ -286,53 +293,58 @@ public protocol UICollectionViewDelegateMagazineLayout: UICollectionViewDelegate
     _ collectionView: UICollectionView,
     layout collectionViewLayout: UICollectionViewLayout,
     finalLayoutAttributesForRemovedBackgroundInSectionAtIndex index: Int,
-    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes
+  )
 
 }
 
 // MARK: Default Insert Animations
 
-public extension UICollectionViewDelegateMagazineLayout {
+extension UICollectionViewDelegateMagazineLayout {
 
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    initialLayoutAttributesForInsertedItemAt indexPath: IndexPath,
-    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
-  {
+  // MARK: Public
+
+  public func collectionView(
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    initialLayoutAttributesForInsertedItemAt _: IndexPath,
+    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes
+  ) {
     defaultInsertAnimation(byModifying: initialLayoutAttributes)
   }
 
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    initialLayoutAttributesForInsertedHeaderInSectionAtIndex index: Int,
-    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
-  {
+  public func collectionView(
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    initialLayoutAttributesForInsertedHeaderInSectionAtIndex _: Int,
+    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes
+  ) {
     defaultInsertAnimation(byModifying: initialLayoutAttributes)
   }
 
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    initialLayoutAttributesForInsertedFooterInSectionAtIndex index: Int,
-    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
-  {
+  public func collectionView(
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    initialLayoutAttributesForInsertedFooterInSectionAtIndex _: Int,
+    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes
+  ) {
     defaultInsertAnimation(byModifying: initialLayoutAttributes)
   }
 
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    initialLayoutAttributesForInsertedBackgroundInSectionAtIndex index: Int,
-    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
-  {
+  public func collectionView(
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    initialLayoutAttributesForInsertedBackgroundInSectionAtIndex _: Int,
+    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes
+  ) {
     defaultInsertAnimation(byModifying: initialLayoutAttributes)
   }
+
+  // MARK: Private
 
   private func defaultInsertAnimation(
-    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes)
-  {
+    byModifying initialLayoutAttributes: UICollectionViewLayoutAttributes
+  ) {
     // The default insert animation is a simple fade-in.
     initialLayoutAttributes.alpha = 0
   }
@@ -341,47 +353,51 @@ public extension UICollectionViewDelegateMagazineLayout {
 
 // MARK: Default Delete Animations
 
-public extension UICollectionViewDelegateMagazineLayout {
+extension UICollectionViewDelegateMagazineLayout {
 
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    finalLayoutAttributesForRemovedItemAt indexPath: IndexPath,
-    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
-  {
+  // MARK: Public
+
+  public func collectionView(
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    finalLayoutAttributesForRemovedItemAt _: IndexPath,
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes
+  ) {
     defaultDeleteAnimation(byModifying: finalLayoutAttributes)
   }
 
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    finalLayoutAttributesForRemovedHeaderInSectionAtIndex index: Int,
-    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
-  {
+  public func collectionView(
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    finalLayoutAttributesForRemovedHeaderInSectionAtIndex _: Int,
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes
+  ) {
     defaultDeleteAnimation(byModifying: finalLayoutAttributes)
   }
 
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    finalLayoutAttributesForRemovedFooterInSectionAtIndex index: Int,
-    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
-  {
+  public func collectionView(
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    finalLayoutAttributesForRemovedFooterInSectionAtIndex _: Int,
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes
+  ) {
     defaultDeleteAnimation(byModifying: finalLayoutAttributes)
   }
 
-  func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    finalLayoutAttributesForRemovedBackgroundInSectionAtIndex index: Int,
-    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
-  {
+  public func collectionView(
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    finalLayoutAttributesForRemovedBackgroundInSectionAtIndex _: Int,
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes
+  ) {
     defaultDeleteAnimation(byModifying: finalLayoutAttributes)
   }
+
+  // MARK: Private
 
   private func defaultDeleteAnimation(
-    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes)
-  {
+    byModifying finalLayoutAttributes: UICollectionViewLayoutAttributes
+  ) {
     // The default delete animation is a simple fade-out.
     finalLayoutAttributes.alpha = 0
   }

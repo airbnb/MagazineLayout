@@ -43,8 +43,8 @@ final class ModelState {
   func idForItemModel(at indexPath: IndexPath) -> UInt64? {
     guard
       indexPath.section < sectionModels.count,
-      indexPath.item < sectionModels[indexPath.section].numberOfItems else
-    {
+      indexPath.item < sectionModels[indexPath.section].numberOfItems
+    else {
       // This occurs when getting layout attributes for initial / final animations
       return nil
     }
@@ -86,7 +86,7 @@ final class ModelState {
     switch item.sizeMode.heightMode {
     case .static:
       return true
-    case .dynamicAndStretchToTallestItemInRow, .dynamic(_):
+    case .dynamicAndStretchToTallestItemInRow, .dynamic:
       return item.preferredHeight != nil
     }
   }
@@ -94,8 +94,8 @@ final class ModelState {
   func itemModelHeightMode(at indexPath: IndexPath) -> MagazineLayoutItemHeightMode? {
     guard
       indexPath.section < sectionModels.count,
-      indexPath.item < sectionModels[indexPath.section].numberOfItems else
-    {
+      indexPath.item < sectionModels[indexPath.section].numberOfItems
+    else {
       assertionFailure("Height mode for item at \(indexPath) is out of bounds")
       return nil
     }
@@ -124,8 +124,8 @@ final class ModelState {
   func itemModelPreferredHeight(at indexPath: IndexPath) -> CGFloat? {
     guard
       indexPath.section < sectionModels.count,
-      indexPath.item < sectionModels[indexPath.section].numberOfItems else
-    {
+      indexPath.item < sectionModels[indexPath.section].numberOfItems
+    else {
       assertionFailure("Height mode for item at \(indexPath) is out of bounds")
       return nil
     }
@@ -134,63 +134,70 @@ final class ModelState {
   }
 
   func itemLocationFramePairs(forItemsIn rect: CGRect) -> ElementLocationFramePairs {
-    return elementLocationFramePairsForElements(
+    elementLocationFramePairsForElements(
       in: rect,
       withElementLocationsForFlattenedIndices: itemLocationsForFlattenedIndices,
       andFramesProvidedBy: { itemLocation -> CGRect in
         return frameForItem(at: itemLocation)
-      })
+      }
+    )
   }
 
   func headerLocationFramePairs(forHeadersIn rect: CGRect) -> ElementLocationFramePairs {
-    return elementLocationFramePairsForElements(
+    elementLocationFramePairsForElements(
       in: rect,
       withElementLocationsForFlattenedIndices: headerLocationsForFlattenedIndices,
       andFramesProvidedBy: { headerLocation -> CGRect in
         guard
           let headerFrame = frameForHeader(
-            inSectionAtIndex: headerLocation.sectionIndex) else
-        {
+            inSectionAtIndex: headerLocation.sectionIndex
+          )
+        else {
           assertionFailure("Expected a frame for header in section at \(headerLocation.sectionIndex)")
           return .zero
         }
 
         return headerFrame
-      })
+      }
+    )
   }
 
   func footerLocationFramePairs(forFootersIn rect: CGRect) -> ElementLocationFramePairs {
-    return elementLocationFramePairsForElements(
+    elementLocationFramePairsForElements(
       in: rect,
       withElementLocationsForFlattenedIndices: footerLocationsForFlattenedIndices,
       andFramesProvidedBy: { footerLocation -> CGRect in
         guard
           let footerFrame = frameForFooter(
-            inSectionAtIndex: footerLocation.sectionIndex) else
-        {
+            inSectionAtIndex: footerLocation.sectionIndex
+          )
+        else {
           assertionFailure("Expected a frame for footer in section at \(footerLocation.sectionIndex)")
           return .zero
         }
 
         return footerFrame
-      })
+      }
+    )
   }
 
   func backgroundLocationFramePairs(forBackgroundsIn rect: CGRect) -> ElementLocationFramePairs {
-    return elementLocationFramePairsForElements(
+    elementLocationFramePairsForElements(
       in: rect,
       withElementLocationsForFlattenedIndices: backgroundLocationsForFlattenedIndices,
       andFramesProvidedBy: { backgroundLocation -> CGRect in
         guard
           let backgroundFrame = frameForBackground(
-            inSectionAtIndex: backgroundLocation.sectionIndex) else
-        {
+            inSectionAtIndex: backgroundLocation.sectionIndex
+          )
+        else {
           assertionFailure("Expected a frame for background in section at \(backgroundLocation.sectionIndex)")
           return .zero
         }
 
         return backgroundFrame
-      })
+      }
+    )
   }
 
   func sectionMaxY(forSectionAtIndex targetSectionIndex: Int) -> CGFloat {
@@ -219,15 +226,18 @@ final class ModelState {
       sectionMinY = 0
     } else {
       sectionMinY = sectionMaxY(
-        forSectionAtIndex: itemLocation.sectionIndex - 1)
+        forSectionAtIndex: itemLocation.sectionIndex - 1
+      )
     }
 
-    var itemFrame: CGRect!
+    var itemFrame = CGRect.zero
     mutateSectionModels(
       withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
         itemFrame = directlyMutableSectionModels[itemLocation.sectionIndex].calculateFrameForItem(
-          atIndex: itemLocation.elementIndex)
-      })
+          atIndex: itemLocation.elementIndex
+        )
+      }
+    )
 
     itemFrame.origin.y += sectionMinY
     return itemFrame
@@ -250,8 +260,11 @@ final class ModelState {
             x: currentVisibleBounds.minX,
             y: currentVisibleBounds.minY - sectionMinY,
             width: currentVisibleBounds.width,
-            height: currentVisibleBounds.height))
-      })
+            height: currentVisibleBounds.height
+          )
+        )
+      }
+    )
 
     headerFrame?.origin.y += sectionMinY
     return headerFrame
@@ -274,8 +287,11 @@ final class ModelState {
             x: currentVisibleBounds.minX,
             y: currentVisibleBounds.minY - sectionMinY,
             width: currentVisibleBounds.width,
-            height: currentVisibleBounds.height))
-      })
+            height: currentVisibleBounds.height
+          )
+        )
+      }
+    )
 
     footerFrame?.origin.y += sectionMinY
     return footerFrame
@@ -293,7 +309,8 @@ final class ModelState {
     mutateSectionModels(
       withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
         backgroundFrame = directlyMutableSectionModels[sectionIndex].calculateFrameForBackground()
-      })
+      }
+    )
 
     backgroundFrame?.origin.y += sectionMinY
     return backgroundFrame
@@ -312,27 +329,28 @@ final class ModelState {
 
   func updateItemHeight(
     toPreferredHeight preferredHeight: CGFloat,
-    forItemAt indexPath: IndexPath)
-  {
+    forItemAt indexPath: IndexPath
+  ) {
     guard
       indexPath.section < sectionModels.count,
-      indexPath.item < sectionModels[indexPath.section].numberOfItems else
-    {
+      indexPath.item < sectionModels[indexPath.section].numberOfItems
+    else {
       assertionFailure("Updating the preferred height for an item model at \(indexPath) is out of bounds")
       return
     }
 
     sectionModels[indexPath.section].updateItemHeight(
       toPreferredHeight: preferredHeight,
-      atIndex: indexPath.item)
+      atIndex: indexPath.item
+    )
 
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: indexPath.section)
   }
 
   func updateHeaderHeight(
     toPreferredHeight preferredHeight: CGFloat,
-    forSectionAtIndex sectionIndex: Int)
-  {
+    forSectionAtIndex sectionIndex: Int
+  ) {
     guard sectionIndex < sectionModels.count else {
       assertionFailure("Updating the preferred height for a header model at section index \(sectionIndex) is out of bounds")
       return
@@ -345,8 +363,8 @@ final class ModelState {
 
   func updateFooterHeight(
     toPreferredHeight preferredHeight: CGFloat,
-    forSectionAtIndex sectionIndex: Int)
-  {
+    forSectionAtIndex sectionIndex: Int
+  ) {
     guard sectionIndex < sectionModels.count else {
       assertionFailure("Updating the preferred height for a footer model at section index \(sectionIndex) is out of bounds")
       return
@@ -359,8 +377,8 @@ final class ModelState {
 
   func updateMetrics(
     to sectionMetrics: MagazineLayoutSectionMetrics,
-    forSectionAtIndex sectionIndex: Int)
-  {
+    forSectionAtIndex sectionIndex: Int
+  ) {
     sectionModels[sectionIndex].updateMetrics(to: sectionMetrics)
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
   }
@@ -424,8 +442,8 @@ final class ModelState {
 
   func applyUpdates(
     _ updates: [CollectionViewUpdate<SectionModel, ItemModel>],
-    modelStateBeforeBatchUpdates: ModelState)
-  {
+    modelStateBeforeBatchUpdates: ModelState
+  ) {
     let sectionModelsBeforeBatchUpdates = modelStateBeforeBatchUpdates.sectionModels
     invalidateEntireSectionMaxYsCache()
 
@@ -440,37 +458,38 @@ final class ModelState {
 
     for update in updates {
       switch update {
-      case let .sectionReload(sectionIndex, newSection):
+      case .sectionReload(let sectionIndex, let newSection):
         sectionModelReloadIndexPairs.append((newSection, sectionIndex))
 
-      case let .itemReload(itemIndexPath, newItem):
+      case .itemReload(let itemIndexPath, let newItem):
         itemModelReloadIndexPathPairs.append((newItem, itemIndexPath))
 
-      case let .sectionDelete(sectionIndex):
+      case .sectionDelete(let sectionIndex):
         sectionIndicesToDelete.append(sectionIndex)
         self.sectionIndicesToDelete.insert(sectionIndex)
 
-      case let .itemDelete(itemIndexPath):
+      case .itemDelete(let itemIndexPath):
         itemIndexPathsToDelete.append(itemIndexPath)
         self.itemIndexPathsToDelete.insert(itemIndexPath)
 
-      case let .sectionMove(initialSectionIndex, finalSectionIndex):
+      case .sectionMove(let initialSectionIndex, let finalSectionIndex):
         sectionIndicesToDelete.append(initialSectionIndex)
         let sectionModelToMove = sectionModelsBeforeBatchUpdates[initialSectionIndex]
         sectionModelInsertIndexPairs.append((sectionModelToMove, finalSectionIndex))
 
-      case let .itemMove(initialItemIndexPath, finalItemIndexPath):
+      case .itemMove(let initialItemIndexPath, let finalItemIndexPath):
         itemIndexPathsToDelete.append(initialItemIndexPath)
         let sectionContainingItemModelToMove = sectionModelsBeforeBatchUpdates[initialItemIndexPath.section]
         let itemModelToMove = sectionContainingItemModelToMove.itemModel(
-          atIndex: initialItemIndexPath.item)
+          atIndex: initialItemIndexPath.item
+        )
         itemModelInsertIndexPathPairs.append((itemModelToMove, finalItemIndexPath))
 
-      case let .sectionInsert(sectionIndex, newSection):
+      case .sectionInsert(let sectionIndex, let newSection):
         sectionModelInsertIndexPairs.append((newSection, sectionIndex))
         sectionIndicesToInsert.insert(sectionIndex)
 
-      case let .itemInsert(itemIndexPath, newItem):
+      case .itemInsert(let itemIndexPath, let newItem):
         itemModelInsertIndexPathPairs.append((newItem, itemIndexPath))
         itemIndexPathsToInsert.insert(itemIndexPath)
       }
@@ -497,6 +516,19 @@ final class ModelState {
     itemIndexPathsToDelete.removeAll()
   }
 
+  func invalidateSectionMaxYsCacheForSectionIndices(startingAt sectionIndex: Int) {
+    guard sectionIndex >= 0, sectionIndex < sectionMaxYsCache.count else {
+      assertionFailure(
+        "Cannot invalidate `sectionMaxYsCache` starting at an invalid (negative or out-of-bounds) `sectionIndex` (\(sectionIndex))."
+      )
+      return
+    }
+
+    for sectionIndex in sectionIndex..<sectionMaxYsCache.count {
+      sectionMaxYsCache[sectionIndex] = nil
+    }
+  }
+
   // MARK: Private
 
   private let currentVisibleBoundsProvider: () -> CGRect
@@ -511,8 +543,8 @@ final class ModelState {
   private var itemLocationsForFlattenedIndices = [Int: ElementLocation]()
 
   private func mutateSectionModels(
-    withUnsafeMutableBufferPointer body: (inout UnsafeMutableBufferPointer<SectionModel>) -> Void)
-  {
+    withUnsafeMutableBufferPointer body: (inout UnsafeMutableBufferPointer<SectionModel>) -> Void
+  ) {
     // Accessing these arrays using unsafe, untyped (raw) pointers
     // avoids expensive copy-on-writes and Swift retain / release calls.
     sectionModels.withUnsafeMutableBufferPointer(body)
@@ -532,28 +564,32 @@ final class ModelState {
       if sectionModels[sectionIndex].headerModel != nil {
         headerLocationsForFlattenedIndices[flattenedHeaderIndex] = ElementLocation(
           elementIndex: 0,
-          sectionIndex: sectionIndex)
+          sectionIndex: sectionIndex
+        )
         flattenedHeaderIndex += 1
       }
 
       if sectionModels[sectionIndex].footerModel != nil {
         footerLocationsForFlattenedIndices[flattenedFooterIndex] = ElementLocation(
           elementIndex: 0,
-          sectionIndex: sectionIndex)
+          sectionIndex: sectionIndex
+        )
         flattenedFooterIndex += 1
       }
 
       if sectionModels[sectionIndex].backgroundModel != nil {
         backgroundLocationsForFlattenedIndices[flattenedBackgroundIndex] = ElementLocation(
           elementIndex: 0,
-          sectionIndex: sectionIndex)
+          sectionIndex: sectionIndex
+        )
         flattenedBackgroundIndex += 1
       }
 
       for itemIndex in 0..<sectionModels[sectionIndex].numberOfItems {
         itemLocationsForFlattenedIndices[flattenedItemIndex] = ElementLocation(
           elementIndex: itemIndex,
-          sectionIndex: sectionIndex)
+          sectionIndex: sectionIndex
+        )
         flattenedItemIndex += 1
       }
     }
@@ -562,17 +598,17 @@ final class ModelState {
   private func elementLocationFramePairsForElements(
     in rect: CGRect,
     withElementLocationsForFlattenedIndices elementLocationsForFlattenedIndices: [Int: ElementLocation],
-    andFramesProvidedBy frameProvider: ((ElementLocation) -> CGRect))
-    -> ElementLocationFramePairs
-  {
+    andFramesProvidedBy frameProvider: (ElementLocation) -> CGRect
+  ) -> ElementLocationFramePairs {
     var elementLocationFramePairs = ElementLocationFramePairs()
 
     guard
       let indexOfFirstFoundElement = indexOfFirstFoundElement(
         in: rect,
         withElementLocationsForFlattenedIndices: elementLocationsForFlattenedIndices,
-        andFramesProvidedBy: frameProvider) else
-    {
+        andFramesProvidedBy: frameProvider
+      )
+    else {
       return elementLocationFramePairs
     }
 
@@ -584,7 +620,8 @@ final class ModelState {
     for elementLocationIndex in (0..<indexOfFirstFoundElement).reversed() {
       let elementLocation = self.elementLocation(
         forFlattenedIndex: elementLocationIndex,
-        in: elementLocationsForFlattenedIndices)
+        in: elementLocationsForFlattenedIndices
+      )
       let frame = frameProvider(elementLocation)
 
       guard frame.maxY > rect.minY else {
@@ -601,19 +638,22 @@ final class ModelState {
       }
 
       elementLocationFramePairs.append(
-        ElementLocationFramePair(elementLocation: elementLocation, frame: frame))
+        ElementLocationFramePair(elementLocation: elementLocation, frame: frame)
+      )
     }
 
     // Look forward to find visible elements
     for elementLocationIndex in indexOfFirstFoundElement..<elementLocationsForFlattenedIndices.count {
       let elementLocation = self.elementLocation(
         forFlattenedIndex: elementLocationIndex,
-        in: elementLocationsForFlattenedIndices)
+        in: elementLocationsForFlattenedIndices
+      )
       let frame = frameProvider(elementLocation)
       guard frame.minY < rect.maxY else { break }
 
       elementLocationFramePairs.append(
-        ElementLocationFramePair(elementLocation: elementLocation, frame: frame))
+        ElementLocationFramePair(elementLocation: elementLocation, frame: frame)
+      )
     }
 
     return elementLocationFramePairs
@@ -622,9 +662,8 @@ final class ModelState {
   private func indexOfFirstFoundElement(
     in rect: CGRect,
     withElementLocationsForFlattenedIndices elementLocationsForFlattenedIndices: [Int: ElementLocation],
-    andFramesProvidedBy frameProvider: ((ElementLocation) -> CGRect))
-    -> Int?
-  {
+    andFramesProvidedBy frameProvider: (ElementLocation) -> CGRect
+  ) -> Int? {
     var lowerBound = 0
     var upperBound = elementLocationsForFlattenedIndices.count - 1
 
@@ -632,7 +671,8 @@ final class ModelState {
       let index = (lowerBound + upperBound) / 2
       let elementLocation = self.elementLocation(
         forFlattenedIndex: index,
-        in: elementLocationsForFlattenedIndices)
+        in: elementLocationsForFlattenedIndices
+      )
       let elementFrame = frameProvider(elementLocation)
       if elementFrame.maxY <= rect.minY {
         lowerBound = index + 1
@@ -648,11 +688,12 @@ final class ModelState {
 
   private func elementLocation(
     forFlattenedIndex index: Int,
-    in elementLocationsForFlattenedIndices: [Int: ElementLocation])
-    -> ElementLocation
-  {
+    in elementLocationsForFlattenedIndices: [Int: ElementLocation]
+  ) -> ElementLocation {
     guard let elementLocation = elementLocationsForFlattenedIndices[index] else {
-      preconditionFailure("`elementLocationsForFlattenedIndices` must have a complete mapping of indices in 0..<\(elementLocationsForFlattenedIndices.count) to element locations")
+      preconditionFailure(
+        "`elementLocationsForFlattenedIndices` must have a complete mapping of indices in 0..<\(elementLocationsForFlattenedIndices.count) to element locations"
+      )
     }
 
     return elementLocation
@@ -673,13 +714,13 @@ final class ModelState {
   }
 
   private func cachedMaxYForSection(atIndex sectionIndex: Int) -> CGFloat? {
-    guard sectionIndex >= 0 && sectionIndex < sectionMaxYsCache.count else { return nil }
+    guard sectionIndex >= 0, sectionIndex < sectionMaxYsCache.count else { return nil }
 
     return sectionMaxYsCache[sectionIndex]
   }
 
   private func cacheMaxY(_ sectionMaxY: CGFloat, forSectionAtIndex sectionIndex: Int) {
-    guard sectionIndex >= 0 && sectionIndex < sectionMaxYsCache.count else { return }
+    guard sectionIndex >= 0, sectionIndex < sectionMaxYsCache.count else { return }
 
     sectionMaxYsCache[sectionIndex] = sectionMaxY
   }
@@ -690,20 +731,9 @@ final class ModelState {
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: 0)
   }
 
-  func invalidateSectionMaxYsCacheForSectionIndices(startingAt sectionIndex: Int) {
-    guard sectionIndex >= 0, sectionIndex < sectionMaxYsCache.count else {
-      assertionFailure("Cannot invalidate `sectionMaxYsCache` starting at an invalid (negative or out-of-bounds) `sectionIndex` (\(sectionIndex)).")
-      return
-    }
-
-    for sectionIndex in sectionIndex..<sectionMaxYsCache.count {
-      sectionMaxYsCache[sectionIndex] = nil
-    }
-  }
-
   private func reloadSectionModels(
-    sectionModelReloadIndexPairs: [(sectionModel: SectionModel, reloadIndex: Int)])
-  {
+    sectionModelReloadIndexPairs: [(sectionModel: SectionModel, reloadIndex: Int)]
+  ) {
     for (sectionModel, reloadIndex) in sectionModelReloadIndexPairs {
       sectionModels.remove(at: reloadIndex)
       sectionModels.insert(sectionModel, at: reloadIndex)
@@ -711,14 +741,17 @@ final class ModelState {
   }
 
   private func reloadItemModels(
-    itemModelReloadIndexPathPairs: [(itemModel: ItemModel, reloadIndexPath: IndexPath)])
-  {
+    itemModelReloadIndexPathPairs: [(itemModel: ItemModel, reloadIndexPath: IndexPath)]
+  ) {
     for (itemModel, reloadIndexPath) in itemModelReloadIndexPathPairs {
       sectionModels[reloadIndexPath.section].deleteItemModel(
-        atIndex: reloadIndexPath.item)
+        atIndex: reloadIndexPath.item
+      )
       sectionModels[reloadIndexPath.section].insert(
-        itemModel, atIndex:
-        reloadIndexPath.item)
+        itemModel,
+        atIndex:
+        reloadIndexPath.item
+      )
     }
   }
 
@@ -733,13 +766,14 @@ final class ModelState {
     // Always delete in descending order
     for indexPathOfItemModelToDelete in (indexPathsOfItemModelsToDelete.sorted { $0 > $1 }) {
       sectionModels[indexPathOfItemModelToDelete.section].deleteItemModel(
-        atIndex: indexPathOfItemModelToDelete.item)
+        atIndex: indexPathOfItemModelToDelete.item
+      )
     }
   }
 
   private func insertSectionModels(
-    sectionModelInsertIndexPairs: [(sectionModel: SectionModel, insertIndex: Int)])
-  {
+    sectionModelInsertIndexPairs: [(sectionModel: SectionModel, insertIndex: Int)]
+  ) {
     // Always insert in ascending order
     for (sectionModel, insertIndex) in (sectionModelInsertIndexPairs.sorted { $0.insertIndex < $1.insertIndex }) {
       sectionModels.insert(sectionModel, at: insertIndex)
@@ -747,8 +781,8 @@ final class ModelState {
   }
 
   private func insertItemModels(
-    itemModelInsertIndexPathPairs: [(itemModel: ItemModel, insertIndexPath: IndexPath)])
-  {
+    itemModelInsertIndexPathPairs: [(itemModel: ItemModel, insertIndexPath: IndexPath)]
+  ) {
     // Always insert in ascending order
     for (itemModel, insertIndexPath) in (itemModelInsertIndexPathPairs.sorted { $0.insertIndexPath < $1.insertIndexPath }) {
       let sectionIndex = insertIndexPath.section

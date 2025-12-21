@@ -33,7 +33,8 @@ final class PerformanceDemoViewController: UIViewController {
       UIBarButtonItem(
         barButtonSystemItem: .add,
         target: self,
-        action: #selector(addButtonTapped)),
+        action: #selector(addButtonTapped)
+      )
     ]
 
     view.addSubview(collectionView)
@@ -58,16 +59,25 @@ final class PerformanceDemoViewController: UIViewController {
     collectionView.delegate = self
     collectionView.register(
       MagazineLayoutCollectionViewCell.self,
-      forCellWithReuseIdentifier: "PerformanceCell")
+      forCellWithReuseIdentifier: "PerformanceCell"
+    )
     return collectionView
   }()
 
-  private var items: [PerformanceItem] = []
+  private var items = [PerformanceItem]()
   private var nextItemID = 0
 
   private let colors: [UIColor] = [
-    .systemRed, .systemOrange, .systemYellow, .systemGreen, .systemTeal,
-    .systemBlue, .systemIndigo, .systemPurple, .systemPink, .systemCyan
+    .systemRed,
+    .systemOrange,
+    .systemYellow,
+    .systemGreen,
+    .systemTeal,
+    .systemBlue,
+    .systemIndigo,
+    .systemPurple,
+    .systemPink,
+    .systemCyan,
   ]
 
   private func loadInitialData() {
@@ -86,7 +96,8 @@ final class PerformanceDemoViewController: UIViewController {
   private func addButtonTapped() {
     let newItem = PerformanceItem(
       id: nextItemID,
-      color: colors.randomElement() ?? .systemBlue)
+      color: colors.randomElement() ?? .systemBlue
+    )
     nextItemID += 1
 
     // Insert at index 0 with manual batch update
@@ -100,26 +111,25 @@ final class PerformanceDemoViewController: UIViewController {
 // MARK: UICollectionViewDataSource
 
 extension PerformanceDemoViewController: UICollectionViewDataSource {
-  func numberOfSections(in collectionView: UICollectionView) -> Int {
-    return 1
+  func numberOfSections(in _: UICollectionView) -> Int {
+    1
+  }
+
+  func collectionView(
+    _: UICollectionView,
+    numberOfItemsInSection _: Int
+  ) -> Int {
+    items.count
   }
 
   func collectionView(
     _ collectionView: UICollectionView,
-    numberOfItemsInSection section: Int)
-    -> Int
-  {
-    return items.count
-  }
-
-  func collectionView(
-    _ collectionView: UICollectionView,
-    cellForItemAt indexPath: IndexPath)
-    -> UICollectionViewCell
-  {
+    cellForItemAt indexPath: IndexPath
+  ) -> UICollectionViewCell {
     let cell = collectionView.dequeueReusableCell(
       withReuseIdentifier: "PerformanceCell",
-      for: indexPath)
+      for: indexPath
+    )
 
     let item = items[indexPath.item]
 
@@ -150,74 +160,66 @@ extension PerformanceDemoViewController: UICollectionViewDelegate {
 
 extension PerformanceDemoViewController: UICollectionViewDelegateMagazineLayout {
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    sizeModeForItemAt indexPath: IndexPath)
-    -> MagazineLayoutItemSizeMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    sizeModeForItemAt _: IndexPath
+  ) -> MagazineLayoutItemSizeMode {
     MagazineLayoutItemSizeMode(widthMode: .halfWidth, heightMode: .dynamic)
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForHeaderInSectionAtIndex index: Int)
-    -> MagazineLayoutHeaderVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForHeaderInSectionAtIndex _: Int
+  ) -> MagazineLayoutHeaderVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForFooterInSectionAtIndex index: Int)
-    -> MagazineLayoutFooterVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForFooterInSectionAtIndex _: Int
+  ) -> MagazineLayoutFooterVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForBackgroundInSectionAtIndex index: Int)
-    -> MagazineLayoutBackgroundVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForBackgroundInSectionAtIndex _: Int
+  ) -> MagazineLayoutBackgroundVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    horizontalSpacingForItemsInSectionAtIndex index: Int)
-    -> CGFloat
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    horizontalSpacingForItemsInSectionAtIndex _: Int
+  ) -> CGFloat {
     12
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    verticalSpacingForElementsInSectionAtIndex index: Int)
-    -> CGFloat
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    verticalSpacingForElementsInSectionAtIndex _: Int
+  ) -> CGFloat {
     12
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetsForSectionAtIndex index: Int)
-    -> UIEdgeInsets
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    insetsForSectionAtIndex _: Int
+  ) -> UIEdgeInsets {
     UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetsForItemsInSectionAtIndex index: Int)
-    -> UIEdgeInsets
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    insetsForItemsInSectionAtIndex _: Int
+  ) -> UIEdgeInsets {
     .zero
   }
 }

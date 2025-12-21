@@ -24,7 +24,7 @@ extension MagazineLayoutItemWidthMode {
   var widthDivisor: CGFloat {
     switch self {
     case .fullWidth: return 1
-    case let .fractionalWidth(divisor): return CGFloat(divisor)
+    case .fractionalWidth(let divisor): return CGFloat(divisor)
     }
   }
 

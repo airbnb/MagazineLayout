@@ -16,13 +16,16 @@
 import XCTest
 @testable import MagazineLayout
 
+// MARK: - ContentInsetAdjustingContentOffsetTests
+
 final class ContentInsetAdjustingContentOffsetTests: XCTestCase {
 
   func testContentOffsetIsNotAdjustedForTopInsetChangeWithToTopBottomLayout() {
     let layout = MagazineLayout()
     let collectionView = StubCollectionView(
       frame: .zero,
-      collectionViewLayout: layout)
+      collectionViewLayout: layout
+    )
     let context = MagazineLayoutInvalidationContext()
     layout.invalidateLayout(with: context)
     XCTAssertEqual(context.contentOffsetAdjustment, .zero)
@@ -37,7 +40,8 @@ final class ContentInsetAdjustingContentOffsetTests: XCTestCase {
     layout.verticalLayoutDirection = .bottomToTop
     let collectionView = StubCollectionView(
       frame: .zero,
-      collectionViewLayout: layout)
+      collectionViewLayout: layout
+    )
     let context = MagazineLayoutInvalidationContext()
     layout.invalidateLayout(with: context)
     XCTAssertEqual(context.contentOffsetAdjustment, .zero)
@@ -52,7 +56,8 @@ final class ContentInsetAdjustingContentOffsetTests: XCTestCase {
     layout.verticalLayoutDirection = .bottomToTop
     let collectionView = StubCollectionView(
       frame: .zero,
-      collectionViewLayout: layout)
+      collectionViewLayout: layout
+    )
     let context = MagazineLayoutInvalidationContext()
     layout.invalidateLayout(with: context)
     XCTAssertEqual(context.contentOffsetAdjustment, .zero)
@@ -67,7 +72,8 @@ final class ContentInsetAdjustingContentOffsetTests: XCTestCase {
     layout.verticalLayoutDirection = .bottomToTop
     let collectionView = StubCollectionView(
       frame: .zero,
-      collectionViewLayout: layout)
+      collectionViewLayout: layout
+    )
     let context = MagazineLayoutInvalidationContext()
     layout.invalidateLayout(with: context)
     XCTAssertEqual(context.contentOffsetAdjustment, .zero)
@@ -78,9 +84,12 @@ final class ContentInsetAdjustingContentOffsetTests: XCTestCase {
   }
 }
 
-private class StubCollectionView: UICollectionView {
+// MARK: - StubCollectionView
 
-  var stubAdjustedContentInset: UIEdgeInsets = .zero
+private final class StubCollectionView: UICollectionView {
+
+  var stubAdjustedContentInset = UIEdgeInsets.zero
+
   override var adjustedContentInset: UIEdgeInsets {
     stubAdjustedContentInset
   }

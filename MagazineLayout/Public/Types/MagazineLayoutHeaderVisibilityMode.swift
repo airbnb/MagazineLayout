@@ -31,10 +31,9 @@ public enum MagazineLayoutHeaderVisibilityMode: Hashable {
   /// This visibility mode will cause the header to be displayed using the specified height mode in
   /// its respective section.
   public static func visible(
-    heightMode: MagazineLayoutHeaderHeightMode)
-    -> MagazineLayoutHeaderVisibilityMode
-  {
-    return .visible(heightMode: heightMode, pinToVisibleBounds: false)
+    heightMode: MagazineLayoutHeaderHeightMode
+  ) -> MagazineLayoutHeaderVisibilityMode {
+    .visible(heightMode: heightMode, pinToVisibleBounds: false)
   }
 
 }

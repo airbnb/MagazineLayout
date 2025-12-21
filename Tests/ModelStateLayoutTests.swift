@@ -29,11 +29,12 @@ final class ModelStateLayoutTests: XCTestCase {
       horizontalSpacing: 20,
       sectionInsets: UIEdgeInsets(top: 30, left: 15, bottom: 20, right: 5),
       itemInsets: UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10),
-      scale: 1)
+      scale: 1
+    )
 
     let sections = [
       (headerModel0, sizeModesAndHeights0, footerModel0),
-      (headerModel1, sizeModesAndHeights1, footerModel1)
+      (headerModel1, sizeModesAndHeights1, footerModel1),
     ].map { headerModel, sizeModesAndHeights, footerModel in
       SectionModel(
         idGenerator: idGenerator,
@@ -48,17 +49,14 @@ final class ModelStateLayoutTests: XCTestCase {
         headerModel: headerModel,
         footerModel: footerModel,
         backgroundModel: BackgroundModel(),
-        metrics: metrics)
+        metrics: metrics
+      )
     }
 
     modelState = ModelState(currentVisibleBoundsProvider: {
-      return CGRect(x: 0, y: 100, width: 320, height: 480)
+      CGRect(x: 0, y: 100, width: 320, height: 480)
     })
     modelState.setSections(sections)
-  }
-
-  override func tearDown() {
-    modelState = nil
   }
 
   func testInitialLayout() {
@@ -92,19 +90,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1575.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
-      ]
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
+    ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames0: [CGRect] = [
-    ]
+    let expectedFooterFrames0 = [CGRect]()
     let expectedFooterFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 1080.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1600.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0)
     ]
     let expectedBackgroundFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
@@ -119,7 +116,8 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
   }
 
   func testUpdatingPreferredHeights() {
@@ -131,10 +129,12 @@ final class ModelStateLayoutTests: XCTestCase {
         let indexPath = IndexPath(item: itemIndex, section: 0)
         modelState.updateItemHeight(
           toPreferredHeight: sizeModeAndHeight.height,
-          forItemAt: indexPath)
+          forItemAt: indexPath
+        )
 
         let preferredHeight = modelState.itemModelPreferredHeight(at: indexPath)
         XCTAssert(preferredHeight == sizeModeAndHeight.height, "Item preferred height is incorrect")
+
       case .static:
         continue
       }
@@ -171,22 +171,22 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 925.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 550.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 550.0, width: 300.0, height: 50.0)
     ]
     let expectedFooterFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 450.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 450.0, width: 300.0, height: 50.0)
     ]
     let expectedFooterFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 950.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 950.0, width: 300.0, height: 50.0)
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 470.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 470.0)
     ]
     let expectedBackgroundFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 550.0, width: 300.0, height: 450.0),
+      CGRect(x: 15.0, y: 550.0, width: 300.0, height: 450.0)
     ]
 
     checkExpectedFrames(
@@ -197,7 +197,8 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
   }
 
   func testUpdatingSectionMetrics() {
@@ -207,7 +208,8 @@ final class ModelStateLayoutTests: XCTestCase {
       horizontalSpacing: 5,
       sectionInsets: UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4),
       itemInsets: UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2),
-      scale: 1)
+      scale: 1
+    )
 
     modelState.updateMetrics(to: metrics, forSectionAtIndex: 0)
 
@@ -240,19 +242,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1937.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 4.0, y: 4.0, width: 92.0, height: 50.0),
+      CGRect(x: 4.0, y: 4.0, width: 92.0, height: 50.0)
     ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1542.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1542.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames0: [CGRect] = [
-    ]
+    let expectedFooterFrames0 = [CGRect]()
     let expectedFooterFrames1: [CGRect] = [
       CGRect(x: 4.0, y: 1458.0, width: 92.0, height: 50.0),
       CGRect(x: 15.0, y: 1962.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 4.0, y: 4.0, width: 92.0, height: 1504.0),
+      CGRect(x: 4.0, y: 4.0, width: 92.0, height: 1504.0)
     ]
     let expectedBackgroundFrames1: [CGRect] = [
       CGRect(x: 4.0, y: 4.0, width: 92.0, height: 1504.0),
@@ -267,20 +268,25 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
   }
 
   func testUpdatingItemSizeMode() {
     modelState.updateItemSizeMode(
       to: MagazineLayoutItemSizeMode(
         widthMode: .thirdWidth,
-        heightMode: .static(height: 50)),
-      forItemAt: IndexPath(item: 5, section: 0))
+        heightMode: .static(height: 50)
+      ),
+      forItemAt: IndexPath(item: 5, section: 0)
+    )
     modelState.updateItemSizeMode(
       to: MagazineLayoutItemSizeMode(
         widthMode: .fifthWidth,
-        heightMode: .dynamicAndStretchToTallestItemInRow),
-      forItemAt: IndexPath(item: 8, section: 1))
+        heightMode: .dynamicAndStretchToTallestItemInRow
+      ),
+      forItemAt: IndexPath(item: 8, section: 1)
+    )
 
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 25.0, y: 90.0, width: 280.0, height: 20.0),
@@ -312,19 +318,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1575.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames0: [CGRect] = [
-    ]
+    let expectedFooterFrames0 = [CGRect]()
     let expectedFooterFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 1080.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1600.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0)
     ]
     let expectedBackgroundFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
@@ -339,23 +344,29 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
   }
 
   func testLayoutAfterInsertingItems() {
     // This test would have caught this issue https://github.com/airbnb/MagazineLayout/issues/40
 
-    modelState.applyUpdates([
-      .itemInsert(
-        itemIndexPath: IndexPath(item: 3, section: 1),
-        newItem: ItemModel(
-          idGenerator: idGenerator,
-          sizeMode: MagazineLayoutItemSizeMode(
-            widthMode: .halfWidth,
-            heightMode: .static(height: 10)),
-          height: 10)),
+    modelState.applyUpdates(
+      [
+        .itemInsert(
+          itemIndexPath: IndexPath(item: 3, section: 1),
+          newItem: ItemModel(
+            idGenerator: idGenerator,
+            sizeMode: MagazineLayoutItemSizeMode(
+              widthMode: .halfWidth,
+              heightMode: .static(height: 10)
+            ),
+            height: 10
+          )
+        )
       ],
-      modelStateBeforeBatchUpdates: modelState.copy())
+      modelStateBeforeBatchUpdates: modelState.copy()
+    )
 
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 25.0, y: 90.0, width: 280.0, height: 20.0),
@@ -388,19 +399,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1575.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames0: [CGRect] = [
-    ]
+    let expectedFooterFrames0 = [CGRect]()
     let expectedFooterFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 1080.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1600.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0)
     ]
     let expectedBackgroundFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
@@ -415,35 +425,47 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
 
-    modelState.applyUpdates([
-      .itemInsert(
-        itemIndexPath: IndexPath(item: 4, section: 0),
-        newItem: ItemModel(
-          idGenerator: idGenerator,
-          sizeMode: MagazineLayoutItemSizeMode(
-            widthMode: .thirdWidth,
-            heightMode: .static(height: 100)),
-          height: 100)),
-      .itemInsert(
-        itemIndexPath: IndexPath(item: 5, section: 0),
-        newItem: ItemModel(
-          idGenerator: idGenerator,
-          sizeMode: MagazineLayoutItemSizeMode(
-            widthMode: .thirdWidth,
-            heightMode: .static(height: 50)),
-          height: 50)),
-      .itemInsert(
-        itemIndexPath: IndexPath(item: 6, section: 0),
-        newItem: ItemModel(
-          idGenerator: idGenerator,
-          sizeMode: MagazineLayoutItemSizeMode(
-            widthMode: .thirdWidth,
-            heightMode: .static(height: 20)),
-          height: 20)),
+    modelState.applyUpdates(
+      [
+        .itemInsert(
+          itemIndexPath: IndexPath(item: 4, section: 0),
+          newItem: ItemModel(
+            idGenerator: idGenerator,
+            sizeMode: MagazineLayoutItemSizeMode(
+              widthMode: .thirdWidth,
+              heightMode: .static(height: 100)
+            ),
+            height: 100
+          )
+        ),
+        .itemInsert(
+          itemIndexPath: IndexPath(item: 5, section: 0),
+          newItem: ItemModel(
+            idGenerator: idGenerator,
+            sizeMode: MagazineLayoutItemSizeMode(
+              widthMode: .thirdWidth,
+              heightMode: .static(height: 50)
+            ),
+            height: 50
+          )
+        ),
+        .itemInsert(
+          itemIndexPath: IndexPath(item: 6, section: 0),
+          newItem: ItemModel(
+            idGenerator: idGenerator,
+            sizeMode: MagazineLayoutItemSizeMode(
+              widthMode: .thirdWidth,
+              heightMode: .static(height: 20)
+            ),
+            height: 20
+          )
+        ),
       ],
-      modelStateBeforeBatchUpdates: modelState.copy())
+      modelStateBeforeBatchUpdates: modelState.copy()
+    )
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 125.0, y: 380.0, width: 80.0, height: 50.0),
@@ -478,19 +500,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1705.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames3: [CGRect] = [
-      CGRect(x: 15.0, y: 1310.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1310.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames2: [CGRect] = [
-    ]
+    let expectedFooterFrames2 = [CGRect]()
     let expectedFooterFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 1210.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1730.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1230.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1230.0)
     ]
     let expectedBackgroundFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1230.0),
@@ -505,14 +526,17 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames2,
       expectedFooterFrames1: expectedFooterFrames3,
       expectedBackgroundFrames0: expectedBackgroundFrames2,
-      expectedBackgroundFrames1: expectedBackgroundFrames3)
+      expectedBackgroundFrames1: expectedBackgroundFrames3
+    )
   }
 
   func testLayoutAfterDeletingItems() {
-    modelState.applyUpdates([
-        .itemDelete(itemIndexPath: IndexPath(item: 5, section: 0)),
+    modelState.applyUpdates(
+      [
+        .itemDelete(itemIndexPath: IndexPath(item: 5, section: 0))
       ],
-      modelStateBeforeBatchUpdates: modelState.copy())
+      modelStateBeforeBatchUpdates: modelState.copy()
+    )
 
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 15.0, y: 140.0, width: 300.0, height: 150.0),
@@ -543,19 +567,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1575.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames0: [CGRect] = [
-    ]
+    let expectedFooterFrames0 = [CGRect]()
     let expectedFooterFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 1080.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1600.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0)
     ]
     let expectedBackgroundFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
@@ -570,15 +593,18 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
 
-    modelState.applyUpdates([
+    modelState.applyUpdates(
+      [
         .itemDelete(itemIndexPath: IndexPath(item: 1, section: 0)),
         .itemDelete(itemIndexPath: IndexPath(item: 6, section: 1)),
         .itemDelete(itemIndexPath: IndexPath(item: 0, section: 1)),
         .itemDelete(itemIndexPath: IndexPath(item: 5, section: 0)),
       ],
-      modelStateBeforeBatchUpdates: modelState.copy())
+      modelStateBeforeBatchUpdates: modelState.copy()
+    )
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 25.0, y: 200.0, width: 130.0, height: 150.0),
@@ -607,19 +633,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1160.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames3: [CGRect] = [
-      CGRect(x: 15.0, y: 820.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 820.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames2: [CGRect] = [
-    ]
+    let expectedFooterFrames2 = [CGRect]()
     let expectedFooterFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 720.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1185.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 740.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 740.0)
     ]
     let expectedBackgroundFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 740.0),
@@ -634,16 +659,20 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames2,
       expectedFooterFrames1: expectedFooterFrames3,
       expectedBackgroundFrames0: expectedBackgroundFrames2,
-      expectedBackgroundFrames1: expectedBackgroundFrames3)
+      expectedBackgroundFrames1: expectedBackgroundFrames3
+    )
   }
 
   func testLayoutAfterMovingItems() {
-    modelState.applyUpdates([
+    modelState.applyUpdates(
+      [
         .itemMove(
           initialItemIndexPath: IndexPath(item: 0, section: 1),
-          finalItemIndexPath: IndexPath(item: 5, section: 0)),
+          finalItemIndexPath: IndexPath(item: 5, section: 0)
+        )
       ],
-      modelStateBeforeBatchUpdates: modelState.copy())
+      modelStateBeforeBatchUpdates: modelState.copy()
+    )
 
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 25.0, y: 380.0, width: 130.0, height: 150.0),
@@ -675,19 +704,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1520.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames0: [CGRect] = [
-    ]
+    let expectedFooterFrames0 = [CGRect]()
     let expectedFooterFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 1080.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1545.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0)
     ]
     let expectedBackgroundFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
@@ -702,23 +730,30 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
 
-    modelState.applyUpdates([
+    modelState.applyUpdates(
+      [
         .itemMove(
           initialItemIndexPath: IndexPath(item: 7, section: 1),
-          finalItemIndexPath: IndexPath(item: 5, section: 1)),
+          finalItemIndexPath: IndexPath(item: 5, section: 1)
+        ),
         .itemMove(
           initialItemIndexPath: IndexPath(item: 0, section: 0),
-          finalItemIndexPath: IndexPath(item: 1, section: 1)),
+          finalItemIndexPath: IndexPath(item: 1, section: 1)
+        ),
         .itemMove(
           initialItemIndexPath: IndexPath(item: 3, section: 0),
-          finalItemIndexPath: IndexPath(item: 6, section: 0)),
+          finalItemIndexPath: IndexPath(item: 6, section: 0)
+        ),
         .itemMove(
           initialItemIndexPath: IndexPath(item: 2, section: 1),
-          finalItemIndexPath: IndexPath(item: 0, section: 1)),
+          finalItemIndexPath: IndexPath(item: 0, section: 1)
+        ),
       ],
-      modelStateBeforeBatchUpdates: modelState.copy())
+      modelStateBeforeBatchUpdates: modelState.copy()
+    )
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 25.0, y: 490.0, width: 80.0, height: 150.0),
@@ -751,19 +786,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1615.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames3: [CGRect] = [
-      CGRect(x: 15.0, y: 1170.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1170.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames2: [CGRect] = [
-    ]
+    let expectedFooterFrames2 = [CGRect]()
     let expectedFooterFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 1070.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1640.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1090.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1090.0)
     ]
     let expectedBackgroundFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1090.0),
@@ -778,7 +812,8 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames2,
       expectedFooterFrames1: expectedFooterFrames3,
       expectedBackgroundFrames0: expectedBackgroundFrames2,
-      expectedBackgroundFrames1: expectedBackgroundFrames3)
+      expectedBackgroundFrames1: expectedBackgroundFrames3
+    )
   }
 
   func testReplacingHeader() {
@@ -812,19 +847,17 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 265.0, y: 1460.0, width: 40.0, height: 30.0),
       CGRect(x: 15.0, y: 1525.0, width: 300.0, height: 15.0),
     ]
-    let expectedHeaderFrames0: [CGRect] = [
-    ]
+    let expectedHeaderFrames0 = [CGRect]()
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1130.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1130.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames0: [CGRect] = [
-    ]
+    let expectedFooterFrames0 = [CGRect]()
     let expectedFooterFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 1030.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1550.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1050.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1050.0)
     ]
     let expectedBackgroundFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1050.0),
@@ -839,14 +872,17 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
 
     modelState.setHeader(
       HeaderModel(heightMode: .static(height: 60), height: 60, pinToVisibleBounds: false),
-      forSectionAtIndex: 0)
+      forSectionAtIndex: 0
+    )
     modelState.setHeader(
       HeaderModel(heightMode: .dynamic, height: 100, pinToVisibleBounds: false),
-      forSectionAtIndex: 1)
+      forSectionAtIndex: 1
+    )
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 25.0, y: 100.0, width: 280.0, height: 20.0),
@@ -878,19 +914,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1615.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 60.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 60.0)
     ]
     let expectedHeaderFrames3: [CGRect] = [
-      CGRect(x: 15.0, y: 1190.0, width: 300.0, height: 100.0),
+      CGRect(x: 15.0, y: 1190.0, width: 300.0, height: 100.0)
     ]
-    let expectedFooterFrames2: [CGRect] = [
-    ]
+    let expectedFooterFrames2 = [CGRect]()
     let expectedFooterFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 1090.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1640.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1110.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1110.0)
     ]
     let expectedBackgroundFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1110.0),
@@ -905,7 +940,8 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames2,
       expectedFooterFrames1: expectedFooterFrames3,
       expectedBackgroundFrames0: expectedBackgroundFrames2,
-      expectedBackgroundFrames1: expectedBackgroundFrames3)
+      expectedBackgroundFrames1: expectedBackgroundFrames3
+    )
   }
 
   func testReplacingFooter() {
@@ -941,18 +977,17 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1525.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1130.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1130.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames0: [CGRect] = [
-    ]
+    let expectedFooterFrames0 = [CGRect]()
     let expectedFooterFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1550.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1550.0, width: 300.0, height: 70.0)
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1050.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1050.0)
     ]
     let expectedBackgroundFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1050.0),
@@ -967,15 +1002,17 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
-
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
 
     modelState.setFooter(
       FooterModel(heightMode: .static(height: 40), height: 40, pinToVisibleBounds: false),
-      forSectionAtIndex: 0)
+      forSectionAtIndex: 0
+    )
     modelState.setFooter(
       FooterModel(heightMode: .dynamic, height: 120, pinToVisibleBounds: false),
-      forSectionAtIndex: 1)
+      forSectionAtIndex: 1
+    )
 
     let expectedItemFrames2: [CGRect] = [
       CGRect(x: 25.0, y: 90.0, width: 280.0, height: 20.0),
@@ -1007,19 +1044,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1565.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames3: [CGRect] = [
-      CGRect(x: 15.0, y: 1170.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1170.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames2: [CGRect] = [
-    ]
+    let expectedFooterFrames2 = [CGRect]()
     let expectedFooterFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 1080.0, width: 300.0, height: 40.0),
       CGRect(x: 15.0, y: 1590.0, width: 300.0, height: 120.0),
     ]
     let expectedBackgroundFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1090.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1090.0)
     ]
     let expectedBackgroundFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1090.0),
@@ -1034,7 +1070,8 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames2,
       expectedFooterFrames1: expectedFooterFrames3,
       expectedBackgroundFrames0: expectedBackgroundFrames2,
-      expectedBackgroundFrames1: expectedBackgroundFrames3)
+      expectedBackgroundFrames1: expectedBackgroundFrames3
+    )
   }
 
   func testReplacingBackground() {
@@ -1070,21 +1107,19 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1575.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames0: [CGRect] = [
-    ]
+    let expectedFooterFrames0 = [CGRect]()
     let expectedFooterFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 1080.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1600.0, width: 300.0, height: 70.0),
     ]
-    let expectedBackgroundFrames0: [CGRect] = [
-    ]
+    let expectedBackgroundFrames0 = [CGRect]()
     let expectedBackgroundFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 490.0),
+      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 490.0)
     ]
 
     checkExpectedFrames(
@@ -1095,7 +1130,8 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
 
     modelState.setBackground(BackgroundModel(), forSectionAtIndex: 0)
 
@@ -1129,19 +1165,18 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1575.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0)
     ]
     let expectedHeaderFrames3: [CGRect] = [
-      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0),
+      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0)
     ]
-    let expectedFooterFrames2: [CGRect] = [
-    ]
+    let expectedFooterFrames2 = [CGRect]()
     let expectedFooterFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 1080.0, width: 300.0, height: 50.0),
       CGRect(x: 15.0, y: 1600.0, width: 300.0, height: 70.0),
     ]
     let expectedBackgroundFrames2: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0)
     ]
     let expectedBackgroundFrames3: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
@@ -1156,7 +1191,8 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames2,
       expectedFooterFrames1: expectedFooterFrames3,
       expectedBackgroundFrames0: expectedBackgroundFrames2,
-      expectedBackgroundFrames1: expectedBackgroundFrames3)
+      expectedBackgroundFrames1: expectedBackgroundFrames3
+    )
   }
 
   func testPinnedHeadersAndFooters() {
@@ -1164,26 +1200,34 @@ final class ModelStateLayoutTests: XCTestCase {
       HeaderModel(
         heightMode: .dynamic,
         height: 50,
-        pinToVisibleBounds: true),
-      forSectionAtIndex: 0)
+        pinToVisibleBounds: true
+      ),
+      forSectionAtIndex: 0
+    )
     modelState.setHeader(
       HeaderModel(
         heightMode: .static(height: 100),
         height: 100,
-        pinToVisibleBounds: true),
-      forSectionAtIndex: 1)
+        pinToVisibleBounds: true
+      ),
+      forSectionAtIndex: 1
+    )
     modelState.setFooter(
       FooterModel(
         heightMode: .static(height: 150),
         height: 150,
-        pinToVisibleBounds: true),
-      forSectionAtIndex: 0)
+        pinToVisibleBounds: true
+      ),
+      forSectionAtIndex: 0
+    )
     modelState.setFooter(
       FooterModel(
         heightMode: .dynamic,
         height: 25,
-        pinToVisibleBounds: true),
-      forSectionAtIndex: 1)
+        pinToVisibleBounds: true
+      ),
+      forSectionAtIndex: 1
+    )
 
     modelState.updateHeaderHeight(toPreferredHeight: 75, forSectionAtIndex: 0)
     modelState.updateFooterHeight(toPreferredHeight: 50, forSectionAtIndex: 1)
@@ -1218,20 +1262,20 @@ final class ModelStateLayoutTests: XCTestCase {
       CGRect(x: 15.0, y: 1730.0, width: 300.0, height: 15.0),
     ]
     let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 100.0, width: 300.0, height: 75.0),
+      CGRect(x: 15.0, y: 100.0, width: 300.0, height: 75.0)
     ]
     let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1305.0, width: 300.0, height: 100.0),
+      CGRect(x: 15.0, y: 1305.0, width: 300.0, height: 100.0)
     ]
     let expectedFooterFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 430.0, width: 300.0, height: 150.0),
+      CGRect(x: 15.0, y: 430.0, width: 300.0, height: 150.0)
     ]
     let expectedFooterFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 430.0, width: 300.0, height: 150.0),
       CGRect(x: 15.0, y: 1405.0, width: 300.0, height: 50.0),
     ]
     let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1225.0),
+      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1225.0)
     ]
     let expectedBackgroundFrames1: [CGRect] = [
       CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1225.0),
@@ -1246,14 +1290,15 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedFooterFrames0: expectedFooterFrames0,
       expectedFooterFrames1: expectedFooterFrames1,
       expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+      expectedBackgroundFrames1: expectedBackgroundFrames1
+    )
   }
 
   // MARK: Private
 
   private let idGenerator = IDGenerator()
 
-  private var modelState: ModelState!
+  private var modelState = ModelState(currentVisibleBoundsProvider: { .zero })
 
   private let visibleRect0 = CGRect(x: 0, y: 0, width: 320, height: 500)
   private let visibleRect1 = CGRect(x: 0, y: 500, width: 320, height: 2000)
@@ -1261,30 +1306,43 @@ final class ModelStateLayoutTests: XCTestCase {
   private lazy var headerModel0 = HeaderModel(
     heightMode: .static(height: 50),
     height: 50,
-    pinToVisibleBounds: false)
+    pinToVisibleBounds: false
+  )
   private lazy var sizeModesAndHeights0: [(sizeMode: MagazineLayoutItemSizeMode, height: CGFloat)] = [
-    (MagazineLayoutItemSizeMode(
-      widthMode: .fullWidth(respectsHorizontalInsets: true),
-      heightMode: .static(height: 20)),
-     20),
+    (
+      MagazineLayoutItemSizeMode(
+        widthMode: .fullWidth(respectsHorizontalInsets: true),
+        heightMode: .static(height: 20)
+      ),
+      20
+    ),
 
-    (MagazineLayoutItemSizeMode(
-      widthMode: .fullWidth(respectsHorizontalInsets: false),
-      heightMode: .dynamic),
-     15),
+    (
+      MagazineLayoutItemSizeMode(
+        widthMode: .fullWidth(respectsHorizontalInsets: false),
+        heightMode: .dynamic
+      ),
+      15
+    ),
 
     (MagazineLayoutItemSizeMode(widthMode: .halfWidth, heightMode: .static(height: 10)), 10),
     (MagazineLayoutItemSizeMode(widthMode: .halfWidth, heightMode: .static(height: 30)), 30),
-    (MagazineLayoutItemSizeMode(
-      widthMode: .halfWidth,
-      heightMode: .dynamicAndStretchToTallestItemInRow),
-     25),
+    (
+      MagazineLayoutItemSizeMode(
+        widthMode: .halfWidth,
+        heightMode: .dynamicAndStretchToTallestItemInRow
+      ),
+      25
+    ),
 
     (MagazineLayoutItemSizeMode(widthMode: .thirdWidth, heightMode: .dynamic), 15),
-    (MagazineLayoutItemSizeMode(
-      widthMode: .thirdWidth,
-      heightMode: .dynamicAndStretchToTallestItemInRow),
-     10),
+    (
+      MagazineLayoutItemSizeMode(
+        widthMode: .thirdWidth,
+        heightMode: .dynamicAndStretchToTallestItemInRow
+      ),
+      10
+    ),
 
     (MagazineLayoutItemSizeMode(widthMode: .fourthWidth, heightMode: .static(height: 35)), 15),
     (MagazineLayoutItemSizeMode(widthMode: .fourthWidth, heightMode: .dynamic), 15),
@@ -1296,12 +1354,14 @@ final class ModelStateLayoutTests: XCTestCase {
   private lazy var footerModel0 = FooterModel(
     heightMode: .static(height: 50),
     height: 50,
-    pinToVisibleBounds: false)
+    pinToVisibleBounds: false
+  )
 
   private lazy var headerModel1 = HeaderModel(
     heightMode: .dynamic,
     height: 70,
-    pinToVisibleBounds: false)
+    pinToVisibleBounds: false
+  )
   private lazy var sizeModesAndHeights1: [(sizeMode: MagazineLayoutItemSizeMode, height: CGFloat)] = [
     (MagazineLayoutItemSizeMode(widthMode: .halfWidth, heightMode: .static(height: 10)), 10),
     (MagazineLayoutItemSizeMode(widthMode: .halfWidth, heightMode: .static(height: 30)), 30),
@@ -1309,10 +1369,13 @@ final class ModelStateLayoutTests: XCTestCase {
 
     (MagazineLayoutItemSizeMode(widthMode: .thirdWidth, heightMode: .static(height: 15)), 15),
 
-    (MagazineLayoutItemSizeMode(
-      widthMode: .fullWidth(respectsHorizontalInsets: true),
-      heightMode: .static(height: 20)),
-     20),
+    (
+      MagazineLayoutItemSizeMode(
+        widthMode: .fullWidth(respectsHorizontalInsets: true),
+        heightMode: .static(height: 20)
+      ),
+      20
+    ),
 
     (MagazineLayoutItemSizeMode(widthMode: .thirdWidth, heightMode: .static(height: 10)), 10),
 
@@ -1322,15 +1385,19 @@ final class ModelStateLayoutTests: XCTestCase {
     (MagazineLayoutItemSizeMode(widthMode: .fifthWidth, heightMode: .static(height: 35)), 35),
     (MagazineLayoutItemSizeMode(widthMode: .fifthWidth, heightMode: .static(height: 30)), 30),
 
-    (MagazineLayoutItemSizeMode(
-      widthMode: .fullWidth(respectsHorizontalInsets: false),
-      heightMode: .static(height: 15)),
-     15),
+    (
+      MagazineLayoutItemSizeMode(
+        widthMode: .fullWidth(respectsHorizontalInsets: false),
+        heightMode: .static(height: 15)
+      ),
+      15
+    ),
   ]
   private lazy var footerModel1 = FooterModel(
     heightMode: .dynamic,
     height: 70,
-    pinToVisibleBounds: false)
+    pinToVisibleBounds: false
+  )
 
   private func checkExpectedFrames(
     expectedItemFrames0: [CGRect],
@@ -1340,75 +1407,99 @@ final class ModelStateLayoutTests: XCTestCase {
     expectedFooterFrames0: [CGRect],
     expectedFooterFrames1: [CGRect],
     expectedBackgroundFrames0: [CGRect],
-    expectedBackgroundFrames1: [CGRect])
-  {
+    expectedBackgroundFrames1: [CGRect]
+  ) {
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedItemFrames0,
-        match: modelState.itemLocationFramePairs(forItemsIn: visibleRect0)),
-      "Item frames are incorrect")
+        match: modelState.itemLocationFramePairs(forItemsIn: visibleRect0)
+      ),
+      "Item frames are incorrect"
+    )
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedItemFrames1,
-        match: modelState.itemLocationFramePairs(forItemsIn: visibleRect1)),
-      "Item frames are incorrect")
+        match: modelState.itemLocationFramePairs(forItemsIn: visibleRect1)
+      ),
+      "Item frames are incorrect"
+    )
     XCTAssert(
       FrameHelpers.expectedFrames(
         (expectedItemFrames0 + expectedItemFrames1).removingDuplicates(),
         matchItemFramesInSectionIndexRange: 0..<modelState.numberOfSections,
-        modelState: modelState),
-      "Item frames are incorrect")
+        modelState: modelState
+      ),
+      "Item frames are incorrect"
+    )
 
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedHeaderFrames0,
-        match: modelState.headerLocationFramePairs(forHeadersIn: visibleRect0)),
-      "Header frames are incorrect")
+        match: modelState.headerLocationFramePairs(forHeadersIn: visibleRect0)
+      ),
+      "Header frames are incorrect"
+    )
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedHeaderFrames1,
-        match: modelState.headerLocationFramePairs(forHeadersIn: visibleRect1)),
-      "Header frames are incorrect")
+        match: modelState.headerLocationFramePairs(forHeadersIn: visibleRect1)
+      ),
+      "Header frames are incorrect"
+    )
     XCTAssert(
       FrameHelpers.expectedFrames(
         (expectedHeaderFrames0 + expectedHeaderFrames1).removingDuplicates(),
         matchHeaderFramesInSectionIndexRange: 0..<modelState.numberOfSections,
-        modelState: modelState),
-      "Header frames are incorrect")
+        modelState: modelState
+      ),
+      "Header frames are incorrect"
+    )
 
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedFooterFrames0,
-        match: modelState.footerLocationFramePairs(forFootersIn: visibleRect0)),
-      "Footer frames are incorrect")
+        match: modelState.footerLocationFramePairs(forFootersIn: visibleRect0)
+      ),
+      "Footer frames are incorrect"
+    )
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedFooterFrames1,
-        match: modelState.footerLocationFramePairs(forFootersIn: visibleRect1)),
-      "Footer frames are incorrect")
+        match: modelState.footerLocationFramePairs(forFootersIn: visibleRect1)
+      ),
+      "Footer frames are incorrect"
+    )
     XCTAssert(
       FrameHelpers.expectedFrames(
         (expectedFooterFrames0 + expectedFooterFrames1).removingDuplicates(),
         matchFooterFramesInSectionIndexRange: 0..<modelState.numberOfSections,
-        modelState: modelState),
-      "Footer frames are incorrect")
+        modelState: modelState
+      ),
+      "Footer frames are incorrect"
+    )
 
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedBackgroundFrames0,
-        match: modelState.backgroundLocationFramePairs(forBackgroundsIn: visibleRect0)),
-      "Background frames are incorrect")
+        match: modelState.backgroundLocationFramePairs(forBackgroundsIn: visibleRect0)
+      ),
+      "Background frames are incorrect"
+    )
     XCTAssert(
       FrameHelpers.expectedFrames(
         expectedBackgroundFrames1,
-        match: modelState.backgroundLocationFramePairs(forBackgroundsIn: visibleRect1)),
-      "Background frames are incorrect")
+        match: modelState.backgroundLocationFramePairs(forBackgroundsIn: visibleRect1)
+      ),
+      "Background frames are incorrect"
+    )
     XCTAssert(
       FrameHelpers.expectedFrames(
         (expectedBackgroundFrames0 + expectedBackgroundFrames1).removingDuplicates(),
         matchBackgroundFramesInSectionIndexRange: 0..<modelState.numberOfSections,
-        modelState: modelState),
-      "Background frames are incorrect")
+        modelState: modelState
+      ),
+      "Background frames are incorrect"
+    )
   }
 
 }
