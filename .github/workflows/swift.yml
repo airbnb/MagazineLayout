@@ -12,10 +12,17 @@ jobs:
     strategy:
       matrix:
         xcode:
-        - '18.0' # Swift 6
+        - '16.4' # Swift 6.1
     steps:
       - uses: actions/checkout@v4
       - name: Build
         run: xcodebuild clean build -scheme MagazineLayout -destination "generic/platform=iOS Simulator"
       - name: Run tests
-        run: xcodebuild clean test -project MagazineLayout.xcodeproj -scheme MagazineLayout -destination "name=iPhone 16,OS=18.4"
+        run: xcodebuild clean test -project MagazineLayout.xcodeproj -scheme MagazineLayout -destination "name=iPhone 16"
+
+  lint-swift:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint Swift
+        run: swift package --allow-writing-to-package-directory format --lint
