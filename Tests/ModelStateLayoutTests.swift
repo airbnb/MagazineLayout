@@ -59,10 +59,6 @@ final class ModelStateLayoutTests: XCTestCase {
     modelState.setSections(sections)
   }
 
-  override func tearDown() {
-    modelState = nil
-  }
-
   func testInitialLayout() {
     let expectedItemFrames0: [CGRect] = [
       CGRect(x: 25.0, y: 90.0, width: 280.0, height: 20.0),
@@ -1302,7 +1298,7 @@ final class ModelStateLayoutTests: XCTestCase {
 
   private let idGenerator = IDGenerator()
 
-  private var modelState: ModelState!
+  private var modelState = ModelState(currentVisibleBoundsProvider: { .zero })
 
   private let visibleRect0 = CGRect(x: 0, y: 0, width: 320, height: 500)
   private let visibleRect1 = CGRect(x: 0, y: 500, width: 320, height: 2000)

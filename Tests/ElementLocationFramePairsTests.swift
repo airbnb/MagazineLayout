@@ -240,7 +240,7 @@ final class ElementLocationFramePairsTests: XCTestCase {
 
   // MARK: Private
 
-  private var elementLocationFramePairs: ElementLocationFramePairs!
+  private var elementLocationFramePairs = ElementLocationFramePairs()
 
   private func elementLocationFramePairDescription(
     from elementLocationFramePair: ElementLocationFramePair

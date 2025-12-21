@@ -25,10 +25,6 @@ final class ModelStateInitialSetUpTests: XCTestCase {
     modelState = ModelState(currentVisibleBoundsProvider: { .zero })
   }
 
-  override func tearDown() {
-    modelState = nil
-  }
-
   func testInitialEmptyModelState() {
     XCTAssert(
       modelState.numberOfSections == 0,
@@ -78,6 +74,6 @@ final class ModelStateInitialSetUpTests: XCTestCase {
 
   // MARK: Private
 
-  private var modelState: ModelState!
+  private var modelState = ModelState(currentVisibleBoundsProvider: { .zero })
 
 }

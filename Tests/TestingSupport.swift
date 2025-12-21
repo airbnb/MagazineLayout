@@ -213,6 +213,7 @@ extension Array where Element == CGRect {
 
 // MARK: - DebugHelpers
 
+// swiftlint:disable no_direct_standard_out_logs
 enum DebugHelpers {
 
   /// Only used while developing

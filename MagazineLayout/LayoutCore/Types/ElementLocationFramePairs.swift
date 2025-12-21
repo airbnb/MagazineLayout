@@ -41,7 +41,7 @@ struct ElementLocationFramePairs {
     if first == nil {
       first = elementLocationFramePair
     } else {
-      last.next = elementLocationFramePair
+      last?.next = elementLocationFramePair
     }
 
     last = elementLocationFramePair
@@ -53,7 +53,7 @@ struct ElementLocationFramePairs {
 
   // MARK: Private
 
-  private var last: ElementLocationFramePair!
+  private var last: ElementLocationFramePair?
 
 }
 

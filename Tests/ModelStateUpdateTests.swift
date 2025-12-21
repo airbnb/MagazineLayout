@@ -25,10 +25,6 @@ final class ModelStateUpdateTests: XCTestCase {
     modelState = ModelState(currentVisibleBoundsProvider: { .zero })
   }
 
-  override func tearDown() {
-    modelState = nil
-  }
-
   func testIsPerformingBatchUpdates() throws {
     let sectionToInsert = try XCTUnwrap(ModelHelpers.basicSectionModels(
       numberOfSections: 1,
@@ -333,7 +329,7 @@ final class ModelStateUpdateTests: XCTestCase {
     )
 
     XCTAssert(
-      (
+      try (
         modelStateBeforeBatchUpdates.indexPathForItemModel(
           withID: try XCTUnwrap(modelStateBeforeBatchUpdates.idForItemModel(at: IndexPath(item: 0, section: 0)))
         ) ==
@@ -410,6 +406,6 @@ final class ModelStateUpdateTests: XCTestCase {
 
   // MARK: Private
 
-  private var modelState: ModelState!
+  private var modelState = ModelState(currentVisibleBoundsProvider: { .zero })
 
 }

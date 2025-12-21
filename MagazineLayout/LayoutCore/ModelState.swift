@@ -230,7 +230,7 @@ final class ModelState {
       )
     }
 
-    var itemFrame: CGRect!
+    var itemFrame = CGRect.zero
     mutateSectionModels(
       withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
         itemFrame = directlyMutableSectionModels[itemLocation.sectionIndex].calculateFrameForItem(

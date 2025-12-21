@@ -26,10 +26,6 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
     modelState = ModelState(currentVisibleBoundsProvider: { .zero })
   }
 
-  override func tearDown() {
-    modelState = nil
-  }
-
   func testEmptySectionsLayout() {
     let metrics0 = MagazineLayoutSectionMetrics.defaultSectionMetrics(
       forCollectionViewWidth: 320,
@@ -170,6 +166,6 @@ final class ModelStateEmptySectionLayoutTests: XCTestCase {
 
   private let idGenerator = IDGenerator()
 
-  private var modelState: ModelState!
+  private var modelState = ModelState(currentVisibleBoundsProvider: { .zero })
 
 }
