@@ -33,12 +33,14 @@ final class ListDemoViewController: UIViewController {
       UIBarButtonItem(
         barButtonSystemItem: .add,
         target: self,
-        action: #selector(addButtonTapped)),
+        action: #selector(addButtonTapped)
+      ),
       UIBarButtonItem(
         image: UIImage(systemName: "shuffle"),
         style: .plain,
         target: self,
-        action: #selector(shuffleButtonTapped)),
+        action: #selector(shuffleButtonTapped)
+      ),
     ]
 
     view.addSubview(collectionView)
@@ -67,8 +69,7 @@ final class ListDemoViewController: UIViewController {
   }()
 
   private lazy var dataSource: DataSource = {
-    let cellRegistration = UICollectionView.CellRegistration<MagazineLayoutCollectionViewCell, ListItem>
-    { cell, indexPath, item in
+    let cellRegistration = UICollectionView.CellRegistration<MagazineLayoutCollectionViewCell, ListItem> { cell, _, item in
       cell.contentConfiguration = UIHostingConfiguration {
         ListItemView(item: item)
       }
@@ -77,7 +78,7 @@ final class ListDemoViewController: UIViewController {
 
     let headerRegistration = UICollectionView.SupplementaryRegistration<MagazineLayoutCollectionViewCell>(
       elementKind: MagazineLayout.SupplementaryViewKind.sectionHeader
-    ) { [weak self] supplementaryView, elementKind, indexPath in
+    ) { [weak self] supplementaryView, _, indexPath in
       guard let self, indexPath.section < self.sections.count else { return }
 
       let section = self.sections[indexPath.section]
@@ -89,7 +90,7 @@ final class ListDemoViewController: UIViewController {
 
     let footerRegistration = UICollectionView.SupplementaryRegistration<MagazineLayoutCollectionViewCell>(
       elementKind: MagazineLayout.SupplementaryViewKind.sectionFooter
-    ) { supplementaryView, elementKind, indexPath in
+    ) { supplementaryView, _, _ in
       supplementaryView.contentConfiguration = UIHostingConfiguration {
         SectionFooterView()
       }
@@ -102,19 +103,25 @@ final class ListDemoViewController: UIViewController {
         collectionView.dequeueConfiguredReusableCell(
           using: cellRegistration,
           for: indexPath,
-          item: item)
-      })
+          item: item
+        )
+      }
+    )
 
     dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
       switch kind {
       case MagazineLayout.SupplementaryViewKind.sectionHeader:
         return collectionView.dequeueConfiguredReusableSupplementary(
           using: headerRegistration,
-          for: indexPath)
+          for: indexPath
+        )
+
       case MagazineLayout.SupplementaryViewKind.sectionFooter:
         return collectionView.dequeueConfiguredReusableSupplementary(
           using: footerRegistration,
-          for: indexPath)
+          for: indexPath
+        )
+
       default:
         return nil
       }
@@ -123,7 +130,7 @@ final class ListDemoViewController: UIViewController {
     return dataSource
   }()
 
-  private var sections: [ListSection] = []
+  private var sections = [ListSection]()
 
   private func loadInitialData() {
     sections = [
@@ -133,54 +140,66 @@ final class ListDemoViewController: UIViewController {
           ListItem(
             title: "Item 1",
             subtitle: "A featured item with important content",
-            color: .systemRed),
+            color: .systemRed
+          ),
           ListItem(
             title: "Item 2",
             subtitle: "Another featured item to showcase",
-            color: .systemBlue),
+            color: .systemBlue
+          ),
           ListItem(
             title: "Item 3",
             subtitle: "The third item in this section",
-            color: .systemGreen),
+            color: .systemGreen
+          ),
         ],
         headerPinned: true,
-        footerPinned: false),
+        footerPinned: false
+      ),
       ListSection(
         title: "Regular Items",
         items: [
           ListItem(
             title: "Item A",
             subtitle: "A regular item in the list",
-            color: .systemPurple),
+            color: .systemPurple
+          ),
           ListItem(
             title: "Item B",
             subtitle: "Another regular item",
-            color: .systemCyan),
+            color: .systemCyan
+          ),
           ListItem(
             title: "Item C",
             subtitle: "Yet another item",
-            color: .systemOrange),
+            color: .systemOrange
+          ),
           ListItem(
             title: "Item D",
             subtitle: "More content here",
-            color: .systemTeal),
+            color: .systemTeal
+          ),
         ],
         headerPinned: true,
-        footerPinned: false),
+        footerPinned: false
+      ),
       ListSection(
         title: "Special Section",
         items: [
           ListItem(
             title: "Special 1",
             subtitle: "This section has a pinned footer",
-            color: .systemPink),
+            color: .systemPink
+          ),
           ListItem(
             title: "Special 2",
             subtitle: "Notice the footer sticks",
-            color: .systemYellow),
+            color: .systemYellow
+          ),
         ],
         headerPinned: true,
-        footerPinned: true),
+        footerPinned: true
+      ),
     ]
 
     applySnapshot(animatingDifferences: false)
@@ -201,13 +220,22 @@ final class ListDemoViewController: UIViewController {
 
     let randomSectionIndex = Int.random(in: 0..<sections.count)
     let colors: [UIColor] = [
-      .systemRed, .systemOrange, .systemYellow, .systemGreen, .systemTeal,
-      .systemBlue, .systemIndigo, .systemPurple, .systemPink, .systemCyan
+      .systemRed,
+      .systemOrange,
+      .systemYellow,
+      .systemGreen,
+      .systemTeal,
+      .systemBlue,
+      .systemIndigo,
+      .systemPurple,
+      .systemPink,
+      .systemCyan,
     ]
     let newItem = ListItem(
       title: "New Item",
       subtitle: "Just added at \(Date().formatted(date: .omitted, time: .shortened))",
-      color: colors.randomElement() ?? .systemBlue)
+      color: colors.randomElement() ?? .systemBlue
+    )
 
     let updatedSection = sections[randomSectionIndex]
     let insertIndex = Int.random(in: 0...updatedSection.items.count)
@@ -219,7 +247,8 @@ final class ListDemoViewController: UIViewController {
       title: updatedSection.title,
       items: updatedItems,
       headerPinned: updatedSection.headerPinned,
-      footerPinned: updatedSection.footerPinned)
+      footerPinned: updatedSection.footerPinned
+    )
 
     applySnapshot()
   }
@@ -232,7 +261,8 @@ final class ListDemoViewController: UIViewController {
         title: section.title,
         items: section.items.shuffled(),
         headerPinned: section.headerPinned,
-        footerPinned: section.footerPinned)
+        footerPinned: section.footerPinned
+      )
     }
     applySnapshot()
   }
@@ -245,7 +275,7 @@ final class ListDemoViewController: UIViewController {
 // MARK: UICollectionViewDelegate
 
 extension ListDemoViewController: UICollectionViewDelegate {
-  func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+  func collectionView(_: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     let section = sections[indexPath.section]
 
     var updatedItems = section.items
@@ -256,7 +286,8 @@ extension ListDemoViewController: UICollectionViewDelegate {
       title: section.title,
       items: updatedItems,
       headerPinned: section.headerPinned,
-      footerPinned: section.footerPinned)
+      footerPinned: section.footerPinned
+    )
 
     applySnapshot()
   }
@@ -266,78 +297,71 @@ extension ListDemoViewController: UICollectionViewDelegate {
 
 extension ListDemoViewController: UICollectionViewDelegateMagazineLayout {
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    sizeModeForItemAt indexPath: IndexPath)
-    -> MagazineLayoutItemSizeMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    sizeModeForItemAt _: IndexPath
+  ) -> MagazineLayoutItemSizeMode {
     MagazineLayoutItemSizeMode(
       widthMode: .fullWidth(respectsHorizontalInsets: true),
-      heightMode: .dynamic)
+      heightMode: .dynamic
+    )
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForHeaderInSectionAtIndex index: Int)
-    -> MagazineLayoutHeaderVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForHeaderInSectionAtIndex index: Int
+  ) -> MagazineLayoutHeaderVisibilityMode {
     let section = sections[index]
     return .visible(heightMode: .dynamic, pinToVisibleBounds: section.headerPinned)
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForFooterInSectionAtIndex index: Int)
-    -> MagazineLayoutFooterVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForFooterInSectionAtIndex index: Int
+  ) -> MagazineLayoutFooterVisibilityMode {
     let section = sections[index]
     return .visible(heightMode: .dynamic, pinToVisibleBounds: section.footerPinned)
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForBackgroundInSectionAtIndex index: Int)
-    -> MagazineLayoutBackgroundVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForBackgroundInSectionAtIndex _: Int
+  ) -> MagazineLayoutBackgroundVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    horizontalSpacingForItemsInSectionAtIndex index: Int)
-    -> CGFloat
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    horizontalSpacingForItemsInSectionAtIndex _: Int
+  ) -> CGFloat {
     12
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    verticalSpacingForElementsInSectionAtIndex index: Int)
-    -> CGFloat
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    verticalSpacingForElementsInSectionAtIndex _: Int
+  ) -> CGFloat {
     12
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetsForSectionAtIndex index: Int)
-    -> UIEdgeInsets
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    insetsForSectionAtIndex _: Int
+  ) -> UIEdgeInsets {
     UIEdgeInsets(top: 0, left: 0, bottom: 24, right: 0)
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetsForItemsInSectionAtIndex index: Int)
-    -> UIEdgeInsets
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    insetsForItemsInSectionAtIndex _: Int
+  ) -> UIEdgeInsets {
     UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
   }
 }
@@ -353,8 +377,8 @@ private struct ListSection: Hashable {
     title: String,
     items: [ListItem],
     headerPinned: Bool = true,
-    footerPinned: Bool = false)
-  {
+    footerPinned: Bool = false
+  ) {
     self.id = id
     self.title = title
     self.items = items
@@ -370,13 +394,14 @@ private struct ListSection: Hashable {
   let headerPinned: Bool
   let footerPinned: Bool
 
+  static func ==(lhs: ListSection, rhs: ListSection) -> Bool {
+    lhs.id == rhs.id
+  }
+
   func hash(into hasher: inout Hasher) {
     hasher.combine(id)
   }
 
-  static func == (lhs: ListSection, rhs: ListSection) -> Bool {
-    lhs.id == rhs.id
-  }
 }
 
 // MARK: - ListItem
@@ -388,13 +413,14 @@ private struct ListItem: Hashable {
   let subtitle: String
   let color: UIColor
 
+  static func ==(lhs: ListItem, rhs: ListItem) -> Bool {
+    lhs.id == rhs.id
+  }
+
   func hash(into hasher: inout Hasher) {
     hasher.combine(id)
   }
 
-  static func == (lhs: ListItem, rhs: ListItem) -> Bool {
-    lhs.id == rhs.id
-  }
 }
 
 // MARK: - ListItemView

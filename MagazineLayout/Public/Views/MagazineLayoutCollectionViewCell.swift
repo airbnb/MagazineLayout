@@ -40,9 +40,8 @@ import UIKit
 open class MagazineLayoutCollectionViewCell: UICollectionViewCell {
 
   override open func preferredLayoutAttributesFitting(
-    _ layoutAttributes: UICollectionViewLayoutAttributes)
-    -> UICollectionViewLayoutAttributes
-  {
+    _ layoutAttributes: UICollectionViewLayoutAttributes
+  ) -> UICollectionViewLayoutAttributes {
     guard let attributes = layoutAttributes as? MagazineLayoutCollectionViewLayoutAttributes else {
       assertionFailure("`layoutAttributes` must be an instance of `MagazineLayoutCollectionViewLayoutAttributes`")
       return super.preferredLayoutAttributesFitting(layoutAttributes)
@@ -74,7 +73,8 @@ open class MagazineLayoutCollectionViewCell: UICollectionViewCell {
       size = super.systemLayoutSizeFitting(
         layoutAttributes.size,
         withHorizontalFittingPriority: .required,
-        verticalFittingPriority: .fittingSizeLevel)
+        verticalFittingPriority: .fittingSizeLevel
+      )
     } else {
       // No self-sizing is required; respect whatever size the layout determined.
       size = layoutAttributes.size

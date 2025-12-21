@@ -34,12 +34,14 @@ final class MessageThreadDemoViewController: UIViewController {
         title: "Send",
         style: .plain,
         target: self,
-        action: #selector(sendButtonTapped)),
+        action: #selector(sendButtonTapped)
+      ),
       UIBarButtonItem(
         title: "Receive",
         style: .plain,
         target: self,
-        action: #selector(receiveButtonTapped)),
+        action: #selector(receiveButtonTapped)
+      ),
     ]
 
     view.addSubview(collectionView)
@@ -69,8 +71,7 @@ final class MessageThreadDemoViewController: UIViewController {
   }()
 
   private lazy var dataSource: DataSource = {
-    let cellRegistration = UICollectionView.CellRegistration<MagazineLayoutCollectionViewCell, Message>
-    { cell, indexPath, message in
+    let cellRegistration = UICollectionView.CellRegistration<MagazineLayoutCollectionViewCell, Message> { cell, _, message in
       cell.contentConfiguration = UIHostingConfiguration {
         MessageView(message: message)
       }
@@ -83,11 +84,13 @@ final class MessageThreadDemoViewController: UIViewController {
         collectionView.dequeueConfiguredReusableCell(
           using: cellRegistration,
           for: indexPath,
-          item: message)
-      })
+          item: message
+        )
+      }
+    )
   }()
 
-  private var messages: [Message] = []
+  private var messages = [Message]()
   private var messageCounter = 0
   private var oldestMessageDate = Date()
   private var isLoadingMore = false
@@ -120,7 +123,7 @@ final class MessageThreadDemoViewController: UIViewController {
 
   private func loadInitialMessages() {
     // Create 10 initial messages alternating between sent and received
-    var initialMessages: [Message] = []
+    var initialMessages = [Message]()
     var timestamp = Date()
 
     for i in 0..<20 {
@@ -132,7 +135,8 @@ final class MessageThreadDemoViewController: UIViewController {
       initialMessages.append(Message(
         text: text,
         isSent: isSent,
-        timestamp: timestamp))
+        timestamp: timestamp
+      ))
 
       timestamp = timestamp.addingTimeInterval(-60) // 1 minute earlier
     }
@@ -156,7 +160,7 @@ final class MessageThreadDemoViewController: UIViewController {
     isLoadingMore = true
 
     // Simulate loading 10 older messages
-    var olderMessages: [Message] = []
+    var olderMessages = [Message]()
     var timestamp = oldestMessageDate.addingTimeInterval(-60)
 
     for i in 0..<10 {
@@ -168,7 +172,8 @@ final class MessageThreadDemoViewController: UIViewController {
       olderMessages.append(Message(
         text: text,
         isSent: isSent,
-        timestamp: timestamp))
+        timestamp: timestamp
+      ))
 
       timestamp = timestamp.addingTimeInterval(-60)
     }
@@ -186,7 +191,8 @@ final class MessageThreadDemoViewController: UIViewController {
   private func sendButtonTapped() {
     let newMessage = Message(
       text: sentMessages.randomElement() ?? "Hello!",
-      isSent: true)
+      isSent: true
+    )
 
     messages.append(newMessage)
     messageCounter += 1
@@ -198,7 +204,8 @@ final class MessageThreadDemoViewController: UIViewController {
   private func receiveButtonTapped() {
     let newMessage = Message(
       text: receivedMessages.randomElement() ?? "Hi there!",
-      isSent: false)
+      isSent: false
+    )
 
     messages.append(newMessage)
     messageCounter += 1
@@ -211,7 +218,7 @@ final class MessageThreadDemoViewController: UIViewController {
 
 extension MessageThreadDemoViewController: UICollectionViewDelegate {
   func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-    if scrollView.contentOffset.y <= -scrollView.adjustedContentInset.top && !isLoadingMore {
+    if scrollView.contentOffset.y <= -scrollView.adjustedContentInset.top, !isLoadingMore {
       loadOlderMessages()
     }
   }
@@ -221,76 +228,69 @@ extension MessageThreadDemoViewController: UICollectionViewDelegate {
 
 extension MessageThreadDemoViewController: UICollectionViewDelegateMagazineLayout {
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    sizeModeForItemAt indexPath: IndexPath)
-    -> MagazineLayoutItemSizeMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    sizeModeForItemAt _: IndexPath
+  ) -> MagazineLayoutItemSizeMode {
     MagazineLayoutItemSizeMode(
       widthMode: .fullWidth(respectsHorizontalInsets: true),
-      heightMode: .dynamic)
+      heightMode: .dynamic
+    )
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForHeaderInSectionAtIndex index: Int)
-    -> MagazineLayoutHeaderVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForHeaderInSectionAtIndex _: Int
+  ) -> MagazineLayoutHeaderVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForFooterInSectionAtIndex index: Int)
-    -> MagazineLayoutFooterVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForFooterInSectionAtIndex _: Int
+  ) -> MagazineLayoutFooterVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForBackgroundInSectionAtIndex index: Int)
-    -> MagazineLayoutBackgroundVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForBackgroundInSectionAtIndex _: Int
+  ) -> MagazineLayoutBackgroundVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    horizontalSpacingForItemsInSectionAtIndex index: Int)
-    -> CGFloat
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    horizontalSpacingForItemsInSectionAtIndex _: Int
+  ) -> CGFloat {
     12
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    verticalSpacingForElementsInSectionAtIndex index: Int)
-    -> CGFloat
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    verticalSpacingForElementsInSectionAtIndex _: Int
+  ) -> CGFloat {
     8
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetsForSectionAtIndex index: Int)
-    -> UIEdgeInsets
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    insetsForSectionAtIndex _: Int
+  ) -> UIEdgeInsets {
     UIEdgeInsets(top: 16, left: 0, bottom: 16, right: 0)
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetsForItemsInSectionAtIndex index: Int)
-    -> UIEdgeInsets
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    insetsForItemsInSectionAtIndex _: Int
+  ) -> UIEdgeInsets {
     UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
   }
 }
@@ -304,8 +304,8 @@ private struct Message: Hashable {
   init(
     text: String,
     isSent: Bool,
-    timestamp: Date = Date())
-  {
+    timestamp: Date = Date()
+  ) {
     self.text = text
     self.isSent = isSent
     self.timestamp = timestamp
@@ -318,13 +318,14 @@ private struct Message: Hashable {
   let isSent: Bool
   let timestamp: Date
 
+  static func ==(lhs: Message, rhs: Message) -> Bool {
+    lhs.id == rhs.id
+  }
+
   func hash(into hasher: inout Hasher) {
     hasher.combine(id)
   }
 
-  static func == (lhs: Message, rhs: Message) -> Bool {
-    lhs.id == rhs.id
-  }
 }
 
 // MARK: - MessageView

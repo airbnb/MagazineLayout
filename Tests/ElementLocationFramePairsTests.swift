@@ -39,13 +39,15 @@ final class ElementLocationFramePairsTests: XCTestCase {
 
   func testOneElement() {
     let expectedDescriptions = [
-      "{0, 0} & (0.0, 0.0, 100.0, 100.0)",
+      "{0, 0} & (0.0, 0.0, 100.0, 100.0)"
     ]
 
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 0, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
 
     var descriptions = [String]()
     for elementLocationFramePair in elementLocationFramePairs {
@@ -65,11 +67,15 @@ final class ElementLocationFramePairsTests: XCTestCase {
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 0, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 1, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
 
     var descriptions = [String]()
     for elementLocationFramePair in elementLocationFramePairs {
@@ -90,46 +96,63 @@ final class ElementLocationFramePairsTests: XCTestCase {
       "{1, 1} & (10.0, 10.0, 200.0, 200.0)",
       "{1, 2} & (10.0, 10.0, 200.0, 200.0)",
       "{1, 3} & (10.0, 10.0, 200.0, 200.0)",
-      ]
+    ]
 
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 0, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 1, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 3, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 4, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
 
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 0, sectionIndex: 1),
-        frame: CGRect(x: 10, y: 10, width: 200, height: 200)))
+        frame: CGRect(x: 10, y: 10, width: 200, height: 200)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 1, sectionIndex: 1),
-        frame: CGRect(x: 10, y: 10, width: 200, height: 200)))
+        frame: CGRect(x: 10, y: 10, width: 200, height: 200)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 2, sectionIndex: 1),
-        frame: CGRect(x: 10, y: 10, width: 200, height: 200)))
+        frame: CGRect(x: 10, y: 10, width: 200, height: 200)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 3, sectionIndex: 1),
-        frame: CGRect(x: 10, y: 10, width: 200, height: 200)))
+        frame: CGRect(x: 10, y: 10, width: 200, height: 200)
+      )
+    )
 
     var descriptions = [String]()
     for elementLocationFramePair in elementLocationFramePairs {
       let indexPathFramePairDescription = elementLocationFramePairDescription(
-        from: elementLocationFramePair)
+        from: elementLocationFramePair
+      )
       descriptions.append(indexPathFramePairDescription)
     }
 
@@ -146,41 +169,57 @@ final class ElementLocationFramePairsTests: XCTestCase {
       "{1, 1} & (10.0, 10.0, 200.0, 200.0)",
       "{1, 2} & (10.0, 10.0, 200.0, 200.0)",
       "{1, 3} & (10.0, 10.0, 200.0, 200.0)",
-      ]
+    ]
 
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 0, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 1, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 3, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 4, sectionIndex: 0),
-        frame: CGRect(x: 0, y: 0, width: 100, height: 100)))
+        frame: CGRect(x: 0, y: 0, width: 100, height: 100)
+      )
+    )
 
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 0, sectionIndex: 1),
-        frame: CGRect(x: 10, y: 10, width: 200, height: 200)))
+        frame: CGRect(x: 10, y: 10, width: 200, height: 200)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 1, sectionIndex: 1),
-        frame: CGRect(x: 10, y: 10, width: 200, height: 200)))
+        frame: CGRect(x: 10, y: 10, width: 200, height: 200)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 2, sectionIndex: 1),
-        frame: CGRect(x: 10, y: 10, width: 200, height: 200)))
+        frame: CGRect(x: 10, y: 10, width: 200, height: 200)
+      )
+    )
     elementLocationFramePairs.append(
       ElementLocationFramePair(
         elementLocation: ElementLocation(elementIndex: 3, sectionIndex: 1),
-        frame: CGRect(x: 10, y: 10, width: 200, height: 200)))
+        frame: CGRect(x: 10, y: 10, width: 200, height: 200)
+      )
+    )
 
     var descriptions = [String]()
     for elementLocationFramePair in elementLocationFramePairs {
@@ -204,9 +243,8 @@ final class ElementLocationFramePairsTests: XCTestCase {
   private var elementLocationFramePairs: ElementLocationFramePairs!
 
   private func elementLocationFramePairDescription(
-    from elementLocationFramePair: ElementLocationFramePair)
-    -> String
-  {
+    from elementLocationFramePair: ElementLocationFramePair
+  ) -> String {
     let sectionIndex = elementLocationFramePair.elementLocation.sectionIndex
     let elementIndex = elementLocationFramePair.elementLocation.elementIndex
     let frame = elementLocationFramePair.frame

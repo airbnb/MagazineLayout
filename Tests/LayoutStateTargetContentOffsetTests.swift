@@ -17,18 +17,21 @@ import XCTest
 
 @testable import MagazineLayout
 
+// MARK: - LayoutStateTargetContentOffsetTests
+
 final class LayoutStateTargetContentOffsetTests: XCTestCase {
 
-  // MARK: Top-to-Bottom Anchor Tests
+  // MARK: Internal
 
-  func testAnchor_TopToBottom_ScrolledToTop() throws {
+  func testAnchor_TopToBottom_ScrolledToTop() {
     let bounds = CGRect(x: 0, y: -50, width: 300, height: 400)
     let layoutState = LayoutState(
       modelState: modelState(bounds: bounds),
       bounds: bounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .topToBottom)
+      verticalLayoutDirection: .topToBottom
+    )
     XCTAssert(layoutState.targetContentOffsetAnchor == .top)
   }
 
@@ -39,10 +42,15 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .topToBottom)
+      verticalLayoutDirection: .topToBottom
+    )
     let indexPath = IndexPath(item: 6, section: 0)
-    let id = layoutState.modelState.idForItemModel(at: indexPath)!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, elementLocation: ElementLocation(indexPath: indexPath), distanceFromTop: -25))
+    let id = try XCTUnwrap(layoutState.modelState.idForItemModel(at: indexPath))
+    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(
+      id: id,
+      elementLocation: ElementLocation(indexPath: indexPath),
+      distanceFromTop: -25
+    ))
   }
 
   func testAnchor_TopToBottom_ScrolledToBottom() throws {
@@ -52,7 +60,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: measurementBounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .topToBottom)
+      verticalLayoutDirection: .topToBottom
+    )
     let maxContentOffset = measurementLayoutState.maxContentOffset
 
     let bounds = CGRect(origin: maxContentOffset, size: measurementBounds.size)
@@ -61,10 +70,15 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: measurementLayoutState.contentInset,
       scale: measurementLayoutState.scale,
-      verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
+      verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection
+    )
     let indexPath = IndexPath(item: 9, section: 0)
-    let id = layoutState.modelState.idForItemModel(at: indexPath)!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, elementLocation: ElementLocation(indexPath: indexPath), distanceFromTop: 25))
+    let id = try XCTUnwrap(layoutState.modelState.idForItemModel(at: indexPath))
+    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(
+      id: id,
+      elementLocation: ElementLocation(indexPath: indexPath),
+      distanceFromTop: 25
+    ))
   }
 
   func testAnchor_TopToBottom_NoFullyVisibleCells_UsesFallback() throws {
@@ -76,16 +90,19 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .topToBottom)
+      verticalLayoutDirection: .topToBottom
+    )
 
     // Since no items are fully visible, the fallback should use the first partially visible item
     // instead of returning .top or .bottom
     let indexPath = IndexPath(item: 0, section: 0)
-    let id = layoutState.modelState.idForItemModel(at: indexPath)!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(id: id, elementLocation: ElementLocation(indexPath: indexPath), distanceFromTop: -300))
+    let id = try XCTUnwrap(layoutState.modelState.idForItemModel(at: indexPath))
+    XCTAssert(layoutState.targetContentOffsetAnchor == .topItem(
+      id: id,
+      elementLocation: ElementLocation(indexPath: indexPath),
+      distanceFromTop: -300
+    ))
   }
-
-  // MARK: Bottom-to-Top Anchor Tests
 
   func testAnchor_BottomToTop_ScrolledToTop() throws {
     let bounds = CGRect(x: 0, y: -50, width: 300, height: 400)
@@ -94,10 +111,15 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .bottomToTop)
+      verticalLayoutDirection: .bottomToTop
+    )
     let indexPath = IndexPath(item: 3, section: 0)
-    let id = layoutState.modelState.idForItemModel(at: indexPath)!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .bottomItem(id: id, elementLocation: ElementLocation(indexPath: indexPath), distanceFromBottom: -90))
+    let id = try XCTUnwrap(layoutState.modelState.idForItemModel(at: indexPath))
+    XCTAssert(layoutState.targetContentOffsetAnchor == .bottomItem(
+      id: id,
+      elementLocation: ElementLocation(indexPath: indexPath),
+      distanceFromBottom: -90
+    ))
   }
 
   func testAnchor_BottomToTop_ScrolledToMiddle() throws {
@@ -107,20 +129,26 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .bottomToTop)
+      verticalLayoutDirection: .bottomToTop
+    )
     let indexPath = IndexPath(item: 10, section: 0)
-    let id = layoutState.modelState.idForItemModel(at: indexPath)!
-    XCTAssert(layoutState.targetContentOffsetAnchor == .bottomItem(id: id, elementLocation: ElementLocation(indexPath: indexPath), distanceFromBottom: -10))
+    let id = try XCTUnwrap(layoutState.modelState.idForItemModel(at: indexPath))
+    XCTAssert(layoutState.targetContentOffsetAnchor == .bottomItem(
+      id: id,
+      elementLocation: ElementLocation(indexPath: indexPath),
+      distanceFromBottom: -10
+    ))
   }
 
-  func testAnchor_BottomToTop_ScrolledToBottom() throws {
+  func testAnchor_BottomToTop_ScrolledToBottom() {
     let measurementBounds = CGRect(x: 0, y: 0, width: 300, height: 400)
     let measurementLayoutState = LayoutState(
       modelState: modelState(bounds: measurementBounds),
       bounds: measurementBounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .bottomToTop)
+      verticalLayoutDirection: .bottomToTop
+    )
     let maxContentOffset = measurementLayoutState.maxContentOffset
 
     let bounds = CGRect(origin: maxContentOffset, size: measurementBounds.size)
@@ -129,11 +157,10 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: measurementLayoutState.contentInset,
       scale: measurementLayoutState.scale,
-      verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
+      verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection
+    )
     XCTAssert(layoutState.targetContentOffsetAnchor == .bottom)
   }
-
-  // MARK: Top-to-Bottom Target Content Offset Tests
 
   func testOffset_TopToBottom_ScrolledToTop() {
     let bounds = CGRect(x: 0, y: -50, width: 300, height: 400)
@@ -142,7 +169,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .topToBottom)
+      verticalLayoutDirection: .topToBottom
+    )
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
     XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == -50)
   }
@@ -154,7 +182,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .topToBottom)
+      verticalLayoutDirection: .topToBottom
+    )
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
     XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == 500)
   }
@@ -166,7 +195,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: measurementBounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .topToBottom)
+      verticalLayoutDirection: .topToBottom
+    )
     let maxContentOffset = measurementLayoutState.maxContentOffset
 
     let bounds = CGRect(origin: maxContentOffset, size: measurementBounds.size)
@@ -175,12 +205,11 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: measurementLayoutState.contentInset,
       scale: measurementLayoutState.scale,
-      verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
+      verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection
+    )
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
     XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == 690)
   }
-
-  // MARK: Bottom-to-Top Target Content Offset Tests
 
   func testOffset_BottomToTop_ScrolledToTop() {
     let bounds = CGRect(x: 0, y: -50, width: 300, height: 400)
@@ -189,7 +218,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .bottomToTop)
+      verticalLayoutDirection: .bottomToTop
+    )
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
     XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == -50)
   }
@@ -201,7 +231,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .bottomToTop)
+      verticalLayoutDirection: .bottomToTop
+    )
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
     XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == 500)
   }
@@ -213,7 +244,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: measurementBounds,
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
-      verticalLayoutDirection: .bottomToTop)
+      verticalLayoutDirection: .bottomToTop
+    )
     let maxContentOffset = measurementLayoutState.maxContentOffset
 
     let bounds = CGRect(origin: maxContentOffset, size: measurementBounds.size)
@@ -222,7 +254,8 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       bounds: bounds,
       contentInset: measurementLayoutState.contentInset,
       scale: measurementLayoutState.scale,
-      verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
+      verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection
+    )
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
     XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == 690)
   }
@@ -262,7 +295,9 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
           horizontalSpacing: 0,
           sectionInsets: .zero,
           itemInsets: .zero,
-          scale: 1))
+          scale: 1
+        )
+      )
     ]
     modelState.setSections(sections)
     return modelState
@@ -289,7 +324,9 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
           horizontalSpacing: 0,
           sectionInsets: .zero,
           itemInsets: .zero,
-          scale: 1))
+          scale: 1
+        )
+      )
     ]
     modelState.setSections(sections)
     return modelState
@@ -299,16 +336,17 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
 
 // MARK: - ItemModel
 
-private extension ItemModel {
-  init(
+extension ItemModel {
+  fileprivate init(
     idGenerator: IDGenerator,
     widthMode: MagazineLayoutItemWidthMode,
-    preferredHeight: CGFloat?)
-  {
+    preferredHeight: CGFloat?
+  ) {
     self.init(
       idGenerator: idGenerator,
       sizeMode: .init(widthMode: widthMode, heightMode: .dynamic),
-      height: 150)
+      height: 150
+    )
     self.preferredHeight = preferredHeight
   }
 }

@@ -19,15 +19,14 @@ import UIKit
 
 // MARK: - ModelHelpers
 
-final class ModelHelpers {
+enum ModelHelpers {
 
   // MARK: Internal
 
   static func basicSectionModels(
     numberOfSections: UInt,
-    numberOfItemsPerSection: UInt)
-    -> [SectionModel]
-  {
+    numberOfItemsPerSection: UInt
+  ) -> [SectionModel] {
     var sectionModels = [SectionModel]()
 
     for _ in 0..<numberOfSections {
@@ -44,7 +43,9 @@ final class ModelHelpers {
         backgroundModel: nil,
         metrics: MagazineLayoutSectionMetrics.defaultSectionMetrics(
           forCollectionViewWidth: 320,
-          scale: 1))
+          scale: 1
+        )
+      )
       sectionModels.append(sectionModel)
     }
 
@@ -52,12 +53,14 @@ final class ModelHelpers {
   }
 
   static func basicItemModel() -> ItemModel {
-    return ItemModel(
+    ItemModel(
       idGenerator: idGenerator,
       sizeMode: MagazineLayoutItemSizeMode(
         widthMode: .fullWidth(respectsHorizontalInsets: true),
-        heightMode: .static(height: 20)),
-      height: 20)
+        heightMode: .static(height: 20)
+      ),
+      height: 20
+    )
   }
 
   // MARK: Private
@@ -73,9 +76,8 @@ final class FrameHelpers {
 
   static func expectedFrames(
     _ expectedFrames: [CGRect],
-    match elementLocationFramePairs: ElementLocationFramePairs)
-    -> Bool
-  {
+    match elementLocationFramePairs: ElementLocationFramePairs
+  ) -> Bool {
     let expectedFrames = Set(expectedFrames)
     var checkedFramesCount = 0
 
@@ -93,16 +95,16 @@ final class FrameHelpers {
   static func expectedFrames(
     _ expectedFrames: [CGRect],
     matchItemFramesInSectionIndexRange sectionIndexRange: Range<Int>,
-    modelState: ModelState)
-    -> Bool
-  {
+    modelState: ModelState
+  ) -> Bool {
     let expectedFrames = Set(expectedFrames)
     var checkedFramesCount = 0
 
     for sectionIndex in sectionIndexRange {
       for itemIndex in 0..<modelState.numberOfItems(inSectionAtIndex: sectionIndex) {
         let itemFrame = modelState.frameForItem(
-          at: ElementLocation(elementIndex: itemIndex, sectionIndex: sectionIndex))
+          at: ElementLocation(elementIndex: itemIndex, sectionIndex: sectionIndex)
+        )
         if !expectedFrames.contains(itemFrame) {
           return false
         }
@@ -117,9 +119,8 @@ final class FrameHelpers {
   static func expectedFrames(
     _ expectedFrames: [CGRect?],
     matchHeaderFramesInSectionIndexRange sectionIndexRange: Range<Int>,
-    modelState: ModelState)
-    -> Bool
-  {
+    modelState: ModelState
+  ) -> Bool {
     var expectedFrameIndex = 0
     for sectionIndex in sectionIndexRange {
       let headerFrame = modelState.frameForHeader(inSectionAtIndex: sectionIndex)
@@ -142,9 +143,8 @@ final class FrameHelpers {
   static func expectedFrames(
     _ expectedFrames: [CGRect?],
     matchFooterFramesInSectionIndexRange sectionIndexRange: Range<Int>,
-    modelState: ModelState)
-    -> Bool
-  {
+    modelState: ModelState
+  ) -> Bool {
     var expectedFrameIndex = 0
     for sectionIndex in sectionIndexRange {
       let footerFrame = modelState.frameForFooter(inSectionAtIndex: sectionIndex)
@@ -167,9 +167,8 @@ final class FrameHelpers {
   static func expectedFrames(
     _ expectedFrames: [CGRect?],
     matchBackgroundFramesInSectionIndexRange sectionIndexRange: Range<Int>,
-    modelState: ModelState)
-    -> Bool
-  {
+    modelState: ModelState
+  ) -> Bool {
     var expectedFrameIndex = 0
     for sectionIndex in sectionIndexRange {
       let backgroundFrame = modelState.frameForBackground(inSectionAtIndex: sectionIndex)
@@ -214,14 +213,14 @@ extension Array where Element == CGRect {
 
 // MARK: - DebugHelpers
 
-final class DebugHelpers {
+enum DebugHelpers {
 
   /// Only used while developing
   static func printExpectedFrameCodeToConsole(
     modelState: ModelState,
     visibleRect0: CGRect,
-    visibleRect1: CGRect)
-  {
+    visibleRect1: CGRect
+  ) {
     print("let expectedItemFrames0: [CGRect] = [")
     for pair in modelState.itemLocationFramePairs(forItemsIn: visibleRect0) {
       print("\tCGRect(x: \(pair.frame.minX), y: \(pair.frame.minY), width: \(pair.frame.width), height: \(pair.frame.height)),")

@@ -22,7 +22,7 @@ final class ModelStateInitialSetUpTests: XCTestCase {
   // MARK: Internal
 
   override func setUp() {
-    modelState = ModelState(currentVisibleBoundsProvider: { return .zero })
+    modelState = ModelState(currentVisibleBoundsProvider: { .zero })
   }
 
   override func tearDown() {
@@ -32,39 +32,48 @@ final class ModelStateInitialSetUpTests: XCTestCase {
   func testInitialEmptyModelState() {
     XCTAssert(
       modelState.numberOfSections == 0,
-      "The model state should contain 0 sections")
+      "The model state should contain 0 sections"
+    )
     XCTAssert(
       modelState.sectionIndicesToInsert.count == 0,
-      "`sectionIndicesToInsert` should be empty")
+      "`sectionIndicesToInsert` should be empty"
+    )
     XCTAssert(
       modelState.sectionIndicesToDelete.count == 0,
-      "`sectionIndicesToDelete` should be empty")
+      "`sectionIndicesToDelete` should be empty"
+    )
     XCTAssert(
       modelState.itemIndexPathsToInsert.count == 0,
-      "`itemIndexPathsToInsert` should be empty")
+      "`itemIndexPathsToInsert` should be empty"
+    )
     XCTAssert(
       modelState.itemIndexPathsToDelete.count == 0,
-      "`itemIndexPathsToDelete` should be empty")
+      "`itemIndexPathsToDelete` should be empty"
+    )
   }
 
   func testSetSections() {
     let sectionModels = ModelHelpers.basicSectionModels(
       numberOfSections: 2,
-      numberOfItemsPerSection: 3)
+      numberOfItemsPerSection: 3
+    )
     modelState.setSections(sectionModels)
 
     XCTAssert(
       modelState.numberOfSections == 2,
-      "The model state should contain 2 sections")
+      "The model state should contain 2 sections"
+    )
     XCTAssert(
-      (modelState.numberOfItems(inSectionAtIndex: 0) == 3 &&
-        modelState.numberOfItems(inSectionAtIndex: 1) == 3),
-      "The model state should contain 3 items for each section")
+      modelState.numberOfItems(inSectionAtIndex: 0) == 3 &&
+        modelState.numberOfItems(inSectionAtIndex: 1) == 3,
+      "The model state should contain 3 items for each section"
+    )
 
     modelState.setSections([])
     XCTAssert(
       modelState.numberOfSections == 0,
-      "The model state should contain 0 sections")
+      "The model state should contain 0 sections"
+    )
   }
 
   // MARK: Private

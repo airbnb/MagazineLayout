@@ -69,24 +69,26 @@ public enum MagazineLayoutItemWidthMode: Hashable {
   /// error and **will result in a runtime crash**.
   case fractionalWidth(divisor: UInt)
 
+  // MARK: Public
+
   /// Half width items will take up `1/2` of the available width for a given row of items.
   public static var halfWidth: MagazineLayoutItemWidthMode {
-    return .fractionalWidth(divisor: 2)
+    .fractionalWidth(divisor: 2)
   }
 
   /// Third width items will take up `1/3` of the available width for a given row of items.
   public static var thirdWidth: MagazineLayoutItemWidthMode {
-    return .fractionalWidth(divisor: 3)
+    .fractionalWidth(divisor: 3)
   }
 
   /// Fourth width items will take up `1/4` of the available width for a given row of items.
   public static var fourthWidth: MagazineLayoutItemWidthMode {
-    return .fractionalWidth(divisor: 4)
+    .fractionalWidth(divisor: 4)
   }
 
   /// Fifth width items will take up `1/5` of the available width for a given row of items.
   public static var fifthWidth: MagazineLayoutItemWidthMode {
-    return .fractionalWidth(divisor: 5)
+    .fractionalWidth(divisor: 5)
   }
 
 }
@@ -124,6 +126,8 @@ public enum MagazineLayoutItemHeightMode: Hashable {
   /// Note that items with this height mode will resize to match the height of the tallest item in
   /// the same row of items, even if the tallest item has a `static` height mode.
   case dynamicAndStretchToTallestItemInRow
+
+  // MARK: Public
 
   /// This height mode will cause the item to self-size in the vertical direction
   ///

@@ -30,10 +30,9 @@ public enum MagazineLayoutFooterVisibilityMode: Hashable {
   /// This visibility mode will cause the footer to be displayed using the specified height mode in
   /// its respective section.
   public static func visible(
-    heightMode: MagazineLayoutFooterHeightMode)
-    -> MagazineLayoutFooterVisibilityMode
-  {
-    return .visible(heightMode: heightMode, pinToVisibleBounds: false)
+    heightMode: MagazineLayoutFooterHeightMode
+  ) -> MagazineLayoutFooterVisibilityMode {
+    .visible(heightMode: heightMode, pinToVisibleBounds: false)
   }
 
 }

@@ -43,6 +43,9 @@ final class RootMenuViewController: UIViewController {
 
   // MARK: Private
 
+  private typealias DataSource = UICollectionViewDiffableDataSource<Int, DemoOption>
+  private typealias Snapshot = NSDiffableDataSourceSnapshot<Int, DemoOption>
+
   private lazy var collectionView: UICollectionView = {
     let layout = MagazineLayout()
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -51,12 +54,8 @@ final class RootMenuViewController: UIViewController {
     return collectionView
   }()
 
-  private typealias DataSource = UICollectionViewDiffableDataSource<Int, DemoOption>
-  private typealias Snapshot = NSDiffableDataSourceSnapshot<Int, DemoOption>
-
   private lazy var dataSource: DataSource = {
-    let cellRegistration = UICollectionView.CellRegistration<MagazineLayoutCollectionViewCell, DemoOption>
-    { cell, indexPath, option in
+    let cellRegistration = UICollectionView.CellRegistration<MagazineLayoutCollectionViewCell, DemoOption> { cell, _, option in
       cell.contentConfiguration = UIHostingConfiguration {
         MenuItemView(option: option)
       }
@@ -69,8 +68,10 @@ final class RootMenuViewController: UIViewController {
         collectionView.dequeueConfiguredReusableCell(
           using: cellRegistration,
           for: indexPath,
-          item: option)
-      })
+          item: option
+        )
+      }
+    )
   }()
 
   private func applyInitialSnapshot() {
@@ -84,7 +85,7 @@ final class RootMenuViewController: UIViewController {
 // MARK: UICollectionViewDelegate
 
 extension RootMenuViewController: UICollectionViewDelegate {
-  func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+  func collectionView(_: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     guard let option = dataSource.itemIdentifier(for: indexPath) else { return }
 
     let viewController: UIViewController
@@ -107,76 +108,69 @@ extension RootMenuViewController: UICollectionViewDelegate {
 
 extension RootMenuViewController: UICollectionViewDelegateMagazineLayout {
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    sizeModeForItemAt indexPath: IndexPath)
-    -> MagazineLayoutItemSizeMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    sizeModeForItemAt _: IndexPath
+  ) -> MagazineLayoutItemSizeMode {
     MagazineLayoutItemSizeMode(
       widthMode: .fullWidth(respectsHorizontalInsets: true),
-      heightMode: .dynamic)
+      heightMode: .dynamic
+    )
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForHeaderInSectionAtIndex index: Int)
-    -> MagazineLayoutHeaderVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForHeaderInSectionAtIndex _: Int
+  ) -> MagazineLayoutHeaderVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForFooterInSectionAtIndex index: Int)
-    -> MagazineLayoutFooterVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForFooterInSectionAtIndex _: Int
+  ) -> MagazineLayoutFooterVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForBackgroundInSectionAtIndex index: Int)
-    -> MagazineLayoutBackgroundVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForBackgroundInSectionAtIndex _: Int
+  ) -> MagazineLayoutBackgroundVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    horizontalSpacingForItemsInSectionAtIndex index: Int)
-    -> CGFloat
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    horizontalSpacingForItemsInSectionAtIndex _: Int
+  ) -> CGFloat {
     16
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    verticalSpacingForElementsInSectionAtIndex index: Int)
-    -> CGFloat
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    verticalSpacingForElementsInSectionAtIndex _: Int
+  ) -> CGFloat {
     16
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetsForSectionAtIndex index: Int)
-    -> UIEdgeInsets
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    insetsForSectionAtIndex _: Int
+  ) -> UIEdgeInsets {
     UIEdgeInsets(top: 16, left: 0, bottom: 16, right: 0)
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetsForItemsInSectionAtIndex index: Int)
-    -> UIEdgeInsets
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    insetsForItemsInSectionAtIndex _: Int
+  ) -> UIEdgeInsets {
     UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
   }
 }
@@ -188,6 +182,8 @@ private enum DemoOption: String, CaseIterable {
   case list = "List Layout"
   case messageThread = "Message Thread"
   case performance = "Performance"
+
+  // MARK: Internal
 
   var subtitle: String {
     switch self {

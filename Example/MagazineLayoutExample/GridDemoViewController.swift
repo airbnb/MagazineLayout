@@ -33,12 +33,14 @@ final class GridDemoViewController: UIViewController {
       UIBarButtonItem(
         barButtonSystemItem: .add,
         target: self,
-        action: #selector(addButtonTapped)),
+        action: #selector(addButtonTapped)
+      ),
       UIBarButtonItem(
         image: UIImage(systemName: "shuffle"),
         style: .plain,
         target: self,
-        action: #selector(shuffleButtonTapped)),
+        action: #selector(shuffleButtonTapped)
+      ),
     ]
 
     view.addSubview(collectionView)
@@ -67,8 +69,7 @@ final class GridDemoViewController: UIViewController {
   }()
 
   private lazy var dataSource: DataSource = {
-    let cellRegistration = UICollectionView.CellRegistration<MagazineLayoutCollectionViewCell, GridItem>
-    { cell, indexPath, item in
+    let cellRegistration = UICollectionView.CellRegistration<MagazineLayoutCollectionViewCell, GridItem> { cell, _, item in
       cell.contentConfiguration = UIHostingConfiguration {
         GridItemView(item: item)
       }
@@ -81,11 +82,13 @@ final class GridDemoViewController: UIViewController {
         collectionView.dequeueConfiguredReusableCell(
           using: cellRegistration,
           for: indexPath,
-          item: item)
-      })
+          item: item
+        )
+      }
+    )
   }()
 
-  private var items: [GridItem] = []
+  private var items = [GridItem]()
 
   private func loadInitialData() {
     let widthModes: [MagazineLayoutItemWidthMode] = [
@@ -113,7 +116,8 @@ final class GridDemoViewController: UIViewController {
       GridItem(
         text: textForWidthMode(widthMode),
         color: colorForWidthMode(widthMode),
-        widthMode: widthMode)
+        widthMode: widthMode
+      )
     }
 
     applySnapshot(animatingDifferences: false)
@@ -130,11 +134,14 @@ final class GridDemoViewController: UIViewController {
     switch widthMode {
     case .fullWidth:
       return .systemRed
+
     case .halfWidth:
       return .systemBlue
+
     case .thirdWidth:
       return .systemGreen
-    case let .fractionalWidth(divisor):
+
+    case .fractionalWidth(let divisor):
       if divisor == 4 {
         return .systemPurple
       } else if divisor == 5 {
@@ -144,6 +151,7 @@ final class GridDemoViewController: UIViewController {
       } else {
         return .systemTeal
       }
+
     @unknown default:
       return .systemRed
     }
@@ -153,11 +161,14 @@ final class GridDemoViewController: UIViewController {
     switch widthMode {
     case .fullWidth:
       return "Full Width"
+
     case .halfWidth:
       return "Half Width"
+
     case .thirdWidth:
       return "Third Width"
-    case let .fractionalWidth(divisor):
+
+    case .fractionalWidth(let divisor):
       if divisor == 4 {
         return "Quarter Width"
       } else if divisor == 5 {
@@ -165,6 +176,7 @@ final class GridDemoViewController: UIViewController {
       } else {
         return "1/\(divisor) Width"
       }
+
     @unknown default:
       return "Unknown Width"
     }
@@ -185,7 +197,8 @@ final class GridDemoViewController: UIViewController {
     let newItem = GridItem(
       text: textForWidthMode(selectedWidthMode),
       color: colorForWidthMode(selectedWidthMode),
-      widthMode: selectedWidthMode)
+      widthMode: selectedWidthMode
+    )
 
     let insertIndex = Int.random(in: 0...items.count)
     items.insert(newItem, at: insertIndex)
@@ -203,7 +216,7 @@ final class GridDemoViewController: UIViewController {
 // MARK: UICollectionViewDelegate
 
 extension GridDemoViewController: UICollectionViewDelegate {
-  func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+  func collectionView(_: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     items.remove(at: indexPath.item)
     applySnapshot()
   }
@@ -213,76 +226,69 @@ extension GridDemoViewController: UICollectionViewDelegate {
 
 extension GridDemoViewController: UICollectionViewDelegateMagazineLayout {
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    sizeModeForItemAt indexPath: IndexPath)
-    -> MagazineLayoutItemSizeMode
-  {
-    return MagazineLayoutItemSizeMode(
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    sizeModeForItemAt indexPath: IndexPath
+  ) -> MagazineLayoutItemSizeMode {
+    MagazineLayoutItemSizeMode(
       widthMode: items[indexPath.item].widthMode,
-      heightMode: .dynamic)
+      heightMode: .dynamic
+    )
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForHeaderInSectionAtIndex index: Int)
-    -> MagazineLayoutHeaderVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForHeaderInSectionAtIndex _: Int
+  ) -> MagazineLayoutHeaderVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForFooterInSectionAtIndex index: Int)
-    -> MagazineLayoutFooterVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForFooterInSectionAtIndex _: Int
+  ) -> MagazineLayoutFooterVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    visibilityModeForBackgroundInSectionAtIndex index: Int)
-    -> MagazineLayoutBackgroundVisibilityMode
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    visibilityModeForBackgroundInSectionAtIndex _: Int
+  ) -> MagazineLayoutBackgroundVisibilityMode {
     .hidden
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    horizontalSpacingForItemsInSectionAtIndex index: Int)
-    -> CGFloat
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    horizontalSpacingForItemsInSectionAtIndex _: Int
+  ) -> CGFloat {
     12
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    verticalSpacingForElementsInSectionAtIndex index: Int)
-    -> CGFloat
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    verticalSpacingForElementsInSectionAtIndex _: Int
+  ) -> CGFloat {
     12
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetsForSectionAtIndex index: Int)
-    -> UIEdgeInsets
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    insetsForSectionAtIndex _: Int
+  ) -> UIEdgeInsets {
     UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
   }
 
   func collectionView(
-    _ collectionView: UICollectionView,
-    layout collectionViewLayout: UICollectionViewLayout,
-    insetsForItemsInSectionAtIndex index: Int)
-    -> UIEdgeInsets
-  {
+    _: UICollectionView,
+    layout _: UICollectionViewLayout,
+    insetsForItemsInSectionAtIndex _: Int
+  ) -> UIEdgeInsets {
     .zero
   }
 }
@@ -296,13 +302,14 @@ private struct GridItem: Hashable {
   let color: UIColor
   let widthMode: MagazineLayoutItemWidthMode
 
+  static func ==(lhs: GridItem, rhs: GridItem) -> Bool {
+    lhs.id == rhs.id
+  }
+
   func hash(into hasher: inout Hasher) {
     hasher.combine(id)
   }
 
-  static func == (lhs: GridItem, rhs: GridItem) -> Bool {
-    lhs.id == rhs.id
-  }
 }
 
 // MARK: - GridItemView

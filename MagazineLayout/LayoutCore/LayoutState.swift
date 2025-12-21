@@ -20,8 +20,6 @@ import UIKit
 /// Represents the state of the layout, including metrics and the current `ModelState`.
 struct LayoutState {
 
-  // MARK: Internal
-
   let modelState: ModelState
 
   var bounds: CGRect
@@ -84,9 +82,11 @@ struct LayoutState {
       let firstVisibleItemLocationFramePair,
       let lastVisibleItemLocationFramePair,
       let firstVisibleItemID = modelState.idForItemModel(
-        at: firstVisibleItemLocationFramePair.elementLocation.indexPath),
+        at: firstVisibleItemLocationFramePair.elementLocation.indexPath
+      ),
       let lastVisibleItemID = modelState.idForItemModel(
-        at: lastVisibleItemLocationFramePair.elementLocation.indexPath)
+        at: lastVisibleItemLocationFramePair.elementLocation.indexPath
+      )
     else {
       switch verticalLayoutDirection {
       case .topToBottom: return .top
@@ -125,8 +125,10 @@ struct LayoutState {
         return .topItem(
           id: firstVisibleItemID,
           elementLocation: firstVisibleItemLocationFramePair.elementLocation,
-          distanceFromTop: distanceFromTop.alignedToPixel(forScreenWithScale: scale))
+          distanceFromTop: distanceFromTop.alignedToPixel(forScreenWithScale: scale)
+        )
       }
+
     case .bottomToTop:
       switch position {
       case .atTop, .inMiddle:
@@ -135,7 +137,9 @@ struct LayoutState {
         return .bottomItem(
           id: lastVisibleItemID,
           elementLocation: lastVisibleItemLocationFramePair.elementLocation,
-          distanceFromBottom: distanceFromBottom.alignedToPixel(forScreenWithScale: scale))
+          distanceFromBottom: distanceFromBottom.alignedToPixel(forScreenWithScale: scale)
+        )
+
       case .atBottom:
         return .bottom
       }
@@ -144,9 +148,8 @@ struct LayoutState {
 
   func yOffset(
     for targetContentOffsetAnchor: TargetContentOffsetAnchor,
-    isPerformingBatchUpdates: Bool)
-    -> CGFloat
-  {
+    isPerformingBatchUpdates: Bool
+  ) -> CGFloat {
     switch targetContentOffsetAnchor {
     case .top:
       return minContentOffset.y

@@ -15,6 +15,8 @@
 
 import UIKit
 
+// MARK: - MagazineLayout
+
 /// A collection view layout that can display items in a grid and list arrangement.
 ///
 /// Consumers should implement `UICollectionViewDelegateMagazineLayout`, which is used for all
@@ -41,21 +43,21 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   // MARK: Public
-  
+
+  override public class var layoutAttributesClass: AnyClass {
+    MagazineLayoutCollectionViewLayoutAttributes.self
+  }
+
+  override public class var invalidationContextClass: AnyClass {
+    MagazineLayoutInvalidationContext.self
+  }
+
   /// The vertical layout direction of items in the collection view. This property changes the behavior of
   /// scroll-position-preservation when performing batch updates or when the collection view's bounds changes.
   public var verticalLayoutDirection = MagazineLayoutVerticalLayoutDirection.topToBottom
 
-  override public class var layoutAttributesClass: AnyClass {
-    return MagazineLayoutCollectionViewLayoutAttributes.self
-  }
-
-  override public class var invalidationContextClass: AnyClass {
-    return MagazineLayoutInvalidationContext.self
-  }
-
   override public var flipsHorizontallyInOppositeLayoutDirection: Bool {
-    return _flipsHorizontallyInOppositeLayoutDirection
+    _flipsHorizontallyInOppositeLayoutDirection
   }
 
   override public var collectionViewContentSize: CGSize {
@@ -117,7 +119,8 @@ public final class MagazineLayout: UICollectionViewLayout {
         bounds: currentCollectionView.bounds,
         contentInset: contentInset,
         scale: scale,
-        verticalLayoutDirection: verticalLayoutDirection)
+        verticalLayoutDirection: verticalLayoutDirection
+      )
 
       var sections = [SectionModel]()
       for sectionIndex in 0..<currentCollectionView.numberOfSections {
@@ -137,7 +140,8 @@ public final class MagazineLayout: UICollectionViewLayout {
       bounds: currentCollectionView.bounds,
       contentInset: contentInset,
       scale: scale,
-      verticalLayoutDirection: verticalLayoutDirection)
+      verticalLayoutDirection: verticalLayoutDirection
+    )
     self.layoutStateBeforeCollectionViewUpdates = layoutStateBeforeCollectionViewUpdates
 
     var updates = [CollectionViewUpdate<SectionModel, ItemModel>]()
@@ -193,27 +197,30 @@ public final class MagazineLayout: UICollectionViewLayout {
       if updateAction == .move {
         guard
           let initialIndexPath = indexPathBeforeUpdate,
-          let finalIndexPath = indexPathAfterUpdate else
-        {
+          let finalIndexPath = indexPathAfterUpdate
+        else {
           assertionFailure("`indexPathBeforeUpdate` and `indexPathAfterUpdate` cannot be `nil` for a `.move` update action")
           return
         }
 
-        if initialIndexPath.item == NSNotFound && finalIndexPath.item == NSNotFound {
+        if initialIndexPath.item == NSNotFound, finalIndexPath.item == NSNotFound {
           updates.append(.sectionMove(
             initialSectionIndex: initialIndexPath.section,
-            finalSectionIndex: finalIndexPath.section))
+            finalSectionIndex: finalIndexPath.section
+          ))
         } else {
           updates.append(.itemMove(
             initialItemIndexPath: initialIndexPath,
-            finalItemIndexPath: finalIndexPath))
+            finalItemIndexPath: finalIndexPath
+          ))
         }
       }
     }
 
     modelState.applyUpdates(
       updates,
-      modelStateBeforeBatchUpdates: layoutStateBeforeCollectionViewUpdates.modelState)
+      modelStateBeforeBatchUpdates: layoutStateBeforeCollectionViewUpdates.modelState
+    )
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
 
     super.prepare(forCollectionViewUpdates: updateItems)
@@ -225,11 +232,12 @@ public final class MagazineLayout: UICollectionViewLayout {
     itemLayoutAttributesForPendingAnimations.removeAll()
     supplementaryViewLayoutAttributesForPendingAnimations.removeAll()
 
-    if let layoutStateBeforeCollectionViewUpdates{
+    if let layoutStateBeforeCollectionViewUpdates {
       let targetContentOffsetAnchor = layoutStateBeforeCollectionViewUpdates.targetContentOffsetAnchor
       let targetYOffset = layoutState.yOffset(
         for: targetContentOffsetAnchor,
-        isPerformingBatchUpdates: true)
+        isPerformingBatchUpdates: true
+      )
       let context = MagazineLayoutInvalidationContext()
       context.invalidateLayoutMetrics = false
       context.contentOffsetAdjustment.y = targetYOffset - layoutState.bounds.minY
@@ -252,7 +260,8 @@ public final class MagazineLayout: UICollectionViewLayout {
         bounds: oldBounds,
         contentInset: contentInset,
         scale: scale,
-        verticalLayoutDirection: verticalLayoutDirection)
+        verticalLayoutDirection: verticalLayoutDirection
+      )
     }
   }
 
@@ -263,9 +272,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func layoutAttributesForElements(
-    in rect: CGRect)
-    -> [UICollectionViewLayoutAttributes]?
-  {
+    in rect: CGRect
+  ) -> [UICollectionViewLayoutAttributes]? {
     // This early return prevents an issue that causes overlapping / misplaced elements after an
     // off-screen batch update occurs. The root cause of this issue is that `UICollectionView`
     // expects `layoutAttributesForElementsInRect:` to return post-batch-update layout attributes
@@ -313,7 +321,8 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     let backgroundLocationFramePairs = modelState.backgroundLocationFramePairs(
-      forBackgroundsIn: rect)
+      forBackgroundsIn: rect
+    )
     for backgroundLocationFramePair in backgroundLocationFramePairs {
       let backgroundLocation = backgroundLocationFramePair.elementLocation
       let backgroundFrame = backgroundLocationFramePair.frame
@@ -321,7 +330,8 @@ public final class MagazineLayout: UICollectionViewLayout {
       if
         let layoutAttributes = backgroundLayoutAttributes(
           for: backgroundLocation,
-          frame: backgroundFrame)
+          frame: backgroundFrame
+        )
       {
         layoutAttributesInRect.append(layoutAttributes)
       }
@@ -341,9 +351,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func layoutAttributesForItem(
-    at indexPath: IndexPath)
-    -> UICollectionViewLayoutAttributes?
-  {
+    at indexPath: IndexPath
+  ) -> UICollectionViewLayoutAttributes? {
     // See comment in `layoutAttributesForElementsInRect:` for more details.
     guard !hasDataSourceCountInvalidationBeforeReceivingUpdateItems else { return nil }
 
@@ -352,12 +361,13 @@ public final class MagazineLayout: UICollectionViewLayout {
     guard
       itemLocation.sectionIndex < modelState.numberOfSections,
       itemLocation.elementIndex < modelState.numberOfItems(inSectionAtIndex: itemLocation.sectionIndex)
-    else
-    {
+    else {
       // On iOS 9, `layoutAttributesForItem(at:)` can be invoked for an index path of a new item
       // before the layout is notified of this new item (through either `prepare` or
       // `prepare(forCollectionViewUpdates:)`). This seems to be fixed in iOS 10 and higher.
-      assertionFailure("`{\(itemLocation.sectionIndex), \(itemLocation.elementIndex)}` is out of bounds of the section models / item models array.")
+      assertionFailure(
+        "`{\(itemLocation.sectionIndex), \(itemLocation.elementIndex)}` is out of bounds of the section models / item models array."
+      )
 
       // Returning `nil` rather than default/frameless layout attributes causes internal exceptions
       // within `UICollectionView`, which is why we don't return `nil` here.
@@ -370,9 +380,8 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   override public func layoutAttributesForSupplementaryView(
     ofKind elementKind: String,
-    at indexPath: IndexPath)
-    -> UICollectionViewLayoutAttributes?
-  {
+    at indexPath: IndexPath
+  ) -> UICollectionViewLayoutAttributes? {
     // See comment in `layoutAttributesForElementsInRect:` for more details.
     guard !hasDataSourceCountInvalidationBeforeReceivingUpdateItems else { return nil }
 
@@ -380,19 +389,22 @@ public final class MagazineLayout: UICollectionViewLayout {
     if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionHeader,
       let headerFrame = modelState.frameForHeader(
-        inSectionAtIndex: elementLocation.sectionIndex)
+        inSectionAtIndex: elementLocation.sectionIndex
+      )
     {
       return headerLayoutAttributes(for: elementLocation, frame: headerFrame)
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionFooter,
       let footerFrame = modelState.frameForFooter(
-        inSectionAtIndex: elementLocation.sectionIndex)
+        inSectionAtIndex: elementLocation.sectionIndex
+      )
     {
       return footerLayoutAttributes(for: elementLocation, frame: footerFrame)
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionBackground,
       let backgroundFrame = modelState.frameForBackground(
-        inSectionAtIndex: elementLocation.sectionIndex)
+        inSectionAtIndex: elementLocation.sectionIndex
+      )
     {
       return backgroundLayoutAttributes(for: elementLocation, frame: backgroundFrame)
     } else {
@@ -401,9 +413,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func initialLayoutAttributesForAppearingItem(
-    at itemIndexPath: IndexPath)
-    -> UICollectionViewLayoutAttributes?
-  {
+    at itemIndexPath: IndexPath
+  ) -> UICollectionViewLayoutAttributes? {
     let attributes = super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
     attributes?.frame = modelState.frameForItem(at: ElementLocation(indexPath: itemIndexPath))
 
@@ -416,20 +427,23 @@ public final class MagazineLayout: UICollectionViewLayout {
           currentCollectionView,
           layout: self,
           initialLayoutAttributesForInsertedItemAt: itemIndexPath,
-          byModifying: $0)
+          byModifying: $0
+        )
       }
 
       attributes?.transform = CGAffineTransform(
         translationX: 0,
-        y: targetContentOffsetCompensatingYOffsetForAppearingItem ?? 0,
+        y: targetContentOffsetCompensatingYOffsetForAppearingItem ?? 0
       )
 
       itemLayoutAttributesForPendingAnimations[itemIndexPath] = attributes
     } else if
       let movedItemID = modelState.idForItemModel(at: itemIndexPath),
       let initialIndexPath = layoutStateBeforeCollectionViewUpdates?.modelState.indexPathForItemModel(
-        withID: movedItemID),
-      let frame = layoutStateBeforeCollectionViewUpdates?.modelState.frameForItem(at: ElementLocation(indexPath: initialIndexPath))
+        withID: movedItemID
+      ),
+      let frame = layoutStateBeforeCollectionViewUpdates?.modelState
+        .frameForItem(at: ElementLocation(indexPath: initialIndexPath))
     {
       attributes?.frame = frame
     }
@@ -438,9 +452,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func finalLayoutAttributesForDisappearingItem(
-    at itemIndexPath: IndexPath)
-    -> UICollectionViewLayoutAttributes?
-  {
+    at itemIndexPath: IndexPath
+  ) -> UICollectionViewLayoutAttributes? {
     if
       modelState.itemIndexPathsToDelete.contains(itemIndexPath) ||
       modelState.sectionIndicesToDelete.contains(itemIndexPath.section)
@@ -451,14 +464,17 @@ public final class MagazineLayout: UICollectionViewLayout {
           currentCollectionView,
           layout: self,
           finalLayoutAttributesForRemovedItemAt: itemIndexPath,
-          byModifying: $0)
+          byModifying: $0
+        )
       }
       return attributes
     } else if
       let movedItemID = layoutStateBeforeCollectionViewUpdates?.modelState.idForItemModel(
-        at: itemIndexPath),
+        at: itemIndexPath
+      ),
       let finalIndexPath = modelState.indexPathForItemModel(
-        withID: movedItemID)
+        withID: movedItemID
+      )
     {
       let attributes = layoutAttributesForItem(at: finalIndexPath)?.copy() as? UICollectionViewLayoutAttributes
       itemLayoutAttributesForPendingAnimations[finalIndexPath] = attributes
@@ -470,95 +486,108 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   override public func initialLayoutAttributesForAppearingSupplementaryElement(
     ofKind elementKind: String,
-    at elementIndexPath: IndexPath)
-    -> UICollectionViewLayoutAttributes?
-  {
+    at elementIndexPath: IndexPath
+  ) -> UICollectionViewLayoutAttributes? {
     // If a supplementary view's visibility changes to `.hidden` due to a data source change, this
     // function will get invoked with an `elementIndexPath` that crashes when its `section` is
     // accessed.
     guard !elementIndexPath.isEmpty else {
       return super.initialLayoutAttributesForAppearingSupplementaryElement(
         ofKind: elementKind,
-        at: elementIndexPath)
+        at: elementIndexPath
+      )
     }
 
     if modelState.sectionIndicesToInsert.contains(elementIndexPath.section) {
       let attributes = layoutAttributesForSupplementaryView(
         ofKind: elementKind,
-        at: elementIndexPath)?.copy() as? UICollectionViewLayoutAttributes
+        at: elementIndexPath
+      )?.copy() as? UICollectionViewLayoutAttributes
       attributes.map {
         modifySupplementaryViewLayoutAttributesForInsertAnimation(
           $0,
           ofKind: elementKind,
-          at: elementIndexPath)
+          at: elementIndexPath
+        )
       }
       supplementaryViewLayoutAttributesForPendingAnimations[elementIndexPath] = attributes
       return attributes
     } else if
       let movedSectionID = modelState.idForSectionModel(
-        atIndex: elementIndexPath.section),
+        atIndex: elementIndexPath.section
+      ),
       let initialSectionIndex = layoutStateBeforeCollectionViewUpdates?.modelState.indexForSectionModel(
-        withID: movedSectionID)
+        withID: movedSectionID
+      )
     {
       let initialIndexPath = IndexPath(item: 0, section: initialSectionIndex)
       return previousLayoutAttributesForSupplementaryView(
         ofKind: elementKind,
-        at: initialIndexPath)
+        at: initialIndexPath
+      )
     } else {
       return super.initialLayoutAttributesForAppearingSupplementaryElement(
         ofKind: elementKind,
-        at: elementIndexPath)
+        at: elementIndexPath
+      )
     }
   }
 
   override public func finalLayoutAttributesForDisappearingSupplementaryElement(
     ofKind elementKind: String,
-    at elementIndexPath: IndexPath)
-    -> UICollectionViewLayoutAttributes?
-  {
+    at elementIndexPath: IndexPath
+  ) -> UICollectionViewLayoutAttributes? {
     // If a supplementary view's visibility changes to `.hidden` due to a data source change, this
     // function will get invoked with an `elementIndexPath` that crashes when its `section` is
     // accessed.
     guard !elementIndexPath.isEmpty else {
       return super.finalLayoutAttributesForDisappearingSupplementaryElement(
         ofKind: elementKind,
-        at: elementIndexPath)
+        at: elementIndexPath
+      )
     }
 
     if modelState.sectionIndicesToDelete.contains(elementIndexPath.section) {
       let attributes = previousLayoutAttributesForSupplementaryView(
         ofKind: elementKind,
-        at: elementIndexPath)
+        at: elementIndexPath
+      )
       attributes.map {
         modifySupplementaryViewLayoutAttributesForDeleteAnimation(
           $0,
           ofKind: elementKind,
-          at: elementIndexPath)
+          at: elementIndexPath
+        )
       }
       return attributes
     } else if
       let movedSectionID = layoutStateBeforeCollectionViewUpdates?.modelState.idForSectionModel(
-        atIndex: elementIndexPath.section),
+        atIndex: elementIndexPath.section
+      ),
       let finalSectionIndex = modelState.indexForSectionModel(
-        withID: movedSectionID)
+        withID: movedSectionID
+      )
     {
       let finalIndexPath = IndexPath(item: 0, section: finalSectionIndex)
       let attributes = layoutAttributesForSupplementaryView(
         ofKind: elementKind,
-        at: finalIndexPath)?.copy() as? UICollectionViewLayoutAttributes
+        at: finalIndexPath
+      )?.copy() as? UICollectionViewLayoutAttributes
       supplementaryViewLayoutAttributesForPendingAnimations[finalIndexPath] = attributes
       return attributes
-    }  else {
+    } else {
       return super.finalLayoutAttributesForDisappearingSupplementaryElement(
         ofKind: elementKind,
-        at: elementIndexPath)
+        at: elementIndexPath
+      )
     }
   }
 
   override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
     let isSameWidth = currentCollectionView.bounds.size.width.isEqual(
       to: newBounds.size.width,
-      screenScale: scale)
+      screenScale: scale
+    )
     let shouldInvalidateDueToSize: Bool
     switch verticalLayoutDirection {
     case .topToBottom:
@@ -569,7 +598,8 @@ public final class MagazineLayout: UICollectionViewLayout {
       // size change due to the requirement of  needing to preserve scroll position from the bottom
       let isSameHeight = currentCollectionView.bounds.size.height.isEqual(
         to: newBounds.size.height,
-        screenScale: scale)
+        screenScale: scale
+      )
       shouldInvalidateDueToSize = !isSameWidth || !isSameHeight
     }
 
@@ -577,11 +607,11 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func invalidationContext(
-    forBoundsChange newBounds: CGRect)
-    -> UICollectionViewLayoutInvalidationContext
-  {
+    forBoundsChange newBounds: CGRect
+  ) -> UICollectionViewLayoutInvalidationContext {
     let invalidationContext = super.invalidationContext(
-      forBoundsChange: newBounds) as! MagazineLayoutInvalidationContext
+      forBoundsChange: newBounds
+    ) as! MagazineLayoutInvalidationContext
 
     invalidationContext.invalidateLayoutMetrics = false
 
@@ -592,14 +622,16 @@ public final class MagazineLayout: UICollectionViewLayout {
       if newBounds.height < currentCollectionView.bounds.height {
         invalidationContext.contentOffsetAdjustment = CGPoint(
           x: 0.0,
-          y: currentCollectionView.bounds.midY - newBounds.midY)
+          y: currentCollectionView.bounds.midY - newBounds.midY
+        )
       } else if newBounds.height > currentCollectionView.bounds.height {
         let distanceFromBottom = currentCollectionView.contentSize.height - currentCollectionView.bounds.maxY
         let midYDelta = newBounds.midY - currentCollectionView.bounds.midY
         let heightDelta = newBounds.height - currentCollectionView.bounds.height
         invalidationContext.contentOffsetAdjustment = CGPoint(
           x: 0.0,
-          y: midYDelta - min(distanceFromBottom, heightDelta))
+          y: midYDelta - min(distanceFromBottom, heightDelta)
+        )
       }
     }
 
@@ -608,18 +640,19 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   override public func shouldInvalidateLayout(
     forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
-    withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
-    -> Bool
-  {
+    withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes
+  ) -> Bool {
     guard !preferredAttributes.indexPath.isEmpty else {
       return super.shouldInvalidateLayout(
         forPreferredLayoutAttributes: preferredAttributes,
-        withOriginalAttributes: originalAttributes)
+        withOriginalAttributes: originalAttributes
+      )
     }
 
     let isSameHeight = preferredAttributes.size.height.isEqual(
       to: originalAttributes.size.height,
-      screenScale: scale)
+      screenScale: scale
+    )
     let hasNewPreferredHeight = !isSameHeight
 
     switch (preferredAttributes.representedElementCategory, preferredAttributes.representedElementKind) {
@@ -628,27 +661,34 @@ public final class MagazineLayout: UICollectionViewLayout {
       switch itemHeightMode {
       case .some(.static):
         return false
+
       case .some(.dynamic):
         return hasNewPreferredHeight
+
       case .some(.dynamicAndStretchToTallestItemInRow):
         let currentPreferredHeight = modelState.itemModelPreferredHeight(
-          at: preferredAttributes.indexPath)
+          at: preferredAttributes.indexPath
+        )
         let isSameHeight = preferredAttributes.size.height.isEqual(
           to: currentPreferredHeight ?? -.greatestFiniteMagnitude,
-          screenScale: scale)
+          screenScale: scale
+        )
         return hasNewPreferredHeight && !isSameHeight
+
       case nil:
         return false
       }
 
     case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionHeader):
       let headerHeightMode = modelState.headerModelHeightMode(
-        atSectionIndex: preferredAttributes.indexPath.section)
+        atSectionIndex: preferredAttributes.indexPath.section
+      )
       return headerHeightMode == .dynamic
 
     case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionFooter):
       let footerHeightMode = modelState.footerModelHeightMode(
-        atSectionIndex: preferredAttributes.indexPath.section)
+        atSectionIndex: preferredAttributes.indexPath.section
+      )
       return footerHeightMode == .dynamic
 
     case (.supplementaryView, MagazineLayout.SupplementaryViewKind.sectionBackground):
@@ -662,12 +702,12 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   override public func invalidationContext(
     forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
-    withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes)
-    -> UICollectionViewLayoutInvalidationContext
-  {
+    withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes
+  ) -> UICollectionViewLayoutInvalidationContext {
     let context = super.invalidationContext(
       forPreferredLayoutAttributes: preferredAttributes,
-      withOriginalAttributes: originalAttributes) as! MagazineLayoutInvalidationContext
+      withOriginalAttributes: originalAttributes
+    ) as! MagazineLayoutInvalidationContext
     context.invalidateLayoutMetrics = false
 
     switch preferredAttributes.representedElementCategory {
@@ -676,15 +716,17 @@ public final class MagazineLayout: UICollectionViewLayout {
         layoutStateBeforeRecreateSectionModels ??
           layoutStateBeforeCollectionViewUpdates ??
           layoutStateBeforeAnimatedBoundsChange ??
-          self.layoutState
+          layoutState
       ).targetContentOffsetAnchor
       let targetYOffsetBefore = layoutState.yOffset(
         for: targetContentOffsetAnchor,
-        isPerformingBatchUpdates: layoutStateBeforeCollectionViewUpdates != nil)
+        isPerformingBatchUpdates: layoutStateBeforeCollectionViewUpdates != nil
+      )
 
       modelState.updateItemHeight(
         toPreferredHeight: preferredAttributes.size.height,
-        forItemAt: preferredAttributes.indexPath)
+        forItemAt: preferredAttributes.indexPath
+      )
 
       switch targetContentOffsetAnchor {
       case .top:
@@ -696,7 +738,8 @@ public final class MagazineLayout: UICollectionViewLayout {
       case .topItem, .bottomItem:
         let targetYOffsetAfter = layoutState.yOffset(
           for: targetContentOffsetAnchor,
-          isPerformingBatchUpdates: layoutStateBeforeCollectionViewUpdates != nil)
+          isPerformingBatchUpdates: layoutStateBeforeCollectionViewUpdates != nil
+        )
         context.contentOffsetAdjustment.y = targetYOffsetAfter - targetYOffsetBefore
       }
 
@@ -713,7 +756,8 @@ public final class MagazineLayout: UICollectionViewLayout {
             let previousHeight = attributes.frame.height
             attributes.frame = modelState.frameForItem(at: ElementLocation(indexPath: preferredAttributes.indexPath))
 
-            var targetContentOffsetCompensatingYOffsetForAppearingItem = targetContentOffsetCompensatingYOffsetForAppearingItem ?? 0
+            var targetContentOffsetCompensatingYOffsetForAppearingItem = targetContentOffsetCompensatingYOffsetForAppearingItem ??
+              0
             targetContentOffsetCompensatingYOffsetForAppearingItem -= (attributes.frame.height - previousHeight)
             self.targetContentOffsetCompensatingYOffsetForAppearingItem = targetContentOffsetCompensatingYOffsetForAppearingItem
             attributes.transform = CGAffineTransform(translationX: 0, y: targetContentOffsetCompensatingYOffsetForAppearingItem)
@@ -722,24 +766,29 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
 
     case .supplementaryView:
-      let layoutAttributesForPendingAnimation = supplementaryViewLayoutAttributesForPendingAnimations[preferredAttributes.indexPath]
+      let layoutAttributesForPendingAnimation =
+        supplementaryViewLayoutAttributesForPendingAnimations[preferredAttributes.indexPath]
 
       switch preferredAttributes.representedElementKind {
       case MagazineLayout.SupplementaryViewKind.sectionHeader?:
         modelState.updateHeaderHeight(
           toPreferredHeight: preferredAttributes.size.height,
-          forSectionAtIndex: preferredAttributes.indexPath.section)
+          forSectionAtIndex: preferredAttributes.indexPath.section
+        )
 
         layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForHeader(
-          inSectionAtIndex: preferredAttributes.indexPath.section)?.height ?? preferredAttributes.size.height
+          inSectionAtIndex: preferredAttributes.indexPath.section
+        )?.height ?? preferredAttributes.size.height
 
       case MagazineLayout.SupplementaryViewKind.sectionFooter?:
         modelState.updateFooterHeight(
           toPreferredHeight: preferredAttributes.size.height,
-          forSectionAtIndex: preferredAttributes.indexPath.section)
+          forSectionAtIndex: preferredAttributes.indexPath.section
+        )
 
         layoutAttributesForPendingAnimation?.frame.size.height = modelState.frameForFooter(
-          inSectionAtIndex: preferredAttributes.indexPath.section)?.height ?? preferredAttributes.size.height
+          inSectionAtIndex: preferredAttributes.indexPath.section
+        )?.height ?? preferredAttributes.size.height
 
       default:
         break
@@ -789,13 +838,14 @@ public final class MagazineLayout: UICollectionViewLayout {
     // because the collection view's width can change without a `contentSizeAdjustment` occurring.
     let isSameWidth = collectionView?.bounds.size.width.isEqual(
       to: cachedCollectionViewWidth ?? -.greatestFiniteMagnitude,
-      screenScale: scale)
+      screenScale: scale
+    )
       ?? false
     if !isSameWidth {
       prepareActions.formUnion([.updateLayoutMetrics, .cachePreviousWidth])
     }
 
-    if context.invalidateLayoutMetrics && shouldInvalidateLayoutMetrics {
+    if context.invalidateLayoutMetrics, shouldInvalidateLayoutMetrics {
       prepareActions.formUnion([.updateLayoutMetrics])
     }
 
@@ -815,9 +865,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public func targetContentOffset(
-    forProposedContentOffset proposedContentOffset: CGPoint)
-    -> CGPoint
-  {
+    forProposedContentOffset proposedContentOffset: CGPoint
+  ) -> CGPoint {
     let layoutStateBefore = layoutStateBeforeCollectionViewUpdates ?? layoutStateBeforeAnimatedBoundsChange
     guard let layoutStateBefore else {
       return super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
@@ -825,7 +874,8 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     let yOffset = layoutState.yOffset(
       for: layoutStateBefore.targetContentOffsetAnchor,
-      isPerformingBatchUpdates: layoutStateBeforeCollectionViewUpdates != nil)
+      isPerformingBatchUpdates: layoutStateBeforeCollectionViewUpdates != nil
+    )
 
     targetContentOffsetCompensatingYOffsetForAppearingItem = proposedContentOffset.y - yOffset
 
@@ -833,6 +883,15 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   // MARK: Private
+
+  private struct PrepareActions: OptionSet {
+    static let recreateSectionModels = PrepareActions(rawValue: 1 << 0)
+    static let updateLayoutMetrics = PrepareActions(rawValue: 1 << 1)
+    static let cachePreviousWidth = PrepareActions(rawValue: 1 << 2)
+
+    let rawValue: UInt
+
+  }
 
   private let _flipsHorizontallyInOppositeLayoutDirection: Bool
   private let idGenerator = IDGenerator()
@@ -844,12 +903,13 @@ public final class MagazineLayout: UICollectionViewLayout {
     bounds: currentCollectionView.bounds,
     contentInset: contentInset,
     scale: scale,
-    verticalLayoutDirection: verticalLayoutDirection)
+    verticalLayoutDirection: verticalLayoutDirection
+  )
   private var layoutStateBeforeRecreateSectionModels: LayoutState?
   private var layoutStateBeforeCollectionViewUpdates: LayoutState?
   private var layoutStateBeforeAnimatedBoundsChange: LayoutState?
 
-  private var hasPinnedHeaderOrFooter: Bool = false
+  private var hasPinnedHeaderOrFooter = false
 
   // Cached layout attributes; lazily populated using information from the model state.
   private var itemLayoutAttributes = [ElementLocation: MagazineLayoutCollectionViewLayoutAttributes]()
@@ -863,18 +923,11 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var itemLayoutAttributesForPendingAnimations = [IndexPath: UICollectionViewLayoutAttributes]()
   private var supplementaryViewLayoutAttributesForPendingAnimations = [IndexPath: UICollectionViewLayoutAttributes]()
 
-  // We need to apply the target content offset to the initial y-offset of an appearing item.
-  // Without this, the appearing item will be visually at the wrong spot, making it look like it
-  // slides into place rather than appearing at its final position.
+  /// We need to apply the target content offset to the initial y-offset of an appearing item.
+  /// Without this, the appearing item will be visually at the wrong spot, making it look like it
+  /// slides into place rather than appearing at its final position.
   private var targetContentOffsetCompensatingYOffsetForAppearingItem: CGFloat?
 
-  private struct PrepareActions: OptionSet {
-    let rawValue: UInt
-
-    static let recreateSectionModels = PrepareActions(rawValue: 1 << 0)
-    static let updateLayoutMetrics = PrepareActions(rawValue: 1 << 1)
-    static let cachePreviousWidth = PrepareActions(rawValue: 1 << 2)
-  }
   private var prepareActions: PrepareActions = []
 
   // Used to prevent a collection view bug / animation issue that occurs when off-screen batch
@@ -893,8 +946,8 @@ public final class MagazineLayout: UICollectionViewLayout {
     return collectionView
   }
 
-  // Used to provide the model state with the current visible bounds for the sole purpose of
-  // supporting pinned headers and footers.
+  /// Used to provide the model state with the current visible bounds for the sole purpose of
+  /// supporting pinned headers and footers.
   private var currentVisibleBounds: CGRect {
     let refreshControlHeight: CGFloat
     #if os(iOS)
@@ -914,11 +967,12 @@ public final class MagazineLayout: UICollectionViewLayout {
       x: currentCollectionView.bounds.minX + contentInset.left,
       y: currentCollectionView.bounds.minY + contentInset.top - refreshControlHeight,
       width: currentCollectionView.bounds.width - contentInset.left - contentInset.right,
-      height: currentCollectionView.bounds.height - contentInset.top - contentInset.bottom + refreshControlHeight)
+      height: currentCollectionView.bounds.height - contentInset.top - contentInset.bottom + refreshControlHeight
+    )
   }
 
   private var delegateMagazineLayout: UICollectionViewDelegateMagazineLayout? {
-    return currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
+    currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
   }
 
   private var scale: CGFloat {
@@ -945,34 +999,38 @@ public final class MagazineLayout: UICollectionViewLayout {
     guard let delegateMagazineLayout = delegateMagazineLayout else {
       return MagazineLayoutSectionMetrics.defaultSectionMetrics(
         forCollectionViewWidth: currentCollectionView.bounds.width,
-        scale: scale)
+        scale: scale
+      )
     }
 
     return MagazineLayoutSectionMetrics(
       forSectionAtIndex: sectionIndex,
       in: currentCollectionView,
       layout: self,
-      delegate: delegateMagazineLayout)
+      delegate: delegateMagazineLayout
+    )
   }
 
   private func sizeModeForItem(at indexPath: IndexPath) -> MagazineLayoutItemSizeMode {
     guard let delegateMagazineLayout = delegateMagazineLayout else {
       return MagazineLayoutItemSizeMode(
         widthMode: MagazineLayout.Default.ItemSizeMode.widthMode,
-        heightMode: .static(height: MagazineLayout.Default.ItemHeight))
+        heightMode: .static(height: MagazineLayout.Default.ItemHeight)
+      )
     }
 
     return delegateMagazineLayout.collectionView(
       currentCollectionView,
       layout: self,
-      sizeModeForItemAt: indexPath)
+      sizeModeForItemAt: indexPath
+    )
   }
 
   private func initialItemHeight(from itemSizeMode: MagazineLayoutItemSizeMode) -> CGFloat {
     switch itemSizeMode.heightMode {
-    case let .static(staticHeight):
+    case .static(let staticHeight):
       return staticHeight
-    case let .dynamic(estimatedHeight):
+    case .dynamic(let estimatedHeight):
       return estimatedHeight
     case .dynamicAndStretchToTallestItemInRow:
       return MagazineLayout.Default.ItemHeight
@@ -980,9 +1038,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   private func visibilityModeForHeader(
-    inSectionAtIndex sectionIndex: Int)
-    -> MagazineLayoutHeaderVisibilityMode
-  {
+    inSectionAtIndex sectionIndex: Int
+  ) -> MagazineLayoutHeaderVisibilityMode {
     guard let delegateMagazineLayout = delegateMagazineLayout else {
       return MagazineLayout.Default.HeaderVisibilityMode
     }
@@ -990,13 +1047,13 @@ public final class MagazineLayout: UICollectionViewLayout {
     return delegateMagazineLayout.collectionView(
       currentCollectionView,
       layout: self,
-      visibilityModeForHeaderInSectionAtIndex: sectionIndex)
+      visibilityModeForHeaderInSectionAtIndex: sectionIndex
+    )
   }
 
   private func visibilityModeForFooter(
-    inSectionAtIndex sectionIndex: Int)
-    -> MagazineLayoutFooterVisibilityMode
-  {
+    inSectionAtIndex sectionIndex: Int
+  ) -> MagazineLayoutFooterVisibilityMode {
     guard let delegateMagazineLayout = delegateMagazineLayout else {
       return MagazineLayout.Default.FooterVisibilityMode
     }
@@ -1004,13 +1061,13 @@ public final class MagazineLayout: UICollectionViewLayout {
     return delegateMagazineLayout.collectionView(
       currentCollectionView,
       layout: self,
-      visibilityModeForFooterInSectionAtIndex: sectionIndex)
+      visibilityModeForFooterInSectionAtIndex: sectionIndex
+    )
   }
 
   private func visibilityModeForBackground(
-    inSectionAtIndex sectionIndex: Int)
-    -> MagazineLayoutBackgroundVisibilityMode
-  {
+    inSectionAtIndex sectionIndex: Int
+  ) -> MagazineLayoutBackgroundVisibilityMode {
     guard let delegateMagazineLayout = delegateMagazineLayout else {
       return MagazineLayout.Default.BackgroundVisibilityMode
     }
@@ -1018,15 +1075,15 @@ public final class MagazineLayout: UICollectionViewLayout {
     return delegateMagazineLayout.collectionView(
       currentCollectionView,
       layout: self,
-      visibilityModeForBackgroundInSectionAtIndex: sectionIndex)
+      visibilityModeForBackgroundInSectionAtIndex: sectionIndex
+    )
   }
 
   private func headerHeight(
-    from headerHeightMode: MagazineLayoutHeaderHeightMode)
-    -> CGFloat
-  {
+    from headerHeightMode: MagazineLayoutHeaderHeightMode
+  ) -> CGFloat {
     switch headerHeightMode {
-    case let .static(staticHeight):
+    case .static(let staticHeight):
       return staticHeight
     case .dynamic:
       return MagazineLayout.Default.HeaderHeight
@@ -1034,11 +1091,10 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   private func footerHeight(
-    from footerHeightMode: MagazineLayoutFooterHeightMode)
-    -> CGFloat
-  {
+    from footerHeightMode: MagazineLayoutFooterHeightMode
+  ) -> CGFloat {
     switch footerHeightMode {
-    case let .static(staticHeight):
+    case .static(let staticHeight):
       return staticHeight
     case .dynamic:
       return MagazineLayout.Default.FooterHeight
@@ -1056,7 +1112,8 @@ public final class MagazineLayout: UICollectionViewLayout {
       headerModel: headerModelForHeader(inSectionAtIndex: sectionIndex),
       footerModel: footerModelForFooter(inSectionAtIndex: sectionIndex),
       backgroundModel: backgroundModelForBackground(inSectionAtIndex: sectionIndex),
-      metrics: metricsForSection(atIndex: sectionIndex))
+      metrics: metricsForSection(atIndex: sectionIndex)
+    )
   }
 
   private func itemModelForItem(at indexPath: IndexPath) -> ItemModel {
@@ -1064,43 +1121,47 @@ public final class MagazineLayout: UICollectionViewLayout {
     return ItemModel(
       idGenerator: idGenerator,
       sizeMode: itemSizeMode,
-      height: initialItemHeight(from: itemSizeMode))
+      height: initialItemHeight(from: itemSizeMode)
+    )
   }
 
   private func headerModelForHeader(
-    inSectionAtIndex sectionIndex: Int)
-    -> HeaderModel?
-  {
+    inSectionAtIndex sectionIndex: Int
+  ) -> HeaderModel? {
     let headerVisibilityMode = visibilityModeForHeader(inSectionAtIndex: sectionIndex)
     switch headerVisibilityMode {
-    case let .visible(heightMode, pinToVisibleBounds):
+    case .visible(let heightMode, let pinToVisibleBounds):
       return HeaderModel(
         heightMode: heightMode,
-        height: headerHeight(from: heightMode), pinToVisibleBounds: pinToVisibleBounds)
+        height: headerHeight(from: heightMode),
+        pinToVisibleBounds: pinToVisibleBounds
+      )
+
     case .hidden:
       return nil
     }
   }
 
   private func footerModelForFooter(
-    inSectionAtIndex sectionIndex: Int)
-    -> FooterModel?
-  {
+    inSectionAtIndex sectionIndex: Int
+  ) -> FooterModel? {
     let footerVisibilityMode = visibilityModeForFooter(inSectionAtIndex: sectionIndex)
     switch footerVisibilityMode {
-    case let .visible(heightMode, pinToVisibleBounds):
+    case .visible(let heightMode, let pinToVisibleBounds):
       return FooterModel(
         heightMode: heightMode,
-        height: footerHeight(from: heightMode), pinToVisibleBounds: pinToVisibleBounds)
+        height: footerHeight(from: heightMode),
+        pinToVisibleBounds: pinToVisibleBounds
+      )
+
     case .hidden:
       return nil
     }
   }
 
   private func backgroundModelForBackground(
-    inSectionAtIndex sectionIndex: Int)
-    -> BackgroundModel?
-  {
+    inSectionAtIndex sectionIndex: Int
+  ) -> BackgroundModel? {
     let backgroundVisibilityMode = visibilityModeForBackground(inSectionAtIndex: sectionIndex)
     switch backgroundVisibilityMode {
     case .visible:
@@ -1111,9 +1172,8 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   private func previousLayoutAttributesForItem(
-    at indexPath: IndexPath)
-    -> UICollectionViewLayoutAttributes?
-  {
+    at indexPath: IndexPath
+  ) -> UICollectionViewLayoutAttributes? {
     let layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(forCellWith: indexPath)
 
     guard let layoutStateBeforeCollectionViewUpdates else {
@@ -1127,7 +1187,8 @@ public final class MagazineLayout: UICollectionViewLayout {
     guard
       indexPath.section < layoutStateBeforeCollectionViewUpdates.modelState.numberOfSections,
       indexPath.item < layoutStateBeforeCollectionViewUpdates.modelState.numberOfItems(
-        inSectionAtIndex: indexPath.section)
+        inSectionAtIndex: indexPath.section
+      )
     else {
       // On iOS 9, `layoutAttributesForItem(at:)` can be invoked for an index path of a new item
       // before the layout is notified of this new item (through either `prepare` or
@@ -1140,19 +1201,20 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     layoutAttributes.frame = layoutStateBeforeCollectionViewUpdates.modelState.frameForItem(
-      at: ElementLocation(indexPath: indexPath))
+      at: ElementLocation(indexPath: indexPath)
+    )
 
     return layoutAttributes
   }
 
   private func previousLayoutAttributesForSupplementaryView(
     ofKind elementKind: String,
-    at indexPath: IndexPath)
-    -> UICollectionViewLayoutAttributes?
-  {
+    at indexPath: IndexPath
+  ) -> UICollectionViewLayoutAttributes? {
     let layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(
       forSupplementaryViewOfKind: elementKind,
-      with: indexPath)
+      with: indexPath
+    )
 
     guard let layoutStateBeforeCollectionViewUpdates else {
       // TODO(bryankeller): Look into whether this happens on iOS 10. It definitely does on iOS 9.
@@ -1176,52 +1238,61 @@ public final class MagazineLayout: UICollectionViewLayout {
     if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionHeader,
       let headerFrame = layoutStateBeforeCollectionViewUpdates.modelState.frameForHeader(
-        inSectionAtIndex: indexPath.section)
+        inSectionAtIndex: indexPath.section
+      )
     {
       layoutAttributes.frame = headerFrame
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionFooter,
       let footerFrame = layoutStateBeforeCollectionViewUpdates.modelState.frameForFooter(
-        inSectionAtIndex: indexPath.section)
+        inSectionAtIndex: indexPath.section
+      )
     {
       layoutAttributes.frame = footerFrame
     } else if
       elementKind == MagazineLayout.SupplementaryViewKind.sectionBackground,
       let backgroundFrame = layoutStateBeforeCollectionViewUpdates.modelState.frameForBackground(
-        inSectionAtIndex: indexPath.section)
+        inSectionAtIndex: indexPath.section
+      )
     {
       layoutAttributes.frame = backgroundFrame
     } else {
       assertionFailure("\(elementKind) is not a valid supplementary view element kind.")
     }
-    
+
     return layoutAttributes
   }
 
   private func modifySupplementaryViewLayoutAttributesForInsertAnimation(
     _ attributes: UICollectionViewLayoutAttributes,
     ofKind elementKind: String,
-    at indexPath: IndexPath)
-  {
+    at indexPath: IndexPath
+  ) {
     switch elementKind {
     case MagazineLayout.SupplementaryViewKind.sectionHeader:
       delegateMagazineLayout?.collectionView(
         currentCollectionView,
         layout: self,
         initialLayoutAttributesForInsertedHeaderInSectionAtIndex: indexPath.section,
-        byModifying: attributes)
+        byModifying: attributes
+      )
+
     case MagazineLayout.SupplementaryViewKind.sectionFooter:
       delegateMagazineLayout?.collectionView(
         currentCollectionView,
         layout: self,
         initialLayoutAttributesForInsertedFooterInSectionAtIndex: indexPath.section,
-        byModifying: attributes)
+        byModifying: attributes
+      )
+
     case MagazineLayout.SupplementaryViewKind.sectionBackground:
       delegateMagazineLayout?.collectionView(
         currentCollectionView,
         layout: self,
         initialLayoutAttributesForInsertedBackgroundInSectionAtIndex: indexPath.section,
-        byModifying: attributes)
+        byModifying: attributes
+      )
+
     default:
       assertionFailure("\(elementKind) is not a valid supplementary view element kind.")
     }
@@ -1230,27 +1301,33 @@ public final class MagazineLayout: UICollectionViewLayout {
   private func modifySupplementaryViewLayoutAttributesForDeleteAnimation(
     _ attributes: UICollectionViewLayoutAttributes,
     ofKind elementKind: String,
-    at indexPath: IndexPath)
-  {
+    at indexPath: IndexPath
+  ) {
     switch elementKind {
     case MagazineLayout.SupplementaryViewKind.sectionHeader:
       delegateMagazineLayout?.collectionView(
         currentCollectionView,
         layout: self,
         finalLayoutAttributesForRemovedHeaderInSectionAtIndex: indexPath.section,
-        byModifying: attributes)
+        byModifying: attributes
+      )
+
     case MagazineLayout.SupplementaryViewKind.sectionFooter:
       delegateMagazineLayout?.collectionView(
         currentCollectionView,
         layout: self,
         finalLayoutAttributesForRemovedFooterInSectionAtIndex: indexPath.section,
-        byModifying: attributes)
+        byModifying: attributes
+      )
+
     case MagazineLayout.SupplementaryViewKind.sectionBackground:
       delegateMagazineLayout?.collectionView(
         currentCollectionView,
         layout: self,
         finalLayoutAttributesForRemovedBackgroundInSectionAtIndex: indexPath.section,
-        byModifying: attributes)
+        byModifying: attributes
+      )
+
     default:
       assertionFailure("\(elementKind) is not a valid supplementary view element kind.")
     }
@@ -1260,13 +1337,12 @@ public final class MagazineLayout: UICollectionViewLayout {
 
 // MARK: Layout Attributes Creation and Caching
 
-private extension MagazineLayout {
+extension MagazineLayout {
 
-  func headerLayoutAttributes(
+  private func headerLayoutAttributes(
     for headerLocation: ElementLocation,
-    frame: CGRect)
-    -> UICollectionViewLayoutAttributes?
-  {
+    frame: CGRect
+  ) -> UICollectionViewLayoutAttributes? {
     guard headerLocation.sectionIndex < currentCollectionView.numberOfSections else { return nil }
 
     let layoutAttributes: MagazineLayoutCollectionViewLayoutAttributes
@@ -1278,15 +1354,17 @@ private extension MagazineLayout {
     } else {
       layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(
         forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionHeader,
-        with: headerLocation.indexPath)
+        with: headerLocation.indexPath
+      )
     }
 
     layoutAttributes.frame = frame
 
     let sectionIndex = headerLocation.sectionIndex
     if
-      case let .visible(heightMode, pinToVisibleBounds) = visibilityModeForHeader(
-        inSectionAtIndex: sectionIndex)
+      case .visible(let heightMode, let pinToVisibleBounds) = visibilityModeForHeader(
+        inSectionAtIndex: sectionIndex
+      )
     {
       layoutAttributes.shouldVerticallySelfSize = heightMode == .dynamic
       hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || pinToVisibleBounds
@@ -1300,11 +1378,10 @@ private extension MagazineLayout {
     return layoutAttributes
   }
 
-  func footerLayoutAttributes(
+  private func footerLayoutAttributes(
     for footerLocation: ElementLocation,
-    frame: CGRect)
-    -> UICollectionViewLayoutAttributes?
-  {
+    frame: CGRect
+  ) -> UICollectionViewLayoutAttributes? {
     guard footerLocation.sectionIndex < currentCollectionView.numberOfSections else { return nil }
 
     let layoutAttributes: MagazineLayoutCollectionViewLayoutAttributes
@@ -1316,15 +1393,17 @@ private extension MagazineLayout {
     } else {
       layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(
         forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionFooter,
-        with: footerLocation.indexPath)
+        with: footerLocation.indexPath
+      )
     }
 
     layoutAttributes.frame = frame
 
     let sectionIndex = footerLocation.sectionIndex
     if
-      case let .visible(heightMode, pinToVisibleBounds) = visibilityModeForFooter(
-        inSectionAtIndex: sectionIndex)
+      case .visible(let heightMode, let pinToVisibleBounds) = visibilityModeForFooter(
+        inSectionAtIndex: sectionIndex
+      )
     {
       layoutAttributes.shouldVerticallySelfSize = heightMode == .dynamic
       hasPinnedHeaderOrFooter = hasPinnedHeaderOrFooter || pinToVisibleBounds
@@ -1338,11 +1417,10 @@ private extension MagazineLayout {
     return layoutAttributes
   }
 
-  func backgroundLayoutAttributes(
+  private func backgroundLayoutAttributes(
     for backgroundLocation: ElementLocation,
-    frame: CGRect)
-    -> UICollectionViewLayoutAttributes?
-  {
+    frame: CGRect
+  ) -> UICollectionViewLayoutAttributes? {
     guard backgroundLocation.sectionIndex < currentCollectionView.numberOfSections else {
       return nil
     }
@@ -1356,7 +1434,8 @@ private extension MagazineLayout {
     } else {
       layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(
         forSupplementaryViewOfKind: MagazineLayout.SupplementaryViewKind.sectionBackground,
-        with: backgroundLocation.indexPath)
+        with: backgroundLocation.indexPath
+      )
     }
 
     layoutAttributes.frame = frame
@@ -1369,11 +1448,10 @@ private extension MagazineLayout {
     return layoutAttributes
   }
 
-  func itemLayoutAttributes(
+  private func itemLayoutAttributes(
     for itemLocation: ElementLocation,
-    frame: CGRect)
-    -> UICollectionViewLayoutAttributes?
-  {
+    frame: CGRect
+  ) -> UICollectionViewLayoutAttributes? {
     guard itemLocation.sectionIndex < currentCollectionView.numberOfSections else { return nil }
     let numberOfItems = currentCollectionView.numberOfItems(inSection: itemLocation.sectionIndex)
     guard itemLocation.elementIndex < numberOfItems else { return nil }
@@ -1386,7 +1464,8 @@ private extension MagazineLayout {
       layoutAttributes = cachedLayoutAttributes
     } else {
       layoutAttributes = MagazineLayoutCollectionViewLayoutAttributes(
-        forCellWith: itemLocation.indexPath)
+        forCellWith: itemLocation.indexPath
+      )
     }
 
     layoutAttributes.frame = frame

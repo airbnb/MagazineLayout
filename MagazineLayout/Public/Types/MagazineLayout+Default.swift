@@ -22,7 +22,8 @@ extension MagazineLayout {
 
     public static let ItemSizeMode = MagazineLayoutItemSizeMode(
       widthMode: .fullWidth(respectsHorizontalInsets: true),
-      heightMode: MagazineLayoutItemHeightMode.static(height: ItemHeight))
+      heightMode: MagazineLayoutItemHeightMode.static(height: ItemHeight)
+    )
     public static let HeaderVisibilityMode = MagazineLayoutHeaderVisibilityMode.hidden
     public static let FooterVisibilityMode = MagazineLayoutFooterVisibilityMode.hidden
     public static let BackgroundVisibilityMode = MagazineLayoutBackgroundVisibilityMode.hidden
@@ -32,8 +33,8 @@ extension MagazineLayout {
     public static let FooterHeight: CGFloat = 44
     public static let VerticalSpacing: CGFloat = 0
     public static let HorizontalSpacing: CGFloat = 0
-    public static let SectionInsets: UIEdgeInsets = .zero
-    public static let ItemInsets: UIEdgeInsets = .zero
+    public static let SectionInsets = UIEdgeInsets.zero
+    public static let ItemInsets = UIEdgeInsets.zero
 
   }
 

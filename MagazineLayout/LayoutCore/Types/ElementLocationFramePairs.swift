@@ -62,7 +62,7 @@ struct ElementLocationFramePairs {
 extension ElementLocationFramePairs: Sequence {
 
   func makeIterator() -> ElementLocationFramePairsIterator {
-    return ElementLocationFramePairsIterator(self)
+    ElementLocationFramePairsIterator(self)
   }
 
 }
@@ -72,8 +72,6 @@ extension ElementLocationFramePairs: Sequence {
 /// Used for iterating through `ElementLocationFramePairs` instances
 struct ElementLocationFramePairsIterator: IteratorProtocol {
 
-  typealias Element = ElementLocationFramePair
-
   // MARK: Lifecycle
 
   init(_ elementLocationFramePairs: ElementLocationFramePairs) {
@@ -81,6 +79,8 @@ struct ElementLocationFramePairsIterator: IteratorProtocol {
   }
 
   // MARK: Internal
+
+  typealias Element = ElementLocationFramePair
 
   mutating func next() -> ElementLocationFramePair? {
     if lastReturnedElement == nil {
@@ -127,8 +127,8 @@ final class ElementLocationFramePair {
 
 extension ElementLocationFramePair: Equatable {
 
-  static func == (lhs: ElementLocationFramePair, rhs: ElementLocationFramePair) -> Bool {
-    return lhs.elementLocation == rhs.elementLocation && lhs.frame == rhs.frame
+  static func ==(lhs: ElementLocationFramePair, rhs: ElementLocationFramePair) -> Bool {
+    lhs.elementLocation == rhs.elementLocation && lhs.frame == rhs.frame
   }
 
 }
