@@ -29,7 +29,7 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
       scale: 1,
       verticalLayoutDirection: .topToBottom)
-    XCTAssert(layoutState.targetContentOffsetAnchor == .top)
+    XCTAssert(layoutState.targetContentOffsetAnchor == .top(overScrollDistance: 0))
   }
 
   func testAnchor_TopToBottom_ScrolledToMiddle() throws {
@@ -130,7 +130,7 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       contentInset: measurementLayoutState.contentInset,
       scale: measurementLayoutState.scale,
       verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
-    XCTAssert(layoutState.targetContentOffsetAnchor == .bottom)
+    XCTAssert(layoutState.targetContentOffsetAnchor == .bottom(overScrollDistance: 0))
   }
 
   // MARK: Top-to-Bottom Target Content Offset Tests
@@ -180,6 +180,20 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
     XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == 690)
   }
 
+  func testOffset_TopToBottom_OverscrolledPastTop() {
+    // bounds.minY = -80 is 30px past minContentOffset.y (-50), simulating rubber-banding
+    let bounds = CGRect(x: 0, y: -80, width: 300, height: 400)
+    let layoutState = LayoutState(
+      modelState: modelState(bounds: bounds),
+      bounds: bounds,
+      contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
+      scale: 1,
+      verticalLayoutDirection: .topToBottom)
+    let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
+    XCTAssert(targetContentOffsetAnchor == .top(overScrollDistance: 30))
+    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == -80)
+  }
+
   // MARK: Bottom-to-Top Target Content Offset Tests
 
   func testOffset_BottomToTop_ScrolledToTop() {
@@ -225,6 +239,29 @@ final class LayoutStateTargetContentOffsetTests: XCTestCase {
       verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
     let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
     XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == 690)
+  }
+
+  func testOffset_BottomToTop_OverscrolledPastBottom() {
+    let measurementBounds = CGRect(x: 0, y: 0, width: 300, height: 400)
+    let measurementLayoutState = LayoutState(
+      modelState: modelState(bounds: measurementBounds),
+      bounds: measurementBounds,
+      contentInset: UIEdgeInsets(top: 50, left: 0, bottom: 30, right: 0),
+      scale: 1,
+      verticalLayoutDirection: .bottomToTop)
+    let maxContentOffset = measurementLayoutState.maxContentOffset
+
+    // 25px past maxContentOffset, simulating rubber-banding
+    let bounds = CGRect(x: 0, y: maxContentOffset.y + 25, width: 300, height: 400)
+    let layoutState = LayoutState(
+      modelState: modelState(bounds: bounds),
+      bounds: bounds,
+      contentInset: measurementLayoutState.contentInset,
+      scale: measurementLayoutState.scale,
+      verticalLayoutDirection: measurementLayoutState.verticalLayoutDirection)
+    let targetContentOffsetAnchor = layoutState.targetContentOffsetAnchor
+    XCTAssert(targetContentOffsetAnchor == .bottom(overScrollDistance: 25))
+    XCTAssert(layoutState.yOffset(for: targetContentOffsetAnchor, isPerformingBatchUpdates: false) == maxContentOffset.y + 25)
   }
 
   // MARK: Private

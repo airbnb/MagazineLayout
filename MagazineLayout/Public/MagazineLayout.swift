@@ -687,11 +687,11 @@ public final class MagazineLayout: UICollectionViewLayout {
         forItemAt: preferredAttributes.indexPath)
 
       switch targetContentOffsetAnchor {
-      case .top:
-        context.contentOffsetAdjustment.y = layoutState.minContentOffset.y - layoutState.bounds.minY
+      case .top(let overScrollDistance):
+        context.contentOffsetAdjustment.y = layoutState.minContentOffset.y - overScrollDistance - layoutState.bounds.minY
 
-      case .bottom:
-        context.contentOffsetAdjustment.y = layoutState.maxContentOffset.y - layoutState.bounds.minY
+      case .bottom(let overScrollDistance):
+        context.contentOffsetAdjustment.y = layoutState.maxContentOffset.y + overScrollDistance - layoutState.bounds.minY
 
       case .topItem, .bottomItem:
         let targetYOffsetAfter = layoutState.yOffset(

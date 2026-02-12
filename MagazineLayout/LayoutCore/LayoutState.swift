@@ -89,8 +89,8 @@ struct LayoutState {
         at: lastVisibleItemLocationFramePair.elementLocation.indexPath)
     else {
       switch verticalLayoutDirection {
-      case .topToBottom: return .top
-      case .bottomToTop: return .bottom
+      case .topToBottom: return .top(overScrollDistance: 0)
+      case .bottomToTop: return .bottom(overScrollDistance: 0)
       }
     }
 
@@ -118,7 +118,7 @@ struct LayoutState {
     case .topToBottom:
       switch position {
       case .atTop:
-        return .top
+        return .top(overScrollDistance: top - bounds.minY)
       case .inMiddle, .atBottom:
         let top = bounds.minY + contentInset.top
         let distanceFromTop = firstVisibleItemLocationFramePair.frame.minY - top
@@ -137,7 +137,7 @@ struct LayoutState {
           elementLocation: lastVisibleItemLocationFramePair.elementLocation,
           distanceFromBottom: distanceFromBottom.alignedToPixel(forScreenWithScale: scale))
       case .atBottom:
-        return .bottom
+        return .bottom(overScrollDistance: bounds.minY - bottom)
       }
     }
   }
@@ -148,11 +148,11 @@ struct LayoutState {
     -> CGFloat
   {
     switch targetContentOffsetAnchor {
-    case .top:
-      return minContentOffset.y
+    case .top(let overScrollDistance):
+      return minContentOffset.y - overScrollDistance
 
-    case .bottom:
-      return maxContentOffset.y
+    case .bottom(let overScrollDistance):
+      return maxContentOffset.y + overScrollDistance
 
     case .topItem(let id, let _elementLocation, let distanceFromTop):
       let elementLocation =

@@ -19,8 +19,8 @@ import UIKit
 
 /// Anchors representing how the collection view prioritizes keeping certain items visible in target content offset calculations.
 enum TargetContentOffsetAnchor: Equatable {
-  case top
-  case bottom
+  case top(overScrollDistance: CGFloat)
+  case bottom(overScrollDistance: CGFloat)
   case topItem(id: UInt64, elementLocation: ElementLocation, distanceFromTop: CGFloat)
   case bottomItem(id: UInt64, elementLocation: ElementLocation, distanceFromBottom: CGFloat)
 }
