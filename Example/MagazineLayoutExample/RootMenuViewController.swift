@@ -198,7 +198,7 @@ private enum DemoOption: String, CaseIterable {
     case .messageThread:
       return "Bottom-to-top layout with pagination"
     case .performance:
-      return "10,000 items with traditional data source"
+      return "100,000 items with traditional data source"
     }
   }
 

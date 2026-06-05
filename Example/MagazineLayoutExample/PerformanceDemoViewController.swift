@@ -26,7 +26,7 @@ final class PerformanceDemoViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
-    title = "Performance (10K Items)"
+    title = "Performance (100K Items)"
     view.backgroundColor = .systemBackground
 
     navigationItem.rightBarButtonItems = [
@@ -71,8 +71,8 @@ final class PerformanceDemoViewController: UIViewController {
   ]
 
   private func loadInitialData() {
-    // Create 10,000 items
-    items = (0..<10_000).map { index in
+    // Create 100,000 items
+    items = (0..<100_000).map { index in
       let color = colors[index % colors.count]
       let item = PerformanceItem(id: nextItemID, color: color)
       nextItemID += 1
