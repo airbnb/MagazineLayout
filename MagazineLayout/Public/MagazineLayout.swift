@@ -97,12 +97,18 @@ public final class MagazineLayout: UICollectionViewLayout {
       hasPinnedHeaderOrFooter = false
     }
 
+    var reusableIndexPath = IndexPath(item: 0, section: 0)
+
     // Update layout metrics if necessary
     if prepareActions.contains(.updateLayoutMetrics) {
       let signpostID = OSSignpostID(log: signpostLog)
       os_signpost(.begin, log: signpostLog, name: SignpostName.prepareUpdateLayoutMetrics, signpostID: signpostID)
 
       for sectionIndex in 0..<modelState.numberOfSections {
+        if Self._enableExperimentalOptimizations {
+          reusableIndexPath.section = sectionIndex
+        }
+
         let sectionMetrics = metricsForSection(atIndex: sectionIndex)
         modelState.updateMetrics(to: sectionMetrics, forSectionAtIndex: sectionIndex)
 
@@ -126,8 +132,13 @@ public final class MagazineLayout: UICollectionViewLayout {
 
         let numberOfItems = modelState.numberOfItems(inSectionAtIndex: sectionIndex)
         for itemIndex in 0..<numberOfItems {
-          let indexPath = IndexPath(item: itemIndex, section: sectionIndex)
-          modelState.updateItemSizeMode(to: sizeModeForItem(at: indexPath), forItemAt: indexPath)
+          if Self._enableExperimentalOptimizations {
+            reusableIndexPath.item = itemIndex
+            modelState.updateItemSizeMode(to: sizeModeForItem(at: reusableIndexPath), forItemAt: reusableIndexPath)
+          } else {
+            let indexPath = IndexPath(item: itemIndex, section: sectionIndex)
+            modelState.updateItemSizeMode(to: sizeModeForItem(at: indexPath), forItemAt: indexPath)
+          }
         }
       }
 
@@ -148,7 +159,13 @@ public final class MagazineLayout: UICollectionViewLayout {
 
       var sections = [SectionModel]()
       for sectionIndex in 0..<currentCollectionView.numberOfSections {
-        let sectionModel = sectionModelForSection(atIndex: sectionIndex)
+        if Self._enableExperimentalOptimizations {
+          reusableIndexPath.section = sectionIndex
+        }
+
+        let sectionModel = sectionModelForSection(
+          atIndex: sectionIndex,
+          reusableIndexPath: &reusableIndexPath)
         sections.append(sectionModel)
       }
 
@@ -176,6 +193,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     self.layoutStateBeforeCollectionViewUpdates = layoutStateBeforeCollectionViewUpdates
 
     var updates = [CollectionViewUpdate<SectionModel, ItemModel>]()
+    var reusableIndexPath = IndexPath(item: 0, section: 0)
 
     for updateItem in updateItems {
       let updateAction = updateItem.updateAction
@@ -189,7 +207,12 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         if indexPath.item == NSNotFound {
-          let sectionModel = sectionModelForSection(atIndex: indexPath.section)
+          if Self._enableExperimentalOptimizations {
+            reusableIndexPath.section = indexPath.section
+          }
+          let sectionModel = sectionModelForSection(
+            atIndex: indexPath.section,
+            reusableIndexPath: &reusableIndexPath)
           updates.append(.sectionReload(sectionIndex: indexPath.section, newSection: sectionModel))
         } else {
           let itemModel = itemModelForItem(at: indexPath)
@@ -217,7 +240,12 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         if indexPath.item == NSNotFound {
-          let sectionModel = sectionModelForSection(atIndex: indexPath.section)
+          if Self._enableExperimentalOptimizations {
+            reusableIndexPath.section = indexPath.section
+          }
+          let sectionModel = sectionModelForSection(
+            atIndex: indexPath.section,
+            reusableIndexPath: &reusableIndexPath)
           updates.append(.sectionInsert(sectionIndex: indexPath.section, newSection: sectionModel))
         } else {
           let itemModel = itemModelForItem(at: indexPath)
@@ -1110,9 +1138,23 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
   }
 
-  private func sectionModelForSection(atIndex sectionIndex: Int) -> SectionModel {
-    let itemModels = (0..<currentCollectionView.numberOfItems(inSection: sectionIndex)).map {
-      itemModelForItem(at: IndexPath(item: $0, section: sectionIndex))
+  private func sectionModelForSection(
+    atIndex sectionIndex: Int,
+    reusableIndexPath: inout IndexPath)
+    -> SectionModel
+  {
+    let numberOfItems = currentCollectionView.numberOfItems(inSection: sectionIndex)
+    var itemModels = [ItemModel]()
+    itemModels.reserveCapacity(numberOfItems)
+
+    for itemIndex in 0..<numberOfItems {
+      if Self._enableExperimentalOptimizations {
+        reusableIndexPath.item = itemIndex
+        itemModels.append(itemModelForItem(at: reusableIndexPath))
+      } else {
+        itemModels.append(itemModelForItem(at: IndexPath(item: itemIndex, section: sectionIndex)))
+      }
+
     }
 
     return SectionModel(
