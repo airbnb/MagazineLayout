@@ -43,6 +43,9 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   // MARK: Public
   
+  /// A temporary flag to enable safely testing some optimizations.
+  public static var _enableExperimentalOptimizations = false
+
   /// The vertical layout direction of items in the collection view. This property changes the behavior of
   /// scroll-position-preservation when performing batch updates or when the collection view's bounds changes.
   public var verticalLayoutDirection = MagazineLayoutVerticalLayoutDirection.topToBottom

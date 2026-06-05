@@ -20,15 +20,12 @@ import UIKit
 /// Used to indicate that collection view properties and/or delegate layout metrics changed.
 public final class MagazineLayoutInvalidationContext: UICollectionViewLayoutInvalidationContext {
 
-  /// A temporary flag to enable safely testing a change to how layout invalidation works.
-  public static var _invalidateLayoutMetricsDefaultValue = true
-
   /// Indicates whether to recompute the positions and sizes of elements based on the current collection view and delegate layout
   /// metrics.
   ///
-  /// Defaults to `false`. Set to `true` when delegate-provided layout values (e.g. item size
+  /// Set to `true` when delegate-provided layout values (e.g. item size
   /// modes, header/footer visibility, section metrics) have changed and the layout needs to
   /// re-query the delegate.
-  public var invalidateLayoutMetrics = _invalidateLayoutMetricsDefaultValue
+  public var invalidateLayoutMetrics = !MagazineLayout._enableExperimentalOptimizations
 
 }
