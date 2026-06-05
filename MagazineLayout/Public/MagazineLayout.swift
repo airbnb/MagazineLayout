@@ -70,7 +70,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     guard collectionView != nil else { return .zero }
-    return layoutState.contentSize
+    return updatedLayoutState().contentSize
   }
 
   override public func prepare() {
@@ -81,6 +81,9 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     super.prepare()
+
+    _currentCollectionView = collectionView
+    _delegateMagazineLayout = currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
 
     // Save the previous collection view width if necessary
     if prepareActions.contains(.cachePreviousWidth) {
@@ -137,7 +140,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       os_signpost(.begin, log: signpostLog, name: SignpostName.prepareRecreateSectionModels, signpostID: signpostID)
 
       layoutStateBeforeRecreateSectionModels = LayoutState(
-        modelState: layoutState.modelState.copy(),
+        modelState: modelState.copy(),
         bounds: currentCollectionView.bounds,
         contentInset: contentInset,
         scale: scale,
@@ -165,7 +168,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     let layoutStateBeforeCollectionViewUpdates = LayoutState(
-      modelState: layoutState.modelState.copy(),
+      modelState: modelState.copy(),
       bounds: currentCollectionView.bounds,
       contentInset: contentInset,
       scale: scale,
@@ -259,6 +262,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     if let layoutStateBeforeCollectionViewUpdates{
       let targetContentOffsetAnchor = layoutStateBeforeCollectionViewUpdates.targetContentOffsetAnchor
+      let layoutState = updatedLayoutState()
       let targetYOffset = layoutState.yOffset(
         for: targetContentOffsetAnchor,
         isPerformingBatchUpdates: true)
@@ -280,7 +284,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     if currentCollectionView.bounds.size != oldBounds.size {
       layoutStateBeforeAnimatedBoundsChange = LayoutState(
-        modelState: layoutState.modelState.copy(),
+        modelState: modelState.copy(),
         bounds: oldBounds,
         contentInset: contentInset,
         scale: scale,
@@ -708,13 +712,15 @@ public final class MagazineLayout: UICollectionViewLayout {
       withOriginalAttributes: originalAttributes) as! MagazineLayoutInvalidationContext
     context.invalidateLayoutMetrics = false
 
+    let layoutState = updatedLayoutState()
+
     switch preferredAttributes.representedElementCategory {
     case .cell:
       let targetContentOffsetAnchor = (
         layoutStateBeforeRecreateSectionModels ??
           layoutStateBeforeCollectionViewUpdates ??
           layoutStateBeforeAnimatedBoundsChange ??
-          self.layoutState
+          layoutState
       ).targetContentOffsetAnchor
       let targetYOffsetBefore = layoutState.yOffset(
         for: targetContentOffsetAnchor,
@@ -867,7 +873,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       return super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
     }
 
-    let yOffset = layoutState.yOffset(
+    let yOffset = updatedLayoutState().yOffset(
       for: layoutStateBefore.targetContentOffsetAnchor,
       isPerformingBatchUpdates: layoutStateBeforeCollectionViewUpdates != nil)
 
@@ -929,12 +935,26 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var cachedCollectionViewWidth: CGFloat?
   private var previousContentInset: UIEdgeInsets?
 
-  private var currentCollectionView: UICollectionView {
-    guard let collectionView = collectionView else {
-      preconditionFailure("`collectionView` should not be `nil`")
-    }
+  // Unowned unsafe references to avoid weak reference overhead.
+  private unowned(unsafe) var _currentCollectionView: UICollectionView?
+  private unowned(unsafe) var _delegateMagazineLayout: UICollectionViewDelegateMagazineLayout?
 
-    return collectionView
+  @inline(__always)
+  private var currentCollectionView: UICollectionView {
+    if MagazineLayout._enableExperimentalOptimizations {
+      _currentCollectionView ?? collectionView!
+    } else {
+      collectionView!
+    }
+  }
+
+  @inline(__always)
+  private var delegateMagazineLayout: UICollectionViewDelegateMagazineLayout? {
+    if MagazineLayout._enableExperimentalOptimizations {
+      _delegateMagazineLayout
+    } else {
+      currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
+    }
   }
 
   // Used to provide the model state with the current visible bounds for the sole purpose of
@@ -961,10 +981,6 @@ public final class MagazineLayout: UICollectionViewLayout {
       height: currentCollectionView.bounds.height - contentInset.top - contentInset.bottom + refreshControlHeight)
   }
 
-  private var delegateMagazineLayout: UICollectionViewDelegateMagazineLayout? {
-    return currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
-  }
-
   private var scale: CGFloat {
     collectionView?.traitCollection.nonZeroDisplayScale ?? 1
   }
@@ -973,16 +989,21 @@ public final class MagazineLayout: UICollectionViewLayout {
     currentCollectionView.adjustedContentInset
   }
 
-  private var layoutState: LayoutState {
+  private var modelState: ModelState {
+    if MagazineLayout._enableExperimentalOptimizations {
+      _layoutState.modelState
+    } else {
+      updatedLayoutState().modelState
+    }
+  }
+
+  /// Relatively expensive compared to just grabbing the `_layoutState`; only use if you need updated metrics.
+  private func updatedLayoutState() -> LayoutState {
     _layoutState.bounds = currentCollectionView.bounds
     _layoutState.contentInset = contentInset
     _layoutState.scale = scale
     _layoutState.verticalLayoutDirection = verticalLayoutDirection
     return _layoutState
-  }
-
-  private var modelState: ModelState {
-    layoutState.modelState
   }
 
   private func metricsForSection(atIndex sectionIndex: Int) -> MagazineLayoutSectionMetrics {
