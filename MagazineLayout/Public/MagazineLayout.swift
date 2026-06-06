@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import os
 import UIKit
 
 /// A collection view layout that can display items in a grid and list arrangement.
@@ -59,11 +60,23 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   override public var collectionViewContentSize: CGSize {
+    let signpostID = OSSignpostID(log: signpostLog)
+    os_signpost(.begin, log: signpostLog, name: SignpostName.collectionViewContentSize, signpostID: signpostID)
+    defer {
+      os_signpost(.end, log: signpostLog, name: SignpostName.collectionViewContentSize, signpostID: signpostID)
+    }
+
     guard collectionView != nil else { return .zero }
     return layoutState.contentSize
   }
 
   override public func prepare() {
+    let prepareSignpostID = OSSignpostID(log: signpostLog)
+    os_signpost(.begin, log: signpostLog, name: SignpostName.prepare, signpostID: prepareSignpostID)
+    defer {
+      os_signpost(.end, log: signpostLog, name: SignpostName.prepare, signpostID: prepareSignpostID)
+    }
+
     super.prepare()
 
     // Save the previous collection view width if necessary
@@ -80,6 +93,9 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     // Update layout metrics if necessary
     if prepareActions.contains(.updateLayoutMetrics) {
+      let signpostID = OSSignpostID(log: signpostLog)
+      os_signpost(.begin, log: signpostLog, name: SignpostName.prepareUpdateLayoutMetrics, signpostID: signpostID)
+
       for sectionIndex in 0..<modelState.numberOfSections {
         let sectionMetrics = metricsForSection(atIndex: sectionIndex)
         modelState.updateMetrics(to: sectionMetrics, forSectionAtIndex: sectionIndex)
@@ -108,10 +124,15 @@ public final class MagazineLayout: UICollectionViewLayout {
           modelState.updateItemSizeMode(to: sizeModeForItem(at: indexPath), forItemAt: indexPath)
         }
       }
+
+      os_signpost(.end, log: signpostLog, name: SignpostName.prepareUpdateLayoutMetrics, signpostID: signpostID)
     }
 
     // Recreate section models from scratch if necessary
     if prepareActions.contains(.recreateSectionModels) {
+      let signpostID = OSSignpostID(log: signpostLog)
+      os_signpost(.begin, log: signpostLog, name: SignpostName.prepareRecreateSectionModels, signpostID: signpostID)
+
       layoutStateBeforeRecreateSectionModels = LayoutState(
         modelState: layoutState.modelState.copy(),
         bounds: currentCollectionView.bounds,
@@ -126,12 +147,20 @@ public final class MagazineLayout: UICollectionViewLayout {
       }
 
       modelState.setSections(sections)
+
+      os_signpost(.end, log: signpostLog, name: SignpostName.prepareRecreateSectionModels, signpostID: signpostID)
     }
 
     prepareActions = []
   }
 
   override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
+    let prepareForCollectionViewUpdatesSignpostID = OSSignpostID(log: signpostLog)
+    os_signpost(.begin, log: signpostLog, name: SignpostName.prepareForCollectionViewUpdates, signpostID: prepareForCollectionViewUpdatesSignpostID)
+    defer {
+      os_signpost(.end, log: signpostLog, name: SignpostName.prepareForCollectionViewUpdates, signpostID: prepareForCollectionViewUpdatesSignpostID)
+    }
+
     let layoutStateBeforeCollectionViewUpdates = LayoutState(
       modelState: layoutState.modelState.copy(),
       bounds: currentCollectionView.bounds,
@@ -289,6 +318,12 @@ public final class MagazineLayout: UICollectionViewLayout {
     // details about the updates to the collection view before `layoutAttributesForElementsInRect:`
     // is invoked, enabling them to resolve their layout in time.
     guard !hasDataSourceCountInvalidationBeforeReceivingUpdateItems else { return nil }
+
+    let signpostID = OSSignpostID(log: signpostLog)
+    os_signpost(.begin, log: signpostLog, name: SignpostName.layoutAttributesForElementsInRect, signpostID: signpostID)
+    defer {
+      os_signpost(.end, log: signpostLog, name: SignpostName.layoutAttributesForElementsInRect, signpostID: signpostID)
+    }
 
     var layoutAttributesInRect = [UICollectionViewLayoutAttributes]()
 
@@ -760,6 +795,12 @@ public final class MagazineLayout: UICollectionViewLayout {
       assertionFailure("`context` must be an instance of `MagazineLayoutInvalidationContext`")
       super.invalidateLayout(with: context)
       return
+    }
+
+    let signpostID = OSSignpostID(log: signpostLog)
+    os_signpost(.begin, log: signpostLog, name: SignpostName.invalidateLayout, signpostID: signpostID)
+    defer {
+      os_signpost(.end, log: signpostLog, name: SignpostName.invalidateLayout, signpostID: signpostID)
     }
 
     // If our layout direction is `bottomToTop`, allow changes to the top and bottom content insets
@@ -1405,4 +1446,20 @@ private extension MagazineLayout {
     return layoutAttributes
   }
 
+}
+
+// MARK: - Signposting
+
+let signpostLog = OSLog(subsystem: "com.airbnb.MagazineLayout", category: "MagazineLayout")
+
+enum SignpostName {
+  static let collectionViewContentSize: StaticString = "MagazineLayout.collectionViewContentSize"
+  static let prepare: StaticString = "MagazineLayout.prepare"
+  static let prepareUpdateLayoutMetrics: StaticString = "MagazineLayout.prepare.updateLayoutMetrics"
+  static let prepareRecreateSectionModels: StaticString = "MagazineLayout.prepare.recreateSectionModels"
+  static let layoutAttributesForElementsInRect: StaticString = "MagazineLayout.layoutAttributesForElementsInRect"
+  static let prepareForCollectionViewUpdates: StaticString = "MagazineLayout.prepareForCollectionViewUpdates"
+  static let invalidateLayout: StaticString = "MagazineLayout.invalidateLayout"
+  static let preferredLayoutAttributesFittingCell: StaticString = "MagazineLayout.preferredLayoutAttributesFitting.cell"
+  static let preferredLayoutAttributesFittingReusableView: StaticString = "MagazineLayout.preferredLayoutAttributesFitting.reusableView"
 }

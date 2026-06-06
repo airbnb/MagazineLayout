@@ -8,8 +8,8 @@ Pod::Spec.new do |s|
   s.source   = { :git => 'https://github.com/airbnb/MagazineLayout.git', :tag => "v#{ s.version.to_s }" }
   s.swift_version = '4.0'
   s.source_files = 'MagazineLayout/**/*.{swift,h}'
-  s.ios.deployment_target = '10.0'
-  s.tvos.deployment_target = '10.0'
+  s.ios.deployment_target = '12.0'
+  s.tvos.deployment_target = '12.0'
 
   s.pod_target_xcconfig = {
     'APPLICATION_EXTENSION_API_ONLY' => 'YES'

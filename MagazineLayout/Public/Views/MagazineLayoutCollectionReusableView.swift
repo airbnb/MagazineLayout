@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import os
 import UIKit
 
 /// A collection reusable view that coordinates with `MagazineLayoutCollectionViewLayoutAttributes`
@@ -39,6 +40,12 @@ open class MagazineLayoutCollectionReusableView: UICollectionReusableView {
     guard let attributes = layoutAttributes as? MagazineLayoutCollectionViewLayoutAttributes else {
       assertionFailure("`layoutAttributes` must be an instance of `MagazineLayoutCollectionViewLayoutAttributes`")
       return super.preferredLayoutAttributesFitting(layoutAttributes)
+    }
+
+    let signpostID = OSSignpostID(log: signpostLog)
+    os_signpost(.begin, log: signpostLog, name: SignpostName.preferredLayoutAttributesFittingReusableView, signpostID: signpostID)
+    defer {
+      os_signpost(.end, log: signpostLog, name: SignpostName.preferredLayoutAttributesFittingReusableView, signpostID: signpostID)
     }
 
     let size: CGSize
