@@ -38,7 +38,10 @@ struct SectionModel {
     numberOfRows = 0
 
     updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: 0)
-    calculateElementFramesIfNecessary()
+
+    if !MagazineLayout._enableExperimentalOptimizations {
+      calculateElementFramesIfNecessary()
+    }
   }
 
   // MARK: Internal
@@ -257,15 +260,22 @@ struct SectionModel {
   }
 
   mutating func removeFooter() -> Bool {
-    guard let indexOfFooter = indexOfFooterRow() else {
+    guard footerModel != nil else {
       return false
     }
-    updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfFooter)
+    // `indexOfFooterRow()` is `nil` if the section hasn't been laid out yet (deferred layout
+    // calculation). In that case the whole section is already invalidated from row 0, so there's no
+    // additional row to invalidate.
+    if let indexOfFooter = indexOfFooterRow() {
+      updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfFooter)
+    }
     footerModel = nil
     return true
   }
 
   mutating func updateItemHeight(toPreferredHeight preferredHeight: CGFloat, atIndex index: Int) {
+    calculateElementFramesIfNecessary()
+
     // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
     // and Swift retain / release calls.
     itemModels.withUnsafeMutableBufferPointer { directlyMutableItemModels in
@@ -292,6 +302,8 @@ struct SectionModel {
   }
 
   mutating func updateHeaderHeight(toPreferredHeight preferredHeight: CGFloat) {
+    calculateElementFramesIfNecessary()
+
     headerModel?.preferredHeight = preferredHeight
 
     if let indexOfHeaderRow = indexOfHeaderRow(), let headerModel = headerModel {
@@ -312,6 +324,8 @@ struct SectionModel {
   }
 
   mutating func updateFooterHeight(toPreferredHeight preferredHeight: CGFloat) {
+    calculateElementFramesIfNecessary()
+
     footerModel?.preferredHeight = preferredHeight
 
     if let indexOfFooterRow = indexOfFooterRow(), let footerModel = footerModel {
@@ -393,7 +407,10 @@ struct SectionModel {
   }
 
   private func indexOfFooterRow() -> Int? {
-    guard footerModel != nil else { return nil }
+    // `numberOfRows` is 0 until the section's element frames have been calculated. With deferred
+    // layout calculation, the footer's row index isn't known yet in that state, so we return `nil`
+    // rather than a bogus `numberOfRows - 1` (which would be -1).
+    guard footerModel != nil, numberOfRows > 0 else { return nil }
     return numberOfRows - 1
   }
   
