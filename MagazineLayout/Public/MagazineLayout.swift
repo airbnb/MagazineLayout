@@ -99,6 +99,19 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     var reusableIndexPath = IndexPath(item: 0, section: 0)
 
+    // Update widths if necessary (e.g. after rotation or other bounds change)
+    if prepareActions.contains(.updateWidths) {
+      let signpostID = OSSignpostID(log: signpostLog)
+      os_signpost(.begin, log: signpostLog, name: SignpostName.prepareUpdateWidths, signpostID: signpostID)
+
+      for sectionIndex in 0..<modelState.numberOfSections {
+        let sectionMetrics = metricsForSection(atIndex: sectionIndex)
+        modelState.updateMetrics(to: sectionMetrics, forSectionAtIndex: sectionIndex)
+      }
+
+      os_signpost(.end, log: signpostLog, name: SignpostName.prepareUpdateWidths, signpostID: signpostID)
+    }
+
     // Update layout metrics if necessary
     if prepareActions.contains(.updateLayoutMetrics) {
       let signpostID = OSSignpostID(log: signpostLog)
@@ -870,7 +883,12 @@ public final class MagazineLayout: UICollectionViewLayout {
       screenScale: scale)
       ?? false
     if !isSameWidth {
-      prepareActions.formUnion([.updateLayoutMetrics, .cachePreviousWidth])
+      prepareActions.formUnion(.cachePreviousWidth)
+      if MagazineLayout._enableExperimentalOptimizations {
+        prepareActions.formUnion(.updateWidths)
+      } else {
+        prepareActions.formUnion(.updateLayoutMetrics)
+      }
     }
 
     if context.invalidateLayoutMetrics && shouldInvalidateLayoutMetrics {
@@ -951,7 +969,8 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     static let recreateSectionModels = PrepareActions(rawValue: 1 << 0)
     static let updateLayoutMetrics = PrepareActions(rawValue: 1 << 1)
-    static let cachePreviousWidth = PrepareActions(rawValue: 1 << 2)
+    static let updateWidths = PrepareActions(rawValue: 1 << 2)
+    static let cachePreviousWidth = PrepareActions(rawValue: 1 << 3)
   }
   private var prepareActions: PrepareActions = []
 
@@ -1521,7 +1540,8 @@ let signpostLog = OSLog(subsystem: "com.airbnb.MagazineLayout", category: "Magaz
 enum SignpostName {
   static let collectionViewContentSize: StaticString = "MagazineLayout.collectionViewContentSize"
   static let prepare: StaticString = "MagazineLayout.prepare"
-  static let prepareUpdateLayoutMetrics: StaticString = "MagazineLayout.prepare.updateLayoutMetrics"
+  static let prepareUpdateWidths: StaticString = "MagazineLayout.prepare.prepareUpdateWidths"
+  static let prepareUpdateLayoutMetrics: StaticString = "MagazineLayout.prepare.prepareUpdateLayoutMetrics"
   static let prepareRecreateSectionModels: StaticString = "MagazineLayout.prepare.recreateSectionModels"
   static let layoutAttributesForElementsInRect: StaticString = "MagazineLayout.layoutAttributesForElementsInRect"
   static let prepareForCollectionViewUpdates: StaticString = "MagazineLayout.prepareForCollectionViewUpdates"
