@@ -186,6 +186,14 @@ struct SectionModel {
   }
 
   @discardableResult
+  mutating func updateItemModel(atIndex indexOfUpdate: Int, to itemModel: ItemModel) -> ItemModel {
+    updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: indexOfUpdate)
+    let oldItemModel = itemModels[indexOfUpdate]
+    itemModels[indexOfUpdate] = itemModel
+    return oldItemModel
+  }
+
+  @discardableResult
   mutating func deleteItemModel(atIndex indexOfDeletion: Int) -> ItemModel {
     updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: indexOfDeletion)
 
@@ -198,12 +206,45 @@ struct SectionModel {
     itemModels.insert(itemModel, at: indexOfInsertion)
   }
 
-  mutating func updateMetrics(to metrics: MagazineLayoutSectionMetrics) {
-    guard self.metrics != metrics else { return }
+  @discardableResult
+  mutating func updateMetrics(to metrics: MagazineLayoutSectionMetrics) -> Bool {
+    guard self.metrics != metrics else { return false }
 
     self.metrics = metrics
 
     updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: 0)
+
+    return true
+  }
+
+  mutating func updateItemSizeModes(
+    _ sizeModeProvider: (_ itemIndex: Int) -> MagazineLayoutItemSizeMode)
+  {
+    guard numberOfItems > 0 else { return }
+
+    var indexOfFirstInvalidatedItem: Int?
+    itemModels.withUnsafeMutableBufferPointer { itemModels in
+      for index in 0..<itemModels.count {
+        let sizeMode = sizeModeProvider(index)
+        let itemModel = itemModels[index]
+        if itemModel.sizeMode != sizeMode {
+          itemModels[index].sizeMode = sizeMode
+          indexOfFirstInvalidatedItem = min(indexOfFirstInvalidatedItem ?? index, index)
+        }
+
+        if
+          case let .static(staticHeight) = sizeMode.heightMode,
+          itemModel.size.height != staticHeight
+        {
+          itemModels[index].size.height = staticHeight
+          indexOfFirstInvalidatedItem = min(indexOfFirstInvalidatedItem ?? index, index)
+        }
+      }
+    }
+
+    if let indexOfFirstInvalidatedItem {
+      updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: indexOfFirstInvalidatedItem)
+    }
   }
 
   mutating func updateItemSizeMode(to sizeMode: MagazineLayoutItemSizeMode, atIndex index: Int) {

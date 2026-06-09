@@ -223,11 +223,10 @@ final class ModelState {
     }
 
     var itemFrame: CGRect!
-    mutateSectionModels(
-      withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
-        itemFrame = directlyMutableSectionModels[itemLocation.sectionIndex].calculateFrameForItem(
-          atIndex: itemLocation.elementIndex)
-      })
+    sectionModels.withUnsafeMutableBufferPointer { sectionModels in
+      itemFrame = sectionModels[itemLocation.sectionIndex].calculateFrameForItem(
+        atIndex: itemLocation.elementIndex)
+    }
 
     itemFrame.origin.y += sectionMinY
     return itemFrame
@@ -243,15 +242,14 @@ final class ModelState {
 
     let currentVisibleBounds = currentVisibleBoundsProvider()
     var headerFrame: CGRect?
-    mutateSectionModels(
-      withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
-        headerFrame = directlyMutableSectionModels[sectionIndex].calculateFrameForHeader(
-          inSectionVisibleBounds: CGRect(
-            x: currentVisibleBounds.minX,
-            y: currentVisibleBounds.minY - sectionMinY,
-            width: currentVisibleBounds.width,
-            height: currentVisibleBounds.height))
-      })
+    sectionModels.withUnsafeMutableBufferPointer { sectionModels in
+      headerFrame = sectionModels[sectionIndex].calculateFrameForHeader(
+        inSectionVisibleBounds: CGRect(
+          x: currentVisibleBounds.minX,
+          y: currentVisibleBounds.minY - sectionMinY,
+          width: currentVisibleBounds.width,
+          height: currentVisibleBounds.height))
+      }
 
     headerFrame?.origin.y += sectionMinY
     return headerFrame
@@ -267,15 +265,14 @@ final class ModelState {
 
     let currentVisibleBounds = currentVisibleBoundsProvider()
     var footerFrame: CGRect?
-    mutateSectionModels(
-      withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
-        footerFrame = directlyMutableSectionModels[sectionIndex].calculateFrameForFooter(
+    sectionModels.withUnsafeMutableBufferPointer { sectionModels in
+        footerFrame = sectionModels[sectionIndex].calculateFrameForFooter(
           inSectionVisibleBounds: CGRect(
             x: currentVisibleBounds.minX,
             y: currentVisibleBounds.minY - sectionMinY,
             width: currentVisibleBounds.width,
             height: currentVisibleBounds.height))
-      })
+      }
 
     footerFrame?.origin.y += sectionMinY
     return footerFrame
@@ -290,10 +287,9 @@ final class ModelState {
     }
 
     var backgroundFrame: CGRect?
-    mutateSectionModels(
-      withUnsafeMutableBufferPointer: { directlyMutableSectionModels in
-        backgroundFrame = directlyMutableSectionModels[sectionIndex].calculateFrameForBackground()
-      })
+    sectionModels.withUnsafeMutableBufferPointer { sectionModels in
+      backgroundFrame = sectionModels[sectionIndex].calculateFrameForBackground()
+    }
 
     backgroundFrame?.origin.y += sectionMinY
     return backgroundFrame
@@ -359,9 +355,32 @@ final class ModelState {
 
   func updateMetrics(
     to sectionMetrics: MagazineLayoutSectionMetrics,
+    forSectionAtIndex sectionIndex: Int,
+    sectionModel: inout SectionModel)
+  {
+    let didUpdate = sectionModel.updateMetrics(to: sectionMetrics)
+    if didUpdate {
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+    }
+  }
+
+  func updateMetrics(
+    to sectionMetrics: MagazineLayoutSectionMetrics,
     forSectionAtIndex sectionIndex: Int)
   {
     sectionModels[sectionIndex].updateMetrics(to: sectionMetrics)
+
+    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+  }
+
+  func updateItemSizeModes(
+    forSectionAtIndex sectionIndex: Int,
+    sectionModel: inout SectionModel,
+    sizeModeProvider: (_ itemIndex: Int) -> MagazineLayoutItemSizeMode)
+  {
+    sectionModel.updateItemSizeModes(sizeModeProvider)
+
+    // TODO: Only invalidate if something changes
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
   }
 
@@ -369,6 +388,19 @@ final class ModelState {
     sectionModels[indexPath.section].updateItemSizeMode(to: sizeMode, atIndex: indexPath.item)
 
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: indexPath.section)
+  }
+
+  func setHeader(
+    _ headerModel: HeaderModel,
+    forSectionAtIndex sectionIndex: Int,
+    sectionModel: inout SectionModel)
+  {
+    sectionModel.setHeader(headerModel)
+
+    // TODO: Only invalidate if something changes
+    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+
+    prepareElementLocationsForFlattenedIndices()
   }
 
   func setHeader(_ headerModel: HeaderModel, forSectionAtIndex sectionIndex: Int) {
@@ -379,11 +411,31 @@ final class ModelState {
     prepareElementLocationsForFlattenedIndices()
   }
 
+  func removeHeader(forSectionAtIndex sectionIndex: Int, sectionModel: inout SectionModel) {
+    if sectionModel.removeHeader() {
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+      prepareElementLocationsForFlattenedIndices()
+    }
+  }
+
   func removeHeader(forSectionAtIndex sectionIndex: Int) {
     if sectionModels[sectionIndex].removeHeader() {
       invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
       prepareElementLocationsForFlattenedIndices()
     }
+  }
+
+  func setFooter(
+    _ footerModel: FooterModel,
+    forSectionAtIndex sectionIndex: Int,
+    sectionModel: inout SectionModel)
+  {
+    sectionModel.setFooter(footerModel)
+
+    // TODO: Only invalidate if something changes
+    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+
+    prepareElementLocationsForFlattenedIndices()
   }
 
   func setFooter(_ footerModel: FooterModel, forSectionAtIndex sectionIndex: Int) {
@@ -394,6 +446,13 @@ final class ModelState {
     prepareElementLocationsForFlattenedIndices()
   }
 
+  func removeFooter(forSectionAtIndex sectionIndex: Int, sectionModel: inout SectionModel) {
+    if sectionModel.removeFooter() {
+      invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
+      prepareElementLocationsForFlattenedIndices()
+    }
+  }
+
   func removeFooter(forSectionAtIndex sectionIndex: Int) {
     if sectionModels[sectionIndex].removeFooter() {
       invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
@@ -401,10 +460,27 @@ final class ModelState {
     }
   }
 
+  func setBackground(
+    _ backgroundModel: BackgroundModel,
+    forSectionAtIndex sectionIndex: Int,
+    sectionModel: inout SectionModel)
+  {
+    sectionModel.setBackground(backgroundModel)
+
+    // TODO: Only invalidate if something changes
+    prepareElementLocationsForFlattenedIndices()
+  }
+
   func setBackground(_ backgroundModel: BackgroundModel, forSectionAtIndex sectionIndex: Int) {
     sectionModels[sectionIndex].setBackground(backgroundModel)
 
     prepareElementLocationsForFlattenedIndices()
+  }
+
+  func removeBackground(forSectionAtIndex sectionIndex: Int, sectionModel: inout SectionModel) {
+    if sectionModel.removeBackground() {
+      prepareElementLocationsForFlattenedIndices()
+    }
   }
 
   func removeBackground(forSectionAtIndex sectionIndex: Int) {
@@ -497,6 +573,16 @@ final class ModelState {
     itemIndexPathsToDelete.removeAll()
   }
 
+  func forEachSectionModel(
+    _ mutator: (_ sectionIndex: Int, _ sectionModel: inout SectionModel) -> Void)
+  {
+    sectionModels.withUnsafeMutableBufferPointer { sectionModels in
+      for sectionIndex in 0..<sectionModels.count {
+        mutator(sectionIndex, &sectionModels[sectionIndex])
+      }
+    }
+  }
+
   // MARK: Private
 
   private let currentVisibleBoundsProvider: () -> CGRect
@@ -510,13 +596,6 @@ final class ModelState {
   private var backgroundLocationsForFlattenedIndices = [Int: ElementLocation]()
   private var itemLocationsForFlattenedIndices = [Int: ElementLocation]()
 
-  private func mutateSectionModels(
-    withUnsafeMutableBufferPointer body: (inout UnsafeMutableBufferPointer<SectionModel>) -> Void)
-  {
-    // Accessing these arrays using unsafe, untyped (raw) pointers
-    // avoids expensive copy-on-writes and Swift retain / release calls.
-    sectionModels.withUnsafeMutableBufferPointer(body)
-  }
 
   private func prepareElementLocationsForFlattenedIndices() {
     headerLocationsForFlattenedIndices.removeAll()
@@ -696,29 +775,55 @@ final class ModelState {
       return
     }
 
-    for sectionIndex in sectionIndex..<sectionMaxYsCache.count {
-      sectionMaxYsCache[sectionIndex] = nil
+    if MagazineLayout._enableExperimentalOptimizations {
+      sectionMaxYsCache.withUnsafeMutableBufferPointer { sectionMaxYsCache in
+        for sectionIndex in sectionIndex..<sectionMaxYsCache.count {
+          sectionMaxYsCache[sectionIndex] = nil
+        }
+      }
+    } else {
+      for sectionIndex in sectionIndex..<sectionMaxYsCache.count {
+        sectionMaxYsCache[sectionIndex] = nil
+      }
     }
   }
 
   private func reloadSectionModels(
     sectionModelReloadIndexPairs: [(sectionModel: SectionModel, reloadIndex: Int)])
   {
-    for (sectionModel, reloadIndex) in sectionModelReloadIndexPairs {
-      sectionModels.remove(at: reloadIndex)
-      sectionModels.insert(sectionModel, at: reloadIndex)
+    if MagazineLayout._enableExperimentalOptimizations {
+      sectionModels.withUnsafeMutableBufferPointer { sectionModels in
+        for (sectionModel, reloadIndex) in sectionModelReloadIndexPairs {
+          sectionModels[reloadIndex] = sectionModel
+        }
+      }
+    } else {
+      for (sectionModel, reloadIndex) in sectionModelReloadIndexPairs {
+        sectionModels.remove(at: reloadIndex)
+        sectionModels.insert(sectionModel, at: reloadIndex)
+      }
     }
   }
 
   private func reloadItemModels(
     itemModelReloadIndexPathPairs: [(itemModel: ItemModel, reloadIndexPath: IndexPath)])
   {
-    for (itemModel, reloadIndexPath) in itemModelReloadIndexPathPairs {
-      sectionModels[reloadIndexPath.section].deleteItemModel(
-        atIndex: reloadIndexPath.item)
-      sectionModels[reloadIndexPath.section].insert(
-        itemModel, atIndex:
-        reloadIndexPath.item)
+    if MagazineLayout._enableExperimentalOptimizations {
+      sectionModels.withUnsafeMutableBufferPointer { sectionModels in
+        for (itemModel, reloadIndexPath) in itemModelReloadIndexPathPairs {
+          sectionModels[reloadIndexPath.section].updateItemModel(
+            atIndex: reloadIndexPath.item,
+            to: itemModel)
+        }
+      }
+    } else {
+      for (itemModel, reloadIndexPath) in itemModelReloadIndexPathPairs {
+        sectionModels[reloadIndexPath.section].deleteItemModel(
+          atIndex: reloadIndexPath.item)
+        sectionModels[reloadIndexPath.section].insert(
+          itemModel,
+          atIndex: reloadIndexPath.item)
+      }
     }
   }
 
@@ -731,9 +836,18 @@ final class ModelState {
 
   private func deleteItemModels(atIndexPaths indexPathsOfItemModelsToDelete: [IndexPath]) {
     // Always delete in descending order
-    for indexPathOfItemModelToDelete in (indexPathsOfItemModelsToDelete.sorted { $0 > $1 }) {
-      sectionModels[indexPathOfItemModelToDelete.section].deleteItemModel(
-        atIndex: indexPathOfItemModelToDelete.item)
+    if MagazineLayout._enableExperimentalOptimizations {
+      sectionModels.withUnsafeMutableBufferPointer { sectionModels in
+        for indexPathOfItemModelToDelete in (indexPathsOfItemModelsToDelete.sorted { $0 > $1 }) {
+          sectionModels[indexPathOfItemModelToDelete.section].deleteItemModel(
+            atIndex: indexPathOfItemModelToDelete.item)
+        }
+      }
+    } else {
+      for indexPathOfItemModelToDelete in (indexPathsOfItemModelsToDelete.sorted { $0 > $1 }) {
+        sectionModels[indexPathOfItemModelToDelete.section].deleteItemModel(
+          atIndex: indexPathOfItemModelToDelete.item)
+      }
     }
   }
 
@@ -750,18 +864,37 @@ final class ModelState {
     itemModelInsertIndexPathPairs: [(itemModel: ItemModel, insertIndexPath: IndexPath)])
   {
     // Always insert in ascending order
-    for (itemModel, insertIndexPath) in (itemModelInsertIndexPathPairs.sorted { $0.insertIndexPath < $1.insertIndexPath }) {
-      let sectionIndex = insertIndexPath.section
-      let itemIndex = insertIndexPath.item
-      let section = sectionModels[sectionIndex]
-      if itemIndex < section.numberOfItems, itemModel.id == section.idForItemModel(atIndex: itemIndex) {
-        // If the `itemModel` to insert already exists at the destination index, then there's no need to insert it again. This
-        // happens if item move updates are generated in addition to section move updates, which appears to be the case when using
-        // `UICollectionViewDiffableDataSource`. Other diffing approaches, like Paul Heckel's, do not produce item moves when
-        // their containing sections move.
-        continue
-      } else {
-        sectionModels[insertIndexPath.section].insert(itemModel, atIndex: itemIndex)
+    if MagazineLayout._enableExperimentalOptimizations {
+      sectionModels.withUnsafeMutableBufferPointer { sectionModels in
+        for (itemModel, insertIndexPath) in (itemModelInsertIndexPathPairs.sorted { $0.insertIndexPath < $1.insertIndexPath }) {
+          let sectionIndex = insertIndexPath.section
+          let itemIndex = insertIndexPath.item
+          let section = sectionModels[sectionIndex]
+          if itemIndex < section.numberOfItems, itemModel.id == section.idForItemModel(atIndex: itemIndex) {
+            // If the `itemModel` to insert already exists at the destination index, then there's no need to insert it again. This
+            // happens if item move updates are generated in addition to section move updates, which appears to be the case when using
+            // `UICollectionViewDiffableDataSource`. Other diffing approaches, like Paul Heckel's, do not produce item moves when
+            // their containing sections move.
+            continue
+          } else {
+            sectionModels[insertIndexPath.section].insert(itemModel, atIndex: itemIndex)
+          }
+        }
+      }
+    } else {
+      for (itemModel, insertIndexPath) in (itemModelInsertIndexPathPairs.sorted { $0.insertIndexPath < $1.insertIndexPath }) {
+        let sectionIndex = insertIndexPath.section
+        let itemIndex = insertIndexPath.item
+        let section = sectionModels[sectionIndex]
+        if itemIndex < section.numberOfItems, itemModel.id == section.idForItemModel(atIndex: itemIndex) {
+          // If the `itemModel` to insert already exists at the destination index, then there's no need to insert it again. This
+          // happens if item move updates are generated in addition to section move updates, which appears to be the case when using
+          // `UICollectionViewDiffableDataSource`. Other diffing approaches, like Paul Heckel's, do not produce item moves when
+          // their containing sections move.
+          continue
+        } else {
+          sectionModels[insertIndexPath.section].insert(itemModel, atIndex: itemIndex)
+        }
       }
     }
   }
