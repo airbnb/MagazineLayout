@@ -18,7 +18,7 @@ import XCTest
 @testable import MagazineLayout
 
 @available(iOS 18.0, *)
-final class ModelStateLayoutTests: XCTestCase {
+class ModelStateLayoutTests: XCTestCase {
 
   // MARK: Internal
 
