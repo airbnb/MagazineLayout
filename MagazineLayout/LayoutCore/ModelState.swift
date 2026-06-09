@@ -134,18 +134,24 @@ final class ModelState {
   }
 
   func itemLocationFramePairs(forItemsIn rect: CGRect) -> ElementLocationFramePairs {
+    prepareElementLocationsForFlattenedIndicesIfNeeded()
+
     return elementLocationFramePairsForElements(
       in: rect,
       withElementLocationsForFlattenedIndices: itemLocationsForFlattenedIndices,
+      newElementLocationsForFlattenedIndices: newItemLocationsForFlattenedIndices,
       andFramesProvidedBy: { itemLocation -> CGRect in
         return frameForItem(at: itemLocation)
       })
   }
 
   func headerLocationFramePairs(forHeadersIn rect: CGRect) -> ElementLocationFramePairs {
+    prepareElementLocationsForFlattenedIndicesIfNeeded()
+
     return elementLocationFramePairsForElements(
       in: rect,
       withElementLocationsForFlattenedIndices: headerLocationsForFlattenedIndices,
+      newElementLocationsForFlattenedIndices: newHeaderLocationsForFlattenedIndices,
       andFramesProvidedBy: { headerLocation -> CGRect in
         guard
           let headerFrame = frameForHeader(
@@ -160,9 +166,12 @@ final class ModelState {
   }
 
   func footerLocationFramePairs(forFootersIn rect: CGRect) -> ElementLocationFramePairs {
+    prepareElementLocationsForFlattenedIndicesIfNeeded()
+
     return elementLocationFramePairsForElements(
       in: rect,
       withElementLocationsForFlattenedIndices: footerLocationsForFlattenedIndices,
+      newElementLocationsForFlattenedIndices: newFooterLocationsForFlattenedIndices,
       andFramesProvidedBy: { footerLocation -> CGRect in
         guard
           let footerFrame = frameForFooter(
@@ -177,9 +186,12 @@ final class ModelState {
   }
 
   func backgroundLocationFramePairs(forBackgroundsIn rect: CGRect) -> ElementLocationFramePairs {
+    prepareElementLocationsForFlattenedIndicesIfNeeded()
+
     return elementLocationFramePairsForElements(
       in: rect,
       withElementLocationsForFlattenedIndices: backgroundLocationsForFlattenedIndices,
+      newElementLocationsForFlattenedIndices: newBackgroundLocationsForFlattenedIndices,
       andFramesProvidedBy: { backgroundLocation -> CGRect in
         guard
           let backgroundFrame = frameForBackground(
@@ -194,6 +206,8 @@ final class ModelState {
   }
 
   func sectionMaxY(forSectionAtIndex targetSectionIndex: Int) -> CGFloat {
+    flushSectionMaxYsCacheInvalidationIfNeeded()
+
     var sectionMaxY: CGFloat {
       guard targetSectionIndex >= 0 && targetSectionIndex < numberOfSections else {
         assertionFailure("`targetSectionIndex` is not within the bounds of the section models array")
@@ -201,8 +215,16 @@ final class ModelState {
       }
 
       var totalHeight: CGFloat = 0
-      for sectionIndex in 0...targetSectionIndex {
-        totalHeight += sectionModels[sectionIndex].calculateHeight()
+      if MagazineLayout._enableExperimentalOptimizations {
+        sectionModels.withUnsafeMutableBufferPointer { sectionModels in
+          for sectionIndex in 0...targetSectionIndex {
+            totalHeight += sectionModels[sectionIndex].calculateHeight()
+          }
+        }
+      } else {
+        for sectionIndex in 0...targetSectionIndex {
+          totalHeight += sectionModels[sectionIndex].calculateHeight()
+        }
       }
 
       return totalHeight
@@ -299,10 +321,19 @@ final class ModelState {
     let currentVisibleBounds = currentVisibleBoundsProvider()
     let newModelState = ModelState(currentVisibleBoundsProvider: { currentVisibleBounds })
     newModelState.sectionModels = sectionModels
+
+    prepareElementLocationsForFlattenedIndicesIfNeeded()
+
     newModelState.headerLocationsForFlattenedIndices = headerLocationsForFlattenedIndices
     newModelState.footerLocationsForFlattenedIndices = footerLocationsForFlattenedIndices
     newModelState.backgroundLocationsForFlattenedIndices = backgroundLocationsForFlattenedIndices
     newModelState.itemLocationsForFlattenedIndices = itemLocationsForFlattenedIndices
+
+    newModelState.newHeaderLocationsForFlattenedIndices = newHeaderLocationsForFlattenedIndices
+    newModelState.newFooterLocationsForFlattenedIndices = newFooterLocationsForFlattenedIndices
+    newModelState.newBackgroundLocationsForFlattenedIndices = newBackgroundLocationsForFlattenedIndices
+    newModelState.newItemLocationsForFlattenedIndices = newItemLocationsForFlattenedIndices
+
     return newModelState
   }
 
@@ -596,44 +627,97 @@ final class ModelState {
   private var backgroundLocationsForFlattenedIndices = [Int: ElementLocation]()
   private var itemLocationsForFlattenedIndices = [Int: ElementLocation]()
 
+  private var newHeaderLocationsForFlattenedIndices = [ElementLocation]()
+  private var newFooterLocationsForFlattenedIndices = [ElementLocation]()
+  private var newBackgroundLocationsForFlattenedIndices = [ElementLocation]()
+  private var newItemLocationsForFlattenedIndices = [ElementLocation]()
+
+  // When experimental optimizations are enabled, these defer the corresponding bookkeeping work
+  // until the next read that depends on it, coalescing repeated invalidations during a single
+  // round of section model mutations.
+  private var needsPrepareElementLocationsForFlattenedIndices = false
+  private var firstInvalidatedSectionMaxYIndex: Int?
 
   private func prepareElementLocationsForFlattenedIndices() {
-    headerLocationsForFlattenedIndices.removeAll()
-    footerLocationsForFlattenedIndices.removeAll()
-    backgroundLocationsForFlattenedIndices.removeAll()
-    itemLocationsForFlattenedIndices.removeAll()
+    if MagazineLayout._enableExperimentalOptimizations {
+      needsPrepareElementLocationsForFlattenedIndices = true
+    } else {
+      rebuildElementLocationsForFlattenedIndices()
+    }
+  }
 
-    var flattenedHeaderIndex = 0
-    var flattenedFooterIndex = 0
-    var flattenedBackgroundIndex = 0
-    var flattenedItemIndex = 0
-    for sectionIndex in 0..<sectionModels.count {
-      if sectionModels[sectionIndex].headerModel != nil {
-        headerLocationsForFlattenedIndices[flattenedHeaderIndex] = ElementLocation(
-          elementIndex: 0,
-          sectionIndex: sectionIndex)
-        flattenedHeaderIndex += 1
+  private func prepareElementLocationsForFlattenedIndicesIfNeeded() {
+    guard needsPrepareElementLocationsForFlattenedIndices else { return }
+    rebuildElementLocationsForFlattenedIndices()
+    needsPrepareElementLocationsForFlattenedIndices = false
+  }
+
+  private func rebuildElementLocationsForFlattenedIndices() {
+    if MagazineLayout._enableExperimentalOptimizations {
+      newHeaderLocationsForFlattenedIndices.removeAll(keepingCapacity: true)
+      newFooterLocationsForFlattenedIndices.removeAll(keepingCapacity: true)
+      newBackgroundLocationsForFlattenedIndices.removeAll(keepingCapacity: true)
+      newItemLocationsForFlattenedIndices.removeAll(keepingCapacity: true)
+
+      for sectionIndex in 0..<sectionModels.count {
+        if sectionModels[sectionIndex].headerModel != nil {
+          let elementLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
+          newHeaderLocationsForFlattenedIndices.append(elementLocation)
+        }
+
+        if sectionModels[sectionIndex].footerModel != nil {
+          let elementLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
+          newFooterLocationsForFlattenedIndices.append(elementLocation)
+        }
+
+        if sectionModels[sectionIndex].backgroundModel != nil {
+          let elementLocation = ElementLocation(elementIndex: 0, sectionIndex: sectionIndex)
+          newBackgroundLocationsForFlattenedIndices.append(elementLocation)
+        }
+
+        for itemIndex in 0..<sectionModels[sectionIndex].numberOfItems {
+          let elementLocation = ElementLocation(elementIndex: itemIndex, sectionIndex: sectionIndex)
+          newItemLocationsForFlattenedIndices.append(elementLocation)
+        }
       }
+    } else {
+      headerLocationsForFlattenedIndices.removeAll()
+      footerLocationsForFlattenedIndices.removeAll()
+      backgroundLocationsForFlattenedIndices.removeAll()
+      itemLocationsForFlattenedIndices.removeAll()
 
-      if sectionModels[sectionIndex].footerModel != nil {
-        footerLocationsForFlattenedIndices[flattenedFooterIndex] = ElementLocation(
-          elementIndex: 0,
-          sectionIndex: sectionIndex)
-        flattenedFooterIndex += 1
-      }
+      var flattenedHeaderIndex = 0
+      var flattenedFooterIndex = 0
+      var flattenedBackgroundIndex = 0
+      var flattenedItemIndex = 0
+      for sectionIndex in 0..<sectionModels.count {
+        if sectionModels[sectionIndex].headerModel != nil {
+          headerLocationsForFlattenedIndices[flattenedHeaderIndex] = ElementLocation(
+            elementIndex: 0,
+            sectionIndex: sectionIndex)
+          flattenedHeaderIndex += 1
+        }
 
-      if sectionModels[sectionIndex].backgroundModel != nil {
-        backgroundLocationsForFlattenedIndices[flattenedBackgroundIndex] = ElementLocation(
-          elementIndex: 0,
-          sectionIndex: sectionIndex)
-        flattenedBackgroundIndex += 1
-      }
+        if sectionModels[sectionIndex].footerModel != nil {
+          footerLocationsForFlattenedIndices[flattenedFooterIndex] = ElementLocation(
+            elementIndex: 0,
+            sectionIndex: sectionIndex)
+          flattenedFooterIndex += 1
+        }
 
-      for itemIndex in 0..<sectionModels[sectionIndex].numberOfItems {
-        itemLocationsForFlattenedIndices[flattenedItemIndex] = ElementLocation(
-          elementIndex: itemIndex,
-          sectionIndex: sectionIndex)
-        flattenedItemIndex += 1
+        if sectionModels[sectionIndex].backgroundModel != nil {
+          backgroundLocationsForFlattenedIndices[flattenedBackgroundIndex] = ElementLocation(
+            elementIndex: 0,
+            sectionIndex: sectionIndex)
+          flattenedBackgroundIndex += 1
+        }
+
+        for itemIndex in 0..<sectionModels[sectionIndex].numberOfItems {
+          itemLocationsForFlattenedIndices[flattenedItemIndex] = ElementLocation(
+            elementIndex: itemIndex,
+            sectionIndex: sectionIndex)
+          flattenedItemIndex += 1
+        }
       }
     }
   }
@@ -641,6 +725,7 @@ final class ModelState {
   private func elementLocationFramePairsForElements(
     in rect: CGRect,
     withElementLocationsForFlattenedIndices elementLocationsForFlattenedIndices: [Int: ElementLocation],
+    newElementLocationsForFlattenedIndices: [ElementLocation],
     andFramesProvidedBy frameProvider: ((ElementLocation) -> CGRect))
     -> ElementLocationFramePairs
   {
@@ -650,6 +735,7 @@ final class ModelState {
       let indexOfFirstFoundElement = indexOfFirstFoundElement(
         in: rect,
         withElementLocationsForFlattenedIndices: elementLocationsForFlattenedIndices,
+        newElementLocationsForFlattenedIndices: newElementLocationsForFlattenedIndices,
         andFramesProvidedBy: frameProvider) else
     {
       return elementLocationFramePairs
@@ -663,7 +749,8 @@ final class ModelState {
     for elementLocationIndex in (0..<indexOfFirstFoundElement).reversed() {
       let elementLocation = self.elementLocation(
         forFlattenedIndex: elementLocationIndex,
-        in: elementLocationsForFlattenedIndices)
+        in: elementLocationsForFlattenedIndices,
+        newElementLocationsForFlattenedIndices: newElementLocationsForFlattenedIndices)
       let frame = frameProvider(elementLocation)
 
       guard frame.maxY > rect.minY else {
@@ -684,10 +771,17 @@ final class ModelState {
     }
 
     // Look forward to find visible elements
-    for elementLocationIndex in indexOfFirstFoundElement..<elementLocationsForFlattenedIndices.count {
+    let numberOfElementLocations =
+      if MagazineLayout._enableExperimentalOptimizations {
+        newElementLocationsForFlattenedIndices.count
+      } else {
+        elementLocationsForFlattenedIndices.count
+      }
+    for elementLocationIndex in indexOfFirstFoundElement..<numberOfElementLocations {
       let elementLocation = self.elementLocation(
         forFlattenedIndex: elementLocationIndex,
-        in: elementLocationsForFlattenedIndices)
+        in: elementLocationsForFlattenedIndices,
+        newElementLocationsForFlattenedIndices: newElementLocationsForFlattenedIndices)
       let frame = frameProvider(elementLocation)
       guard frame.minY < rect.maxY else { break }
 
@@ -701,17 +795,26 @@ final class ModelState {
   private func indexOfFirstFoundElement(
     in rect: CGRect,
     withElementLocationsForFlattenedIndices elementLocationsForFlattenedIndices: [Int: ElementLocation],
+    newElementLocationsForFlattenedIndices: [ElementLocation],
     andFramesProvidedBy frameProvider: ((ElementLocation) -> CGRect))
     -> Int?
   {
+    let numberOfElementLocations =
+      if MagazineLayout._enableExperimentalOptimizations {
+        newElementLocationsForFlattenedIndices.count
+      } else {
+        elementLocationsForFlattenedIndices.count
+      }
+
     var lowerBound = 0
-    var upperBound = elementLocationsForFlattenedIndices.count - 1
+    var upperBound = numberOfElementLocations - 1
 
     while lowerBound <= upperBound {
       let index = (lowerBound + upperBound) / 2
       let elementLocation = self.elementLocation(
         forFlattenedIndex: index,
-        in: elementLocationsForFlattenedIndices)
+        in: elementLocationsForFlattenedIndices,
+        newElementLocationsForFlattenedIndices: newElementLocationsForFlattenedIndices)
       let elementFrame = frameProvider(elementLocation)
       if elementFrame.maxY <= rect.minY {
         lowerBound = index + 1
@@ -727,14 +830,19 @@ final class ModelState {
 
   private func elementLocation(
     forFlattenedIndex index: Int,
-    in elementLocationsForFlattenedIndices: [Int: ElementLocation])
+    in elementLocationsForFlattenedIndices: [Int: ElementLocation],
+    newElementLocationsForFlattenedIndices: [ElementLocation])
     -> ElementLocation
   {
-    guard let elementLocation = elementLocationsForFlattenedIndices[index] else {
-      preconditionFailure("`elementLocationsForFlattenedIndices` must have a complete mapping of indices in 0..<\(elementLocationsForFlattenedIndices.count) to element locations")
-    }
+    if MagazineLayout._enableExperimentalOptimizations {
+      return newElementLocationsForFlattenedIndices[index]
+    } else {
+      guard let elementLocation = elementLocationsForFlattenedIndices[index] else {
+        preconditionFailure("`elementLocationsForFlattenedIndices` must have a complete mapping of indices in 0..<\(elementLocationsForFlattenedIndices.count) to element locations")
+      }
 
-    return elementLocation
+      return elementLocation
+    }
   }
 
   private func allocateMemoryForSectionMaxYsCache() {
@@ -770,6 +878,23 @@ final class ModelState {
   }
 
   func invalidateSectionMaxYsCacheForSectionIndices(startingAt sectionIndex: Int) {
+    if MagazineLayout._enableExperimentalOptimizations {
+      firstInvalidatedSectionMaxYIndex = min(
+        firstInvalidatedSectionMaxYIndex ?? sectionIndex,
+        sectionIndex)
+    } else {
+      clearSectionMaxYsCache(startingAt: sectionIndex)
+    }
+  }
+
+  private func flushSectionMaxYsCacheInvalidationIfNeeded() {
+    guard let firstInvalidatedSectionMaxYIndex else { return }
+    clearSectionMaxYsCache(startingAt: firstInvalidatedSectionMaxYIndex)
+    self.firstInvalidatedSectionMaxYIndex = nil
+  }
+
+  /// Clears cached section max-Y values from `sectionIndex` through the end of the cache.
+  private func clearSectionMaxYsCache(startingAt sectionIndex: Int) {
     guard sectionIndex >= 0, sectionIndex < sectionMaxYsCache.count else {
       assertionFailure("Cannot invalidate `sectionMaxYsCache` starting at an invalid (negative or out-of-bounds) `sectionIndex` (\(sectionIndex)).")
       return

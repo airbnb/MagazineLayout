@@ -917,7 +917,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       !context.invalidateDataSourceCounts
 
     if context.invalidateEverything {
-      prepareActions.formUnion([.recreateSectionModels])
+      prepareActions.formUnion(.recreateSectionModels)
     }
 
     // Checking `cachedCollectionViewWidth != collectionView?.bounds.size.width` is necessary
@@ -936,7 +936,7 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     if context.invalidateLayoutMetrics && shouldInvalidateLayoutMetrics {
-      prepareActions.formUnion([.updateLayoutMetrics])
+      prepareActions.formUnion(.updateLayoutMetrics)
     }
 
     hasDataSourceCountInvalidationBeforeReceivingUpdateItems = context.invalidateDataSourceCounts &&
