@@ -22,7 +22,6 @@ let signpostLog = OSLog(subsystem: "com.airbnb.MagazineLayout", category: "Magaz
 enum SignpostName {
   static let collectionViewContentSize: StaticString = "MagazineLayout.collectionViewContentSize"
   static let prepare: StaticString = "MagazineLayout.prepare"
-  static let prepareUpdateWidths: StaticString = "MagazineLayout.prepare.prepareUpdateWidths"
   static let prepareUpdateLayoutMetrics: StaticString = "MagazineLayout.prepare.prepareUpdateLayoutMetrics"
   static let prepareRecreateSectionModels: StaticString = "MagazineLayout.prepare.recreateSectionModels"
   static let layoutAttributesForElementsInRect: StaticString = "MagazineLayout.layoutAttributesForElementsInRect"

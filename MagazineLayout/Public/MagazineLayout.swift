@@ -99,21 +99,6 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     var reusableIndexPath = IndexPath(item: 0, section: 0)
 
-    // Update widths if necessary (e.g. after rotation or other bounds change)
-    if prepareActions.contains(.updateWidths) {
-      let signpostID = OSSignpostID(log: signpostLog)
-      os_signpost(.begin, log: signpostLog, name: SignpostName.prepareUpdateWidths, signpostID: signpostID)
-
-      modelState.forEachSectionModel { sectionIndex, sectionModel in
-        modelState.updateMetrics(
-          to: metricsForSection(atIndex: sectionIndex),
-          forSectionAtIndex: sectionIndex,
-          sectionModel: &sectionModel)
-      }
-
-      os_signpost(.end, log: signpostLog, name: SignpostName.prepareUpdateWidths, signpostID: signpostID)
-    }
-
     // Update layout metrics if necessary
     if prepareActions.contains(.updateLayoutMetrics) {
       let signpostID = OSSignpostID(log: signpostLog)
@@ -928,11 +913,7 @@ public final class MagazineLayout: UICollectionViewLayout {
       ?? false
     if !isSameWidth {
       prepareActions.formUnion(.cachePreviousWidth)
-      if MagazineLayout._enableExperimentalOptimizations {
-        prepareActions.formUnion(.updateWidths)
-      } else {
-        prepareActions.formUnion(.updateLayoutMetrics)
-      }
+      prepareActions.formUnion(.updateLayoutMetrics)
     }
 
     if context.invalidateLayoutMetrics && shouldInvalidateLayoutMetrics {
@@ -1013,8 +994,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     static let recreateSectionModels = PrepareActions(rawValue: 1 << 0)
     static let updateLayoutMetrics = PrepareActions(rawValue: 1 << 1)
-    static let updateWidths = PrepareActions(rawValue: 1 << 2)
-    static let cachePreviousWidth = PrepareActions(rawValue: 1 << 3)
+    static let cachePreviousWidth = PrepareActions(rawValue: 1 << 2)
   }
   private var prepareActions: PrepareActions = []
 
