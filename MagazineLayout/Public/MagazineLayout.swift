@@ -85,9 +85,10 @@ public final class MagazineLayout: UICollectionViewLayout {
     _currentCollectionView = collectionView
     _delegateMagazineLayout = currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
 
-    // Save the previous collection view width if necessary
-    if prepareActions.contains(.cachePreviousWidth) {
+    // Save the previous collection view width and horizontal insets if necessary
+    if prepareActions.contains(.cachePreviousHorizontalMetrics) {
       cachedCollectionViewWidth = currentCollectionView.bounds.width
+      cachedHorizontalContentInset = contentInset.left + contentInset.right
     }
 
     if
@@ -905,14 +906,19 @@ public final class MagazineLayout: UICollectionViewLayout {
       prepareActions.formUnion(.recreateSectionModels)
     }
 
-    // Checking `cachedCollectionViewWidth != collectionView?.bounds.size.width` is necessary
-    // because the collection view's width can change without a `contentSizeAdjustment` occurring.
+    // Manually checking for a different width or different horizontal insets is necessary because
+    // these values can change without a `contentSizeAdjustment` occurring.
     let isSameWidth = collectionView?.bounds.size.width.isEqual(
       to: cachedCollectionViewWidth ?? -.greatestFiniteMagnitude,
       screenScale: scale)
       ?? false
-    if !isSameWidth {
-      prepareActions.formUnion(.cachePreviousWidth)
+    let horizontalContentInset = (collectionView?.adjustedContentInset.left ?? 0) +
+      (collectionView?.adjustedContentInset.right ?? 0)
+    let isSameHorizontalContentInset = horizontalContentInset.isEqual(
+      to: cachedHorizontalContentInset ?? -.greatestFiniteMagnitude,
+      screenScale: scale)
+    if !isSameWidth || !isSameHorizontalContentInset {
+      prepareActions.formUnion(.cachePreviousHorizontalMetrics)
       prepareActions.formUnion(.updateLayoutMetrics)
     }
 
@@ -994,7 +1000,7 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     static let recreateSectionModels = PrepareActions(rawValue: 1 << 0)
     static let updateLayoutMetrics = PrepareActions(rawValue: 1 << 1)
-    static let cachePreviousWidth = PrepareActions(rawValue: 1 << 2)
+    static let cachePreviousHorizontalMetrics = PrepareActions(rawValue: 1 << 2)
   }
   private var prepareActions: PrepareActions = []
 
@@ -1004,6 +1010,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   private var hasDataSourceCountInvalidationBeforeReceivingUpdateItems = false
 
   private var cachedCollectionViewWidth: CGFloat?
+  private var cachedHorizontalContentInset: CGFloat?
   private var previousContentInset: UIEdgeInsets?
 
   // Unowned unsafe references to avoid weak reference overhead.
