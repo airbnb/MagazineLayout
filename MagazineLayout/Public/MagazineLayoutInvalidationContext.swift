@@ -22,10 +22,6 @@ public final class MagazineLayoutInvalidationContext: UICollectionViewLayoutInva
 
   /// Indicates whether to recompute the positions and sizes of elements based on the current collection view and delegate layout
   /// metrics.
-  ///
-  /// Set to `true` when delegate-provided layout values (e.g. item size
-  /// modes, header/footer visibility, section metrics) have changed and the layout needs to
-  /// re-query the delegate.
-  public var invalidateLayoutMetrics = !MagazineLayout._enableExperimentalOptimizations
+  public var invalidateLayoutMetrics = true
 
 }
