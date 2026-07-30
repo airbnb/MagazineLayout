@@ -66,6 +66,88 @@ final class ModelHelpers {
 
 }
 
+// MARK: - Single section mutations
+
+/// `MagazineLayout` mutates section models in place, through the `inout SectionModel` handed out by
+/// `forEachSectionModel`, to avoid copy-on-write traffic. These helpers give tests that same access
+/// one section at a time.
+@available(iOS 18.0, *)
+extension ModelState {
+
+  func updateMetrics(
+    to sectionMetrics: MagazineLayoutSectionMetrics,
+    forSectionAtIndex sectionIndex: Int)
+  {
+    mutateSectionModel(atIndex: sectionIndex) { sectionIndex, sectionModel in
+      updateMetrics(
+        to: sectionMetrics,
+        forSectionAtIndex: sectionIndex,
+        sectionModel: &sectionModel)
+    }
+  }
+
+  func updateItemSizeModes(
+    forSectionAtIndex sectionIndex: Int,
+    sizeModeProvider: (_ itemIndex: Int) -> MagazineLayoutItemSizeMode)
+  {
+    mutateSectionModel(atIndex: sectionIndex) { sectionIndex, sectionModel in
+      updateItemSizeModes(
+        forSectionAtIndex: sectionIndex,
+        sectionModel: &sectionModel,
+        sizeModeProvider: sizeModeProvider)
+    }
+  }
+
+  func setHeader(_ headerModel: HeaderModel, forSectionAtIndex sectionIndex: Int) {
+    mutateSectionModel(atIndex: sectionIndex) { sectionIndex, sectionModel in
+      setHeader(headerModel, forSectionAtIndex: sectionIndex, sectionModel: &sectionModel)
+    }
+  }
+
+  func removeHeader(forSectionAtIndex sectionIndex: Int) {
+    mutateSectionModel(atIndex: sectionIndex) { sectionIndex, sectionModel in
+      removeHeader(forSectionAtIndex: sectionIndex, sectionModel: &sectionModel)
+    }
+  }
+
+  func setFooter(_ footerModel: FooterModel, forSectionAtIndex sectionIndex: Int) {
+    mutateSectionModel(atIndex: sectionIndex) { sectionIndex, sectionModel in
+      setFooter(footerModel, forSectionAtIndex: sectionIndex, sectionModel: &sectionModel)
+    }
+  }
+
+  func removeFooter(forSectionAtIndex sectionIndex: Int) {
+    mutateSectionModel(atIndex: sectionIndex) { sectionIndex, sectionModel in
+      removeFooter(forSectionAtIndex: sectionIndex, sectionModel: &sectionModel)
+    }
+  }
+
+  func setBackground(_ backgroundModel: BackgroundModel, forSectionAtIndex sectionIndex: Int) {
+    mutateSectionModel(atIndex: sectionIndex) { sectionIndex, sectionModel in
+      setBackground(backgroundModel, forSectionAtIndex: sectionIndex, sectionModel: &sectionModel)
+    }
+  }
+
+  func removeBackground(forSectionAtIndex sectionIndex: Int) {
+    mutateSectionModel(atIndex: sectionIndex) { sectionIndex, sectionModel in
+      removeBackground(forSectionAtIndex: sectionIndex, sectionModel: &sectionModel)
+    }
+  }
+
+  // MARK: Private
+
+  private func mutateSectionModel(
+    atIndex index: Int,
+    _ mutate: (_ sectionIndex: Int, _ sectionModel: inout SectionModel) -> Void)
+  {
+    forEachSectionModel { sectionIndex, sectionModel in
+      guard sectionIndex == index else { return }
+      mutate(sectionIndex, &sectionModel)
+    }
+  }
+
+}
+
 // MARK: - FrameHelpers
 
 @available(iOS 18.0, *)

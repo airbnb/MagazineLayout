@@ -380,15 +380,6 @@ final class ModelState {
     }
   }
 
-  func updateMetrics(
-    to sectionMetrics: MagazineLayoutSectionMetrics,
-    forSectionAtIndex sectionIndex: Int)
-  {
-    sectionModels[sectionIndex].updateMetrics(to: sectionMetrics)
-
-    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
-  }
-
   func updateItemSizeModes(
     forSectionAtIndex sectionIndex: Int,
     sectionModel: inout SectionModel,
@@ -398,12 +389,6 @@ final class ModelState {
 
     // TODO: Only invalidate if something changes
     invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
-  }
-
-  func updateItemSizeMode(to sizeMode: MagazineLayoutItemSizeMode, forItemAt indexPath: IndexPath) {
-    sectionModels[indexPath.section].updateItemSizeMode(to: sizeMode, atIndex: indexPath.item)
-
-    invalidateSectionMaxYsCacheForSectionIndices(startingAt: indexPath.section)
   }
 
   func setHeader(
@@ -419,23 +404,8 @@ final class ModelState {
     setNeedsPrepareElementLocationsForFlattenedIndices()
   }
 
-  func setHeader(_ headerModel: HeaderModel, forSectionAtIndex sectionIndex: Int) {
-    sectionModels[sectionIndex].setHeader(headerModel)
-
-    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
-
-    setNeedsPrepareElementLocationsForFlattenedIndices()
-  }
-
   func removeHeader(forSectionAtIndex sectionIndex: Int, sectionModel: inout SectionModel) {
     if sectionModel.removeHeader() {
-      invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
-      setNeedsPrepareElementLocationsForFlattenedIndices()
-    }
-  }
-
-  func removeHeader(forSectionAtIndex sectionIndex: Int) {
-    if sectionModels[sectionIndex].removeHeader() {
       invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
       setNeedsPrepareElementLocationsForFlattenedIndices()
     }
@@ -454,23 +424,8 @@ final class ModelState {
     setNeedsPrepareElementLocationsForFlattenedIndices()
   }
 
-  func setFooter(_ footerModel: FooterModel, forSectionAtIndex sectionIndex: Int) {
-    sectionModels[sectionIndex].setFooter(footerModel)
-
-    invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
-
-    setNeedsPrepareElementLocationsForFlattenedIndices()
-  }
-
   func removeFooter(forSectionAtIndex sectionIndex: Int, sectionModel: inout SectionModel) {
     if sectionModel.removeFooter() {
-      invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
-      setNeedsPrepareElementLocationsForFlattenedIndices()
-    }
-  }
-
-  func removeFooter(forSectionAtIndex sectionIndex: Int) {
-    if sectionModels[sectionIndex].removeFooter() {
       invalidateSectionMaxYsCacheForSectionIndices(startingAt: sectionIndex)
       setNeedsPrepareElementLocationsForFlattenedIndices()
     }
@@ -487,20 +442,8 @@ final class ModelState {
     setNeedsPrepareElementLocationsForFlattenedIndices()
   }
 
-  func setBackground(_ backgroundModel: BackgroundModel, forSectionAtIndex sectionIndex: Int) {
-    sectionModels[sectionIndex].setBackground(backgroundModel)
-
-    setNeedsPrepareElementLocationsForFlattenedIndices()
-  }
-
   func removeBackground(forSectionAtIndex sectionIndex: Int, sectionModel: inout SectionModel) {
     if sectionModel.removeBackground() {
-      setNeedsPrepareElementLocationsForFlattenedIndices()
-    }
-  }
-
-  func removeBackground(forSectionAtIndex sectionIndex: Int) {
-    if sectionModels[sectionIndex].removeBackground() {
       setNeedsPrepareElementLocationsForFlattenedIndices()
     }
   }

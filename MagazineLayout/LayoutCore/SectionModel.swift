@@ -48,8 +48,6 @@ struct SectionModel {
   private(set) var footerModel: FooterModel?
   private(set) var backgroundModel: BackgroundModel?
 
-  var visibleBounds: CGRect?
-
   var numberOfItems: Int {
     return itemModels.count
   }
@@ -245,20 +243,6 @@ struct SectionModel {
     }
   }
 
-  mutating func updateItemSizeMode(to sizeMode: MagazineLayoutItemSizeMode, atIndex index: Int) {
-    // Accessing this array using an unsafe, untyped (raw) pointer avoids expensive copy-on-writes
-    // and Swift retain / release calls.
-    itemModels.withUnsafeMutableBufferPointer { directlyMutableItemModels in
-      directlyMutableItemModels[index].sizeMode = sizeMode
-
-      if case let .static(staticHeight) = sizeMode.heightMode {
-        directlyMutableItemModels[index].size.height = staticHeight
-      }
-    }
-
-    updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex: index)
-  }
-
   mutating func setHeader(_ headerModel: HeaderModel) {
     let oldPreferredHeight = self.headerModel?.preferredHeight
     self.headerModel = headerModel
@@ -437,11 +421,6 @@ struct SectionModel {
   private func indexOfHeaderRow() -> Int? {
     guard headerModel != nil else { return nil }
     return 0
-  }
-
-  private func indexOfFirstItemsRow() -> Int? {
-    guard numberOfItems > 0 else { return nil }
-    return headerModel == nil ? 0 : 1
   }
 
   private func indexOfLastItemsRow() -> Int? {
