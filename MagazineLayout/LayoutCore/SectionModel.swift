@@ -38,10 +38,6 @@ struct SectionModel {
     numberOfRows = 0
 
     updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: 0)
-
-    if !MagazineLayout._enableExperimentalOptimizations {
-      calculateElementFramesIfNecessary()
-    }
   }
 
   // MARK: Internal
@@ -83,12 +79,7 @@ struct SectionModel {
   mutating func calculateFrameForItem(atIndex index: Int) -> CGRect {
     calculateElementFramesIfNecessary()
 
-    let rowIndex: Int? =
-      if MagazineLayout._enableExperimentalOptimizations {
-        newRowIndicesForItemIndices[safe: index] ?? nil
-      } else {
-        rowIndicesForItemIndices[index]
-      }
+    let rowIndex = rowIndicesForItemIndices[safe: index] ?? nil
 
     var origin = itemModels[index].originInSection
     if let rowIndex {
@@ -330,23 +321,8 @@ struct SectionModel {
       directlyMutableItemModels[index].preferredHeight = preferredHeight
     }
 
-    let rowIndex: Int? =
-      if MagazineLayout._enableExperimentalOptimizations {
-        newRowIndicesForItemIndices[safe: index] ?? nil
-      } else {
-        rowIndicesForItemIndices[index]
-      }
-
-    let rowHeight: CGFloat? =
-      if let rowIndex {
-        if MagazineLayout._enableExperimentalOptimizations {
-          newItemRowHeightsForRowIndices[safe: rowIndex]
-        } else {
-          itemRowHeightsForRowIndices[rowIndex]
-        }
-      } else {
-        nil
-      }
+    let rowIndex = rowIndicesForItemIndices[safe: index] ?? nil
+    let rowHeight = rowIndex.flatMap { itemRowHeightsForRowIndices[safe: $0] }
 
     if let rowIndex, let rowHeight {
       let newRowHeight = updateHeightsForItemsInRow(at: rowIndex)
@@ -436,42 +412,26 @@ struct SectionModel {
     }
   }
 
-  private var itemIndicesForRowIndices = [Int: [Int]]()
-  private var rowIndicesForItemIndices = [Int: Int]()
-  private var itemRowHeightsForRowIndices = [Int: CGFloat]()
-
-  private var newItemIndicesForRowIndices = [ClosedRange<Int>?]()
-  private var newRowIndicesForItemIndices = [Int?]()
-  private var newItemRowHeightsForRowIndices = [CGFloat]()
+  private var itemIndicesForRowIndices = [ClosedRange<Int>?]()
+  private var rowIndicesForItemIndices = [Int?]()
+  private var itemRowHeightsForRowIndices = [CGFloat]()
 
   private var rowOffsetTracker: RowOffsetTracker?
 
   private func maxYForItemsRow(atIndex rowIndex: Int) -> CGFloat? {
-    if MagazineLayout._enableExperimentalOptimizations {
-      guard
-        let itemIndices = newItemIndicesForRowIndices[safe: rowIndex] ?? nil,
-        let itemY = itemModels[safe: itemIndices.lowerBound]?.originInSection.y
-      else {
-        return nil
-      }
-
-      var maxItemHeight: CGFloat = 0
-      for itemIndex in itemIndices {
-        maxItemHeight = max(maxItemHeight, itemModels[safe: itemIndex]?.size.height ?? maxItemHeight)
-      }
-
-      return itemY + maxItemHeight
-    } else {
-      guard
-        let itemIndices = itemIndicesForRowIndices[rowIndex],
-        let itemY = itemIndices.first.flatMap({ itemModels[$0].originInSection.y }),
-        let maxItemHeight = itemIndices.map({ itemModels[$0].size.height }).max()
-      else {
-        return nil
-      }
-
-      return itemY + maxItemHeight
+    guard
+      let itemIndices = itemIndicesForRowIndices[safe: rowIndex] ?? nil,
+      let itemY = itemModels[safe: itemIndices.lowerBound]?.originInSection.y
+    else {
+      return nil
     }
+
+    var maxItemHeight: CGFloat = 0
+    for itemIndex in itemIndices {
+      maxItemHeight = max(maxItemHeight, itemModels[safe: itemIndex]?.size.height ?? maxItemHeight)
+    }
+
+    return itemY + maxItemHeight
   }
 
   private func indexOfHeaderRow() -> Int? {
@@ -486,11 +446,7 @@ struct SectionModel {
 
   private func indexOfLastItemsRow() -> Int? {
     guard numberOfItems > 0 else { return nil }
-    if MagazineLayout._enableExperimentalOptimizations {
-      return newRowIndicesForItemIndices[numberOfItems - 1]
-    } else {
-      return rowIndicesForItemIndices[numberOfItems - 1]
-    }
+    return rowIndicesForItemIndices[numberOfItems - 1]
   }
 
   private func indexOfFooterRow() -> Int? {
@@ -502,27 +458,15 @@ struct SectionModel {
   }
   
   private mutating func updateIndexOfFirstInvalidatedRow(forChangeToItemAtIndex changedIndex: Int) {
-    if MagazineLayout._enableExperimentalOptimizations {
-      guard
-        let indexOfCurrentRow = newRowIndicesForItemIndices[safe: changedIndex] ?? nil,
-        indexOfCurrentRow > 0 else
-      {
-        indexOfFirstInvalidatedRow = newRowIndicesForItemIndices[safe: 0] ?? 0
-        return
-      }
-
-      updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfCurrentRow - 1)
-    } else {
-      guard
-        let indexOfCurrentRow = rowIndicesForItemIndices[changedIndex],
-        indexOfCurrentRow > 0 else
-      {
-        indexOfFirstInvalidatedRow = rowIndicesForItemIndices[0] ?? 0
-        return
-      }
-
-      updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfCurrentRow - 1)
+    guard
+      let indexOfCurrentRow = rowIndicesForItemIndices[safe: changedIndex] ?? nil,
+      indexOfCurrentRow > 0 else
+    {
+      indexOfFirstInvalidatedRow = rowIndicesForItemIndices[safe: 0] ?? 0
+      return
     }
+
+    updateIndexOfFirstInvalidatedRowIfNecessary(toProposedIndex: indexOfCurrentRow - 1)
   }
   
   private mutating func updateIndexOfFirstInvalidatedRowIfNecessary(
@@ -536,16 +480,11 @@ struct SectionModel {
   private mutating func applyRowOffsets(upToInvalidatedRow invalidatedRow: Int) {
     guard let rowOffsetTracker = rowOffsetTracker else { return }
 
-    let upperBound: Int
-    if MagazineLayout._enableExperimentalOptimizations {
-      upperBound = min(invalidatedRow, numberOfRows)
-      guard upperBound > 0 else {
-        // Every row is about to be recomputed, so the tracker's offsets are irrelevant. Drop it.
-        self.rowOffsetTracker = nil
-        return
-      }
-    } else {
-      upperBound = numberOfRows
+    let upperBound = min(invalidatedRow, numberOfRows)
+    guard upperBound > 0 else {
+      // Every row is about to be recomputed, so the tracker's offsets are irrelevant. Drop it.
+      self.rowOffsetTracker = nil
+      return
     }
 
     for rowIndex in 0..<upperBound {
@@ -554,14 +493,8 @@ struct SectionModel {
       case indexOfHeaderRow(): headerModel?.originInSection.y += rowOffset
       case indexOfFooterRow(): footerModel?.originInSection.y += rowOffset
       default:
-        if MagazineLayout._enableExperimentalOptimizations {
-          if let itemIndices = newItemIndicesForRowIndices[safe: rowIndex] ?? nil {
-            for itemIndex in itemIndices {
-              itemModels[itemIndex].originInSection.y += rowOffset
-            }
-          }
-        } else {
-          for itemIndex in itemIndicesForRowIndices[rowIndex] ?? [] {
+        if let itemIndices = itemIndicesForRowIndices[safe: rowIndex] ?? nil {
+          for itemIndex in itemIndices {
             itemModels[itemIndex].originInSection.y += rowOffset
           }
         }
@@ -582,41 +515,28 @@ struct SectionModel {
     // make new mappings for those row indices as we do layout calculations below. Since all
     // item / row index mappings before `indexOfFirstInvalidatedRow` are still valid, we'll leave
     // those alone.
-    if MagazineLayout._enableExperimentalOptimizations {
-      var lowestItemIndex: Int?
-      var lowestRowIndexKey: Int?
-      var lowestRowIndex: Int?
-      for rowIndexKey in newItemIndicesForRowIndices.indices {
-        guard rowIndexKey >= rowIndex else { continue }
+    var lowestItemIndex: Int?
+    var lowestRowIndexKey: Int?
+    var lowestRowIndex: Int?
+    for rowIndexKey in itemIndicesForRowIndices.indices {
+      guard rowIndexKey >= rowIndex else { continue }
 
-        if let itemIndices = newItemIndicesForRowIndices[safe: rowIndexKey] ?? nil {
-          lowestItemIndex = min(lowestItemIndex ?? itemIndices.lowerBound, itemIndices.lowerBound)
-        }
-
-        lowestRowIndexKey = min(lowestRowIndexKey ?? rowIndexKey, rowIndexKey)
-        lowestRowIndex = min(lowestRowIndex ?? rowIndex, rowIndex)
+      if let itemIndices = itemIndicesForRowIndices[safe: rowIndexKey] ?? nil {
+        lowestItemIndex = min(lowestItemIndex ?? itemIndices.lowerBound, itemIndices.lowerBound)
       }
 
-      if let lowestItemIndex {
-        newRowIndicesForItemIndices.removeSubrange(lowestItemIndex...)
-      }
-      if let lowestRowIndexKey {
-        newItemIndicesForRowIndices.removeSubrange(lowestRowIndexKey...)
-      }
-      if let lowestRowIndex {
-        newItemRowHeightsForRowIndices.removeSubrange(lowestRowIndex...)
-      }
-    } else {
-      for rowIndexKey in itemIndicesForRowIndices.keys {
-        guard rowIndexKey >= rowIndex else { continue }
+      lowestRowIndexKey = min(lowestRowIndexKey ?? rowIndexKey, rowIndexKey)
+      lowestRowIndex = min(lowestRowIndex ?? rowIndex, rowIndex)
+    }
 
-        if let itemIndex = itemIndicesForRowIndices[rowIndexKey]?.first {
-          rowIndicesForItemIndices[itemIndex] = nil
-        }
-
-        itemIndicesForRowIndices[rowIndexKey] = nil
-        itemRowHeightsForRowIndices[rowIndex] = nil
-      }
+    if let lowestItemIndex {
+      rowIndicesForItemIndices.removeSubrange(lowestItemIndex...)
+    }
+    if let lowestRowIndexKey {
+      itemIndicesForRowIndices.removeSubrange(lowestRowIndexKey...)
+    }
+    if let lowestRowIndex {
+      itemRowHeightsForRowIndices.removeSubrange(lowestRowIndex...)
     }
 
     // Header frame calculation
@@ -635,12 +555,7 @@ struct SectionModel {
     // Item frame calculations
 
     let previousRowIndex = rowIndex - 1
-    let indexOfLastItemInPreviousRow: Int? =
-      if MagazineLayout._enableExperimentalOptimizations {
-        newItemIndicesForRowIndices[safe: previousRowIndex]??.upperBound
-      } else {
-        itemIndicesForRowIndices[previousRowIndex]?.last
-      }
+    let indexOfLastItemInPreviousRow = itemIndicesForRowIndices[safe: previousRowIndex]??.upperBound
 
     let startingItemIndex: Int
     if
@@ -675,20 +590,14 @@ struct SectionModel {
     var indexInCurrentRow = 0
     for itemIndex in startingItemIndex..<numberOfItems {
       // Create item / row index mappings
-      if MagazineLayout._enableExperimentalOptimizations {
-        newItemIndicesForRowIndices.grow(toInclude: rowIndex, fillingWith: nil)
-        if let range = newItemIndicesForRowIndices[rowIndex] {
-          newItemIndicesForRowIndices[rowIndex] = range.lowerBound...itemIndex
-        } else {
-          newItemIndicesForRowIndices[rowIndex] = itemIndex...itemIndex
-        }
-        newRowIndicesForItemIndices.grow(toInclude: itemIndex, fillingWith: nil)
-        newRowIndicesForItemIndices[itemIndex] = rowIndex
+      itemIndicesForRowIndices.grow(toInclude: rowIndex, fillingWith: nil)
+      if let range = itemIndicesForRowIndices[rowIndex] {
+        itemIndicesForRowIndices[rowIndex] = range.lowerBound...itemIndex
       } else {
-        itemIndicesForRowIndices[rowIndex] = itemIndicesForRowIndices[rowIndex] ?? []
-        itemIndicesForRowIndices[rowIndex]?.append(itemIndex)
-        rowIndicesForItemIndices[itemIndex] = rowIndex
+        itemIndicesForRowIndices[rowIndex] = itemIndex...itemIndex
       }
+      rowIndicesForItemIndices.grow(toInclude: itemIndex, fillingWith: nil)
+      rowIndicesForItemIndices[itemIndex] = rowIndex
 
       let itemModel = itemModels[itemIndex]
 
@@ -774,26 +683,11 @@ struct SectionModel {
   }
 
   private mutating func updateHeightsForItemsInRow(at rowIndex: Int) -> CGFloat {
-    if MagazineLayout._enableExperimentalOptimizations {
-      guard let indicesForItemsInRow = newItemIndicesForRowIndices[safe: rowIndex] ?? nil else {
-        assertionFailure("Expected item indices for row \(rowIndex).")
-        return 0
-      }
-      return updateHeightsForItems(in: indicesForItemsInRow, at: rowIndex)
-    } else {
-      guard let indicesForItemsInRow = itemIndicesForRowIndices[rowIndex] else {
-        assertionFailure("Expected item indices for row \(rowIndex).")
-        return 0
-      }
-      return updateHeightsForItems(in: indicesForItemsInRow, at: rowIndex)
+    guard let indicesForItemsInRow = itemIndicesForRowIndices[safe: rowIndex] ?? nil else {
+      assertionFailure("Expected item indices for row \(rowIndex).")
+      return 0
     }
-  }
 
-  private mutating func updateHeightsForItems<Indices: Sequence<Int>>(
-    in indicesForItemsInRow: Indices,
-    at rowIndex: Int)
-    -> CGFloat
-  {
     var heightOfTallestItem = CGFloat(0)
     var stretchToTallestItemInRowItemIndices = Set<Int>()
 
@@ -824,12 +718,8 @@ struct SectionModel {
       }
     }
 
-    if MagazineLayout._enableExperimentalOptimizations {
-      newItemRowHeightsForRowIndices.grow(toInclude: rowIndex, fillingWith: 0)
-      newItemRowHeightsForRowIndices[rowIndex] = heightOfTallestItem
-    } else {
-      itemRowHeightsForRowIndices[rowIndex] = heightOfTallestItem
-    }
+    itemRowHeightsForRowIndices.grow(toInclude: rowIndex, fillingWith: 0)
+    itemRowHeightsForRowIndices[rowIndex] = heightOfTallestItem
 
     return heightOfTallestItem
   }
