@@ -270,76 +270,46 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedBackgroundFrames1: expectedBackgroundFrames1)
   }
 
-  func testUpdatingItemSizeMode() {
-    modelState.updateItemSizeMode(
-      to: MagazineLayoutItemSizeMode(
-        widthMode: .thirdWidth,
-        heightMode: .static(height: 50)),
-      forItemAt: IndexPath(item: 5, section: 0))
-    modelState.updateItemSizeMode(
-      to: MagazineLayoutItemSizeMode(
-        widthMode: .fifthWidth,
-        heightMode: .dynamicAndStretchToTallestItemInRow),
-      forItemAt: IndexPath(item: 8, section: 1))
+  func testUpdatingItemSizeModes() {
+    modelState.updateItemSizeModes(forSectionAtIndex: 0) { itemIndex in
+      itemIndex == 5
+        ? MagazineLayoutItemSizeMode(widthMode: .thirdWidth, heightMode: .static(height: 50))
+        : sizeModesAndHeights0[itemIndex].sizeMode
+    }
+    modelState.updateItemSizeModes(forSectionAtIndex: 1) { itemIndex in
+      itemIndex == 8
+        ? MagazineLayoutItemSizeMode(
+            widthMode: .fifthWidth,
+            heightMode: .dynamicAndStretchToTallestItemInRow)
+        : sizeModesAndHeights1[itemIndex].sizeMode
+    }
 
-    let expectedItemFrames0: [CGRect] = [
-      CGRect(x: 25.0, y: 90.0, width: 280.0, height: 20.0),
-      CGRect(x: 15.0, y: 140.0, width: 300.0, height: 150.0),
-      CGRect(x: 25.0, y: 320.0, width: 130.0, height: 10.0),
-      CGRect(x: 175.0, y: 320.0, width: 130.0, height: 30.0),
-      CGRect(x: 25.0, y: 380.0, width: 130.0, height: 150.0),
-    ]
-    let expectedItemFrames1: [CGRect] = [
-      CGRect(x: 25.0, y: 380.0, width: 130.0, height: 150.0),
-      CGRect(x: 25.0, y: 560.0, width: 80.0, height: 50.0),
-      CGRect(x: 125.0, y: 560.0, width: 80.0, height: 150.0),
-      CGRect(x: 25.0, y: 740.0, width: 55.0, height: 15.0),
-      CGRect(x: 100.0, y: 740.0, width: 55.0, height: 150.0),
-      CGRect(x: 175.0, y: 740.0, width: 55.0, height: 150.0),
-      CGRect(x: 250.0, y: 740.0, width: 55.0, height: 150.0),
-      CGRect(x: 25.0, y: 920.0, width: 40.0, height: 150.0),
-      CGRect(x: 25.0, y: 1260.0, width: 130.0, height: 10.0),
-      CGRect(x: 175.0, y: 1260.0, width: 130.0, height: 30.0),
-      CGRect(x: 25.0, y: 1320.0, width: 130.0, height: 25.0),
-      CGRect(x: 25.0, y: 1375.0, width: 80.0, height: 15.0),
-      CGRect(x: 25.0, y: 1420.0, width: 280.0, height: 20.0),
-      CGRect(x: 25.0, y: 1470.0, width: 80.0, height: 10.0),
-      CGRect(x: 25.0, y: 1510.0, width: 40.0, height: 15.0),
-      CGRect(x: 85.0, y: 1510.0, width: 40.0, height: 15.0),
-      CGRect(x: 145.0, y: 1510.0, width: 40.0, height: 35.0),
-      CGRect(x: 205.0, y: 1510.0, width: 40.0, height: 35.0),
-      CGRect(x: 265.0, y: 1510.0, width: 40.0, height: 30.0),
-      CGRect(x: 15.0, y: 1575.0, width: 300.0, height: 15.0),
-    ]
-    let expectedHeaderFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 50.0),
-    ]
-    let expectedHeaderFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 70.0),
-    ]
-    let expectedFooterFrames0: [CGRect] = [
-    ]
-    let expectedFooterFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 1080.0, width: 300.0, height: 50.0),
-      CGRect(x: 15.0, y: 1600.0, width: 300.0, height: 70.0),
-    ]
-    let expectedBackgroundFrames0: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
-    ]
-    let expectedBackgroundFrames1: [CGRect] = [
-      CGRect(x: 15.0, y: 30.0, width: 300.0, height: 1100.0),
-      CGRect(x: 15.0, y: 1180.0, width: 300.0, height: 490.0),
-    ]
+    XCTAssertEqual(
+      modelState.itemModelHeightMode(at: IndexPath(item: 5, section: 0)),
+      .static(height: 50),
+      "Item height mode is incorrect")
 
-    checkExpectedFrames(
-      expectedItemFrames0: expectedItemFrames0,
-      expectedItemFrames1: expectedItemFrames1,
-      expectedHeaderFrames0: expectedHeaderFrames0,
-      expectedHeaderFrames1: expectedHeaderFrames1,
-      expectedFooterFrames0: expectedFooterFrames0,
-      expectedFooterFrames1: expectedFooterFrames1,
-      expectedBackgroundFrames0: expectedBackgroundFrames0,
-      expectedBackgroundFrames1: expectedBackgroundFrames1)
+    // Item 5 in section 0 is now a third-width item with a static height of 50. Item 6 shares its
+    // row and stretches to the tallest item in that row.
+    XCTAssertEqual(
+      modelState.frameForItem(at: ElementLocation(elementIndex: 5, sectionIndex: 0)),
+      CGRect(x: 25, y: 560, width: 80, height: 50),
+      "Item frame is incorrect")
+    XCTAssertEqual(
+      modelState.frameForItem(at: ElementLocation(elementIndex: 6, sectionIndex: 0)),
+      CGRect(x: 125, y: 560, width: 80, height: 150),
+      "Item frame is incorrect")
+
+    // Items 6 through 10 in section 1 are fifth-width items sharing a row. Item 8 now stretches to
+    // the tallest item in that row, which is 35pt tall.
+    let fifthWidthRowFrames = (6...10).map { itemIndex in
+      modelState.frameForItem(at: ElementLocation(elementIndex: itemIndex, sectionIndex: 1))
+    }
+    XCTAssertEqual(
+      Set(fifthWidthRowFrames.map { $0.minY }).count,
+      1,
+      "Expected items 6 through 10 in section 1 to share a row")
+    XCTAssertEqual(fifthWidthRowFrames[2].height, 35, "Item frame is incorrect")
   }
 
   func testLayoutAfterInsertingItems() {

@@ -42,9 +42,6 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   // MARK: Public
-  
-  /// A temporary flag to enable safely testing some optimizations.
-  public static var _enableExperimentalOptimizations = false
 
   /// The vertical layout direction of items in the collection view. This property changes the behavior of
   /// scroll-position-preservation when performing batch updates or when the collection view's bounds changes.
@@ -105,80 +102,49 @@ public final class MagazineLayout: UICollectionViewLayout {
       let signpostID = OSSignpostID(log: signpostLog)
       os_signpost(.begin, log: signpostLog, name: SignpostName.prepareUpdateLayoutMetrics, signpostID: signpostID)
 
-      if MagazineLayout._enableExperimentalOptimizations {
-        modelState.forEachSectionModel { sectionIndex, sectionModel in
-          reusableIndexPath.section = sectionIndex
+      modelState.forEachSectionModel { sectionIndex, sectionModel in
+        reusableIndexPath.section = sectionIndex
 
-          modelState.updateMetrics(
-            to: metricsForSection(atIndex: sectionIndex),
+        modelState.updateMetrics(
+          to: metricsForSection(atIndex: sectionIndex),
+          forSectionAtIndex: sectionIndex,
+          sectionModel: &sectionModel)
+
+        if let headerModel = headerModelForHeader(inSectionAtIndex: sectionIndex) {
+          modelState.setHeader(
+            headerModel,
             forSectionAtIndex: sectionIndex,
             sectionModel: &sectionModel)
-
-          if let headerModel = headerModelForHeader(inSectionAtIndex: sectionIndex) {
-            modelState.setHeader(
-              headerModel,
-              forSectionAtIndex: sectionIndex,
-              sectionModel: &sectionModel)
-          } else {
-            modelState.removeHeader(forSectionAtIndex: sectionIndex, sectionModel: &sectionModel)
-          }
-
-          if let footerModel = footerModelForFooter(inSectionAtIndex: sectionIndex) {
-            modelState.setFooter(
-              footerModel,
-              forSectionAtIndex: sectionIndex,
-              sectionModel: &sectionModel)
-          } else {
-            modelState.removeFooter(forSectionAtIndex: sectionIndex, sectionModel: &sectionModel)
-          }
-
-          if let backgroundModel = backgroundModelForBackground(inSectionAtIndex: sectionIndex) {
-            modelState.setBackground(
-              backgroundModel,
-              forSectionAtIndex: sectionIndex,
-              sectionModel: &sectionModel)
-          } else {
-            modelState.removeBackground(
-              forSectionAtIndex: sectionIndex,
-              sectionModel: &sectionModel)
-          }
-
-          modelState.updateItemSizeModes(
-            forSectionAtIndex: sectionIndex,
-            sectionModel: &sectionModel)
-          { itemIndex in
-            reusableIndexPath.item = itemIndex
-            return sizeModeForItem(at: reusableIndexPath)
-          }
+        } else {
+          modelState.removeHeader(forSectionAtIndex: sectionIndex, sectionModel: &sectionModel)
         }
-      } else {
-        for sectionIndex in 0..<modelState.numberOfSections {
-          let sectionMetrics = metricsForSection(atIndex: sectionIndex)
-          modelState.updateMetrics(to: sectionMetrics, forSectionAtIndex: sectionIndex)
 
-          if let headerModel = headerModelForHeader(inSectionAtIndex: sectionIndex) {
-            modelState.setHeader(headerModel, forSectionAtIndex: sectionIndex)
-          } else {
-            modelState.removeHeader(forSectionAtIndex: sectionIndex)
-          }
+        if let footerModel = footerModelForFooter(inSectionAtIndex: sectionIndex) {
+          modelState.setFooter(
+            footerModel,
+            forSectionAtIndex: sectionIndex,
+            sectionModel: &sectionModel)
+        } else {
+          modelState.removeFooter(forSectionAtIndex: sectionIndex, sectionModel: &sectionModel)
+        }
 
-          if let footerModel = footerModelForFooter(inSectionAtIndex: sectionIndex) {
-            modelState.setFooter(footerModel, forSectionAtIndex: sectionIndex)
-          } else {
-            modelState.removeFooter(forSectionAtIndex: sectionIndex)
-          }
+        if let backgroundModel = backgroundModelForBackground(inSectionAtIndex: sectionIndex) {
+          modelState.setBackground(
+            backgroundModel,
+            forSectionAtIndex: sectionIndex,
+            sectionModel: &sectionModel)
+        } else {
+          modelState.removeBackground(
+            forSectionAtIndex: sectionIndex,
+            sectionModel: &sectionModel)
+        }
 
-          if let backgroundModel = backgroundModelForBackground(inSectionAtIndex: sectionIndex) {
-            modelState.setBackground(backgroundModel, forSectionAtIndex: sectionIndex)
-          } else {
-            modelState.removeBackground(forSectionAtIndex: sectionIndex)
-          }
-
-          let numberOfItems = modelState.numberOfItems(inSectionAtIndex: sectionIndex)
-          for itemIndex in 0..<numberOfItems {
-            let indexPath = IndexPath(item: itemIndex, section: sectionIndex)
-            modelState.updateItemSizeMode(to: sizeModeForItem(at: indexPath), forItemAt: indexPath)
-          }
+        modelState.updateItemSizeModes(
+          forSectionAtIndex: sectionIndex,
+          sectionModel: &sectionModel)
+        { itemIndex in
+          reusableIndexPath.item = itemIndex
+          return sizeModeForItem(at: reusableIndexPath)
         }
       }
 
@@ -198,13 +164,9 @@ public final class MagazineLayout: UICollectionViewLayout {
         verticalLayoutDirection: verticalLayoutDirection)
 
       var sections = [SectionModel]()
-      if Self._enableExperimentalOptimizations {
-        sections.reserveCapacity(currentCollectionView.numberOfSections)
-      }
+      sections.reserveCapacity(currentCollectionView.numberOfSections)
       for sectionIndex in 0..<currentCollectionView.numberOfSections {
-        if Self._enableExperimentalOptimizations {
-          reusableIndexPath.section = sectionIndex
-        }
+        reusableIndexPath.section = sectionIndex
 
         let sectionModel = sectionModelForSection(
           atIndex: sectionIndex,
@@ -250,9 +212,7 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         if indexPath.item == NSNotFound {
-          if Self._enableExperimentalOptimizations {
-            reusableIndexPath.section = indexPath.section
-          }
+          reusableIndexPath.section = indexPath.section
           let sectionModel = sectionModelForSection(
             atIndex: indexPath.section,
             reusableIndexPath: &reusableIndexPath)
@@ -283,9 +243,7 @@ public final class MagazineLayout: UICollectionViewLayout {
         }
 
         if indexPath.item == NSNotFound {
-          if Self._enableExperimentalOptimizations {
-            reusableIndexPath.section = indexPath.section
-          }
+          reusableIndexPath.section = indexPath.section
           let sectionModel = sectionModelForSection(
             atIndex: indexPath.section,
             reusableIndexPath: &reusableIndexPath)
@@ -1019,20 +977,12 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   @inline(__always)
   private var currentCollectionView: UICollectionView {
-    if MagazineLayout._enableExperimentalOptimizations {
-      _currentCollectionView ?? collectionView!
-    } else {
-      collectionView!
-    }
+    _currentCollectionView ?? collectionView!
   }
 
   @inline(__always)
   private var delegateMagazineLayout: UICollectionViewDelegateMagazineLayout? {
-    if MagazineLayout._enableExperimentalOptimizations {
-      _delegateMagazineLayout
-    } else {
-      currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
-    }
+    _delegateMagazineLayout
   }
 
   // Used to provide the model state with the current visible bounds for the sole purpose of
@@ -1068,11 +1018,7 @@ public final class MagazineLayout: UICollectionViewLayout {
   }
 
   private var modelState: ModelState {
-    if MagazineLayout._enableExperimentalOptimizations {
-      _layoutState.modelState
-    } else {
-      updatedLayoutState().modelState
-    }
+    _layoutState.modelState
   }
 
   /// Relatively expensive compared to just grabbing the `_layoutState`; only use if you need updated metrics.
@@ -1195,18 +1141,11 @@ public final class MagazineLayout: UICollectionViewLayout {
   {
     let numberOfItems = currentCollectionView.numberOfItems(inSection: sectionIndex)
     var itemModels = [ItemModel]()
-    if Self._enableExperimentalOptimizations {
-      itemModels.reserveCapacity(numberOfItems)
-    }
+    itemModels.reserveCapacity(numberOfItems)
 
     for itemIndex in 0..<numberOfItems {
-      if Self._enableExperimentalOptimizations {
-        reusableIndexPath.item = itemIndex
-        itemModels.append(itemModelForItem(at: reusableIndexPath))
-      } else {
-        itemModels.append(itemModelForItem(at: IndexPath(item: itemIndex, section: sectionIndex)))
-      }
-
+      reusableIndexPath.item = itemIndex
+      itemModels.append(itemModelForItem(at: reusableIndexPath))
     }
 
     return SectionModel(
