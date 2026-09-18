@@ -180,6 +180,17 @@ public final class MagazineLayout: UICollectionViewLayout {
     }
 
     prepareActions = []
+
+    // Now that the section models are up-to-date, anchor the content offset to the bottom of the
+    // content if necessary, before the collection view queries us for the elements in its visible
+    // bounds.
+    if
+      let layoutStateBeforeRecreateSectionModels,
+      layoutStateBeforeCollectionViewUpdates == nil
+    {
+      anchorContentOffsetToBottomIfNeeded(
+        layoutStateBeforeRecreatingSectionModels: layoutStateBeforeRecreateSectionModels)
+    }
   }
 
   override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
@@ -1019,6 +1030,35 @@ public final class MagazineLayout: UICollectionViewLayout {
 
   private var modelState: ModelState {
     _layoutState.modelState
+  }
+
+  /// Moves the content offset to the bottom of the content if the layout was anchored to the bottom before its section models
+  /// were recreated.
+  ///
+  /// With a `bottomToTop` layout direction, content is anchored to the bottom of the collection view. When the section models
+  /// are recreated from scratch - like on initial load, or after a `reloadData` - the collection view asks for the elements in its
+  /// visible bounds before we have a chance to adjust the content offset through an invalidation context. Since the content offset
+  /// is at the top of the content at that point, items at the *top* get created and self-sized, just to be discarded once the content
+  /// offset moves to the bottom. Adjusting the content offset here, at the end of `prepare`, prevents that wasted work; the
+  /// collection view computes its visible bounds after the layout is prepared.
+  private func anchorContentOffsetToBottomIfNeeded(
+    layoutStateBeforeRecreatingSectionModels: LayoutState)
+  {
+    guard case .bottomToTop = verticalLayoutDirection else { return }
+
+    // Any other anchor is handled by adjusting the content offset as items are self-sized, since
+    // the position of the anchor item isn't known until then.
+    guard
+      case .bottom(let overScrollDistance) = layoutStateBeforeRecreatingSectionModels.targetContentOffsetAnchor
+    else {
+      return
+    }
+
+    let layoutState = updatedLayoutState()
+    let targetYOffset = layoutState.maxContentOffset.y + overScrollDistance
+    guard !targetYOffset.isEqual(to: layoutState.bounds.minY, screenScale: scale) else { return }
+
+    currentCollectionView.contentOffset.y = targetYOffset
   }
 
   /// Relatively expensive compared to just grabbing the `_layoutState`; only use if you need updated metrics.
