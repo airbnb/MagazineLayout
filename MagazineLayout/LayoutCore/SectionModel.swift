@@ -596,7 +596,9 @@ struct SectionModel {
       }
 
       let totalSpacing = metrics.horizontalSpacing * (itemModel.sizeMode.widthMode.widthDivisor - 1)
-      let itemWidth = ((availableWidthForItems - totalSpacing) / itemModel.sizeMode.widthMode.widthDivisor)
+      // Layout can run before the collection view has a usable width. Insets and spacing must
+      // not produce negative item widths.
+      let itemWidth = max(0, (availableWidthForItems - totalSpacing) / itemModel.sizeMode.widthMode.widthDivisor)
         .alignedToPixel(forScreenWithScale: metrics.scale)
       let itemX = CGFloat(indexInCurrentRow) *
         itemWidth + CGFloat(indexInCurrentRow) *

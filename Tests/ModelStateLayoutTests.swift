@@ -1219,7 +1219,106 @@ final class ModelStateLayoutTests: XCTestCase {
       expectedBackgroundFrames1: expectedBackgroundFrames1)
   }
 
+  func testZeroCollectionWidthClampsItemWidth() {
+    var section = makeWidthTestSection(collectionViewWidth: 0)
+
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 0), CGRect(x: 12, y: 0, width: 0, height: 20))
+  }
+
+  func testSectionInsetsExceedingCollectionWidthClampItemWidth() {
+    var section = makeWidthTestSection(collectionViewWidth: 10)
+
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 0), CGRect(x: 12, y: 0, width: 0, height: 20))
+  }
+
+  func testItemInsetsExceedingSectionWidthClampItemWidth() {
+    var section = makeWidthTestSection(
+      collectionViewWidth: 30,
+      itemInsets: UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 6))
+
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 0), CGRect(x: 18, y: 0, width: 0, height: 20))
+  }
+
+  func testColumnSpacingExceedingAvailableWidthClampsItemWidths() {
+    var section = makeWidthTestSection(
+      collectionViewWidth: 30,
+      widthMode: .halfWidth,
+      horizontalSpacing: 16)
+
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 0), CGRect(x: 12, y: 0, width: 0, height: 20))
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 1), CGRect(x: 28, y: 0, width: 0, height: 20))
+  }
+
+  func testItemWidthRecoversAfterCollectionWidthIncreases() {
+    let itemInsets = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 4)
+    var section = makeWidthTestSection(collectionViewWidth: 0, itemInsets: itemInsets)
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 0), CGRect(x: 18, y: 0, width: 0, height: 20))
+
+    section.updateMetrics(to: MagazineLayoutSectionMetrics.defaultSectionMetrics(
+      forCollectionViewWidth: 120,
+      sectionInsets: UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 8),
+      itemInsets: itemInsets,
+      scale: 2))
+
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 0), CGRect(x: 18, y: 0, width: 90, height: 20))
+  }
+
+  func testHalfWidthItemsRetainTheirFramesWhenSpaceIsAvailable() {
+    var section = makeWidthTestSection(
+      collectionViewWidth: 120,
+      widthMode: .halfWidth,
+      itemInsets: UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 4),
+      horizontalSpacing: 10)
+
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 0), CGRect(x: 18, y: 0, width: 40, height: 20))
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 1), CGRect(x: 68, y: 0, width: 40, height: 20))
+  }
+
+  func testFullWidthIgnoringItemInsetsClampsNegativeSectionWidth() {
+    var section = makeWidthTestSection(
+      collectionViewWidth: 10,
+      widthMode: .fullWidth(respectsHorizontalInsets: false),
+      itemInsets: UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 4))
+
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 0), CGRect(x: 12, y: 0, width: 0, height: 20))
+  }
+
+  func testFullWidthIgnoringItemInsetsRetainsAvailableSectionWidth() {
+    var section = makeWidthTestSection(
+      collectionViewWidth: 120,
+      widthMode: .fullWidth(respectsHorizontalInsets: false),
+      itemInsets: UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 4))
+
+    XCTAssertEqual(section.calculateFrameForItem(atIndex: 0), CGRect(x: 12, y: 0, width: 100, height: 20))
+  }
+
   // MARK: Private
+
+  private func makeWidthTestSection(
+    collectionViewWidth: CGFloat,
+    widthMode: MagazineLayoutItemWidthMode = .fullWidth(respectsHorizontalInsets: true),
+    itemInsets: UIEdgeInsets = .zero,
+    horizontalSpacing: CGFloat = 0)
+    -> SectionModel
+  {
+    let idGenerator = IDGenerator()
+    let sizeMode = MagazineLayoutItemSizeMode(widthMode: widthMode, heightMode: .static(height: 20))
+    return SectionModel(
+      idGenerator: idGenerator,
+      itemModels: [
+        ItemModel(idGenerator: idGenerator, sizeMode: sizeMode, height: 20),
+        ItemModel(idGenerator: idGenerator, sizeMode: sizeMode, height: 20),
+      ],
+      headerModel: nil,
+      footerModel: nil,
+      backgroundModel: nil,
+      metrics: MagazineLayoutSectionMetrics.defaultSectionMetrics(
+        forCollectionViewWidth: collectionViewWidth,
+        horizontalSpacing: horizontalSpacing,
+        sectionInsets: UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 8),
+        itemInsets: itemInsets,
+        scale: 2))
+  }
 
   private let idGenerator = IDGenerator()
 
