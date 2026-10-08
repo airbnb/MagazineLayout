@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.homepage = 'https://github.com/airbnb/MagazineLayout'
   s.authors  = 'Airbnb'
   s.source   = { :git => 'https://github.com/airbnb/MagazineLayout.git', :tag => "v#{ s.version.to_s }" }
-  s.swift_version = '4.0'
+  s.swift_versions = ['4.0', '4.2', '5.0']
   s.source_files = 'MagazineLayout/**/*.{swift,h}'
   s.ios.deployment_target = '12.0'
   s.tvos.deployment_target = '12.0'
