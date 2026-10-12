@@ -82,6 +82,19 @@ public final class MagazineLayout: UICollectionViewLayout {
     _currentCollectionView = collectionView
     _delegateMagazineLayout = currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
 
+    // UIKit skips `shouldInvalidateLayout(forBoundsChange:)` when the layout is already invalidated,
+    // assuming the pending `prepare()` will read the new bounds. On iPhone Duo rotating while closed,
+    // a batch update from the size-class trait change finishes before the collection view is resized,
+    // so the width change arrives with no invalidation and no safe-area change to trigger one. The
+    // width check in `invalidateLayout(with:)` never runs, so it has to be repeated here.
+    if
+      let cachedCollectionViewWidth,
+      !cachedCollectionViewWidth.isEqual(to: currentCollectionView.bounds.width, screenScale: scale)
+    {
+      prepareActions.formUnion(.cachePreviousHorizontalMetrics)
+      prepareActions.formUnion(.updateLayoutMetrics)
+    }
+
     // Save the previous collection view width and horizontal insets if necessary
     if prepareActions.contains(.cachePreviousHorizontalMetrics) {
       cachedCollectionViewWidth = currentCollectionView.bounds.width
