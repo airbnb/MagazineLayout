@@ -82,10 +82,24 @@ public final class MagazineLayout: UICollectionViewLayout {
     _currentCollectionView = collectionView
     _delegateMagazineLayout = currentCollectionView.delegate as? UICollectionViewDelegateMagazineLayout
 
-    // Save the previous collection view width and horizontal insets if necessary
-    if prepareActions.contains(.cachePreviousHorizontalMetrics) {
+    // The width and horizontal insets can change after `invalidateLayout(with:)` runs without it being
+    // called again, so it can't reliably detect these changes. UIKit skips
+    // `shouldInvalidateLayout(forBoundsChange:)` while the layout is already invalidated, assuming the
+    // pending `prepare()` will read the new bounds. On iPhone Duo rotating while closed, the size-class
+    // batch update finishes before the collection view is resized, so the new width arrives after
+    // `invalidateLayout(with:)` has already run. Comparing here sees the final values.
+    let isSameWidth = currentCollectionView.bounds.width.isEqual(
+      to: cachedCollectionViewWidth ?? -.greatestFiniteMagnitude,
+      screenScale: scale)
+    let horizontalContentInset = contentInset.left + contentInset.right
+    let isSameHorizontalContentInset = horizontalContentInset.isEqual(
+      to: cachedHorizontalContentInset ?? -.greatestFiniteMagnitude,
+      screenScale: scale)
+
+    if !isSameWidth || !isSameHorizontalContentInset {
       cachedCollectionViewWidth = currentCollectionView.bounds.width
-      cachedHorizontalContentInset = contentInset.left + contentInset.right
+      cachedHorizontalContentInset = horizontalContentInset
+      prepareActions.formUnion(.updateLayoutMetrics)
     }
 
     if
@@ -875,22 +889,6 @@ public final class MagazineLayout: UICollectionViewLayout {
       prepareActions.formUnion(.recreateSectionModels)
     }
 
-    // Manually checking for a different width or different horizontal insets is necessary because
-    // these values can change without a `contentSizeAdjustment` occurring.
-    let isSameWidth = collectionView?.bounds.size.width.isEqual(
-      to: cachedCollectionViewWidth ?? -.greatestFiniteMagnitude,
-      screenScale: scale)
-      ?? false
-    let horizontalContentInset = (collectionView?.adjustedContentInset.left ?? 0) +
-      (collectionView?.adjustedContentInset.right ?? 0)
-    let isSameHorizontalContentInset = horizontalContentInset.isEqual(
-      to: cachedHorizontalContentInset ?? -.greatestFiniteMagnitude,
-      screenScale: scale)
-    if !isSameWidth || !isSameHorizontalContentInset {
-      prepareActions.formUnion(.cachePreviousHorizontalMetrics)
-      prepareActions.formUnion(.updateLayoutMetrics)
-    }
-
     if context.invalidateLayoutMetrics && shouldInvalidateLayoutMetrics {
       prepareActions.formUnion(.updateLayoutMetrics)
     }
@@ -969,7 +967,6 @@ public final class MagazineLayout: UICollectionViewLayout {
 
     static let recreateSectionModels = PrepareActions(rawValue: 1 << 0)
     static let updateLayoutMetrics = PrepareActions(rawValue: 1 << 1)
-    static let cachePreviousHorizontalMetrics = PrepareActions(rawValue: 1 << 2)
   }
   private var prepareActions: PrepareActions = []
 
