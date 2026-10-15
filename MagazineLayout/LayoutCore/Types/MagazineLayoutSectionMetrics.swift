@@ -74,11 +74,13 @@ struct MagazineLayoutSectionMetrics: Equatable {
   // MARK: Internal
 
   var width: CGFloat {
-    return collectionViewWidth -
-      collectionViewContentInset.left -
-      collectionViewContentInset.right -
-      sectionInsets.left -
-      sectionInsets.right
+    return max(
+      0,
+      collectionViewWidth -
+        collectionViewContentInset.left -
+        collectionViewContentInset.right -
+        sectionInsets.left -
+        sectionInsets.right)
   }
 
   let verticalSpacing: CGFloat

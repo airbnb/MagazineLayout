@@ -1292,24 +1292,44 @@ final class ModelStateLayoutTests: XCTestCase {
     XCTAssertEqual(section.calculateFrameForItem(atIndex: 0), CGRect(x: 12, y: 0, width: 100, height: 20))
   }
 
+  func testZeroCollectionWidthClampsHeaderWidth() {
+    var section = makeWidthTestSection(collectionViewWidth: 0, headerHeight: 30)
+
+    XCTAssertEqual(
+      section.calculateFrameForHeader(inSectionVisibleBounds: .zero),
+      CGRect(x: 12, y: 0, width: 0, height: 30))
+  }
+
+  func testSectionInsetsExceedingCollectionWidthClampHeaderWidth() {
+    var section = makeWidthTestSection(collectionViewWidth: 10, headerHeight: 30)
+
+    XCTAssertEqual(
+      section.calculateFrameForHeader(inSectionVisibleBounds: .zero),
+      CGRect(x: 12, y: 0, width: 0, height: 30))
+  }
+
   // MARK: Private
 
   private func makeWidthTestSection(
     collectionViewWidth: CGFloat,
     widthMode: MagazineLayoutItemWidthMode = .fullWidth(respectsHorizontalInsets: true),
     itemInsets: UIEdgeInsets = .zero,
-    horizontalSpacing: CGFloat = 0)
+    horizontalSpacing: CGFloat = 0,
+    headerHeight: CGFloat? = nil)
     -> SectionModel
   {
     let idGenerator = IDGenerator()
     let sizeMode = MagazineLayoutItemSizeMode(widthMode: widthMode, heightMode: .static(height: 20))
+    let headerModel = headerHeight.map {
+      HeaderModel(heightMode: .static(height: $0), height: $0, pinToVisibleBounds: false)
+    }
     return SectionModel(
       idGenerator: idGenerator,
       itemModels: [
         ItemModel(idGenerator: idGenerator, sizeMode: sizeMode, height: 20),
         ItemModel(idGenerator: idGenerator, sizeMode: sizeMode, height: 20),
       ],
-      headerModel: nil,
+      headerModel: headerModel,
       footerModel: nil,
       backgroundModel: nil,
       metrics: MagazineLayoutSectionMetrics.defaultSectionMetrics(
